@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: #ffe7a0;
+  background: #1a1a22;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid #00daff;
+  outline-offset: 2px;
+}
+
+/* Retro glow effects */
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(0, 218, 255, 0.3);
+}
+
+.glow-orange {
+  box-shadow: 0 0 20px rgba(255, 107, 50, 0.3);
+}
+
+/* Terminal/monitor effects */
+.terminal-border {
+  border: 2px solid #00daff;
+  box-shadow: 
+    inset 0 0 10px rgba(0, 218, 255, 0.1),
+    0 0 20px rgba(0, 218, 255, 0.3);
+}
+
+.panel {
+  background: rgba(26, 26, 34, 0.8);
+  border: 1px solid #8f8f8f;
+  backdrop-filter: blur(10px);
+}
+
+/* Button styles */
+.btn-primary {
+  background: #ff6b32;
+  color: #1a1a22;
+  padding: 1rem 2rem;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.btn-primary:hover {
+  background: #ff8c5a;
+  box-shadow: 0 0 20px rgba(255, 107, 50, 0.5);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #00daff;
+  padding: 1rem 2rem;
+  border: 2px solid #00daff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.btn-secondary:hover {
+  background: rgba(0, 218, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 218, 255, 0.3);
+}
+
+/* Accessibility: Ensure sufficient contrast */
+@media (prefers-contrast: high) {
+  .btn-primary {
+    border: 2px solid #1a1a22;
+  }
+  
+  .btn-secondary {
+    border-width: 3px;
+  }
+}
+

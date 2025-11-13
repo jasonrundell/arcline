@@ -1,0 +1,30 @@
+import { MetadataRoute } from "next";
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "ARCline - ARC Raiders Multi-Hotline",
+    short_name: "ARCline",
+    description: "Multiple automated hotlines for the ARC Raiders universe",
+    start_url: "/",
+    display: "standalone",
+    background_color: "#1a1a22",
+    theme_color: "#1a1a22",
+    orientation: "portrait-primary",
+    icons: [
+      {
+        src: "/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
+    ],
+    categories: ["games", "entertainment"],
+  };
+}
+
