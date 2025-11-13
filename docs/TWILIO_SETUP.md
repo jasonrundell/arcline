@@ -8,15 +8,16 @@ This guide covers setting up Twilio ConversationRelay for ARCline hotlines.
 - Phone numbers purchased in Twilio (or use trial numbers for testing)
 - Webhook URL from your deployed application
 
-## Step 1: Purchase Phone Numbers
+## Step 1: Purchase Phone Number
 
 1. Go to [Twilio Console > Phone Numbers](https://console.twilio.com/us1/develop/phone-numbers/manage/search)
-2. Purchase phone numbers for each hotline:
-   - Extraction Hotline
-   - Loot Locator Hotline
-   - Scrappy's Chicken Line
-   - Faction Gossip Line
-   - Wake-Up Call / Raid Alarm
+2. Purchase **one phone number** for all hotlines
+3. The system uses an interactive voice menu - users press 1-5 to select their option:
+   - Press 1: Extraction Request
+   - Press 2: Loot Locator
+   - Press 3: Scrappy's Chicken Line
+   - Press 4: Faction News
+   - Press 5: Event Alarm
 
 ## Step 2: Configure ConversationRelay
 
@@ -43,25 +44,27 @@ curl -X POST https://conversations.twilio.com/v1/Services/SERVICE_SID/Configurat
   -d "WebhookUrl=WEBHOOK_URL"
 ```
 
-## Step 3: Configure Phone Numbers
-
-For each phone number:
+## Step 3: Configure Phone Number
 
 1. Go to Phone Numbers > Manage > Active Numbers
-2. Click on the phone number
+2. Click on your phone number
 3. Configure:
    - **Voice & Fax**: Set to your Conversation Service
    - **A MESSAGE COMES IN**: Leave blank (handled by ConversationRelay)
    - **A CALL COMES IN**: Set to your Conversation Service
 
+**Note**: Only one phone number is needed. The webhook handler presents a menu when users call.
+
 ## Step 4: Set Up ConversationRelay Webhook
 
 Your webhook endpoint is:
+
 ```
 POST /api/twilio/conversation/webhook
 ```
 
 The endpoint expects form data with:
+
 - `ConversationSid`
 - `CurrentInput`
 - `CurrentInputType`
@@ -80,11 +83,13 @@ The endpoint expects form data with:
 ### Test with ngrok (Local Development)
 
 1. Start ngrok:
+
    ```bash
    ngrok http 3000
    ```
 
 2. Update webhook URL in Twilio to ngrok URL:
+
    ```
    https://your-ngrok-url.ngrok.io/api/twilio/conversation/webhook
    ```
@@ -98,12 +103,10 @@ Add to your `.env.local`:
 ```env
 TWILIO_ACCOUNT_SID=your_account_sid
 TWILIO_AUTH_TOKEN=your_auth_token
-NEXT_PUBLIC_TWILIO_EXTRACTION_NUMBER=+1234567890
-NEXT_PUBLIC_TWILIO_LOOT_NUMBER=+1234567890
-NEXT_PUBLIC_TWILIO_CHICKEN_NUMBER=+1234567890
-NEXT_PUBLIC_TWILIO_GOSSIP_NUMBER=+1234567890
-NEXT_PUBLIC_TWILIO_ALARM_NUMBER=+1234567890
+NEXT_PUBLIC_TWILIO_PHONE_NUMBER=+18722825463
 ```
+
+**Note**: Only one phone number is needed. Users select options via the voice menu (1-5).
 
 ## Troubleshooting
 
@@ -138,6 +141,7 @@ Add language detection and routing in webhook handler.
 ### Analytics
 
 Use Twilio Insights to track:
+
 - Call volume
 - Response times
 - Error rates
@@ -147,4 +151,3 @@ Use Twilio Insights to track:
 - [Twilio ConversationRelay Documentation](https://www.twilio.com/docs/conversations/conversation-relay)
 - [Twilio API Reference](https://www.twilio.com/docs/voice/api)
 - [Webhook Security Best Practices](https://www.twilio.com/docs/usage/webhooks/webhooks-security)
-

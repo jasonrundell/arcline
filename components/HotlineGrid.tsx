@@ -29,7 +29,7 @@ const hotlines = [
   },
   {
     id: "gossip",
-    title: "Faction Gossip Line",
+    title: "Faction News Line",
     description: "Community rumors and news updates",
     icon: "📢",
     color: "arc-cyan",
@@ -37,7 +37,7 @@ const hotlines = [
   },
   {
     id: "alarm",
-    title: "Wake-Up Call / Raid Alarm",
+    title: "Event Alarm",
     description: "Automated reminders for raid starts",
     icon: "⏰",
     color: "arc-orange",

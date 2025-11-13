@@ -6,7 +6,8 @@ interface HotlineDetailProps {
   id: string;
   title: string;
   description: string;
-  phoneNumber?: string;
+  phoneNumber: string;
+  menuOption?: number;
 }
 
 export default function HotlineDetail({
@@ -14,11 +15,10 @@ export default function HotlineDetail({
   title,
   description,
   phoneNumber,
+  menuOption,
 }: HotlineDetailProps) {
   const handleCall = () => {
-    if (phoneNumber) {
-      window.location.href = `tel:${phoneNumber}`;
-    }
+    window.location.href = `tel:${phoneNumber}`;
   };
 
   return (
@@ -36,25 +36,24 @@ export default function HotlineDetail({
           <h1 className="text-4xl font-bold mb-4 text-arc-cyan">{title}</h1>
           <p className="text-lg text-arc-gray mb-8">{description}</p>
 
-          {phoneNumber ? (
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-arc-gray mb-2">Phone Number:</p>
-                <p className="text-2xl font-mono text-arc-sand">{phoneNumber}</p>
-              </div>
-              <button
-                onClick={handleCall}
-                className="btn-primary w-full"
-                aria-label={`Call ${title}`}
-              >
-                Call Now
-              </button>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-arc-gray mb-2">Phone Number:</p>
+              <p className="text-2xl font-mono text-arc-sand">{phoneNumber}</p>
+              {menuOption && (
+                <p className="text-sm text-arc-gray mt-2">
+                  When calling, press <span className="text-arc-orange font-bold">{menuOption}</span> to select this option.
+                </p>
+              )}
             </div>
-          ) : (
-            <div className="text-arc-gray">
-              <p>Phone number configuration pending.</p>
-            </div>
-          )}
+            <button
+              onClick={handleCall}
+              className="btn-primary w-full"
+              aria-label={`Call ${title}`}
+            >
+              Call Now
+            </button>
+          </div>
 
           <div className="mt-8 pt-8 border-t border-arc-gray/30">
             <h2 className="text-xl font-bold mb-4 text-arc-orange">How it works:</h2>

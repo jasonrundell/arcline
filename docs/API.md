@@ -51,15 +51,27 @@ Returns a JSON object with the following structure:
 - `remember` (object, optional): Key-value pairs to store in conversation memory
 - `handoff` (object, optional): Handoff configuration for advanced routing
 
+### Call Flow
+
+1. **User calls the single phone number**
+2. **Main Menu**: User hears menu options and presses 1-5:
+   - Press 1: Extraction Request
+   - Press 2: Loot Locator
+   - Press 3: Scrappy's Chicken Line
+   - Press 4: Faction News
+   - Press 5: Event Alarm
+3. **Routing**: Based on selection, user is routed to appropriate hotline handler
+4. **Hotline Handler**: Processes the specific hotline interaction
+
 ### Hotline Types
 
-The webhook routes requests based on the `hotlineType` stored in memory:
+The webhook routes requests based on the `hotlineType` stored in memory after menu selection:
 
-1. **extraction** - Extraction Request Hotline
-2. **loot** - Loot Locator Hotline
-3. **chicken** - Scrappy's Chicken Line
-4. **gossip** - Faction Gossip Line
-5. **alarm** - Wake-Up Call / Raid Alarm
+1. **extraction** - Extraction Request Hotline (Menu option 1)
+2. **loot** - Loot Locator Hotline (Menu option 2)
+3. **chicken** - Scrappy's Chicken Line (Menu option 3)
+4. **gossip** - Faction News Line (Menu option 4)
+5. **alarm** - Event Alarm (Menu option 5)
 
 ### Example Request
 

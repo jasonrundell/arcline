@@ -2,9 +2,14 @@
 
 A retro-styled, multi-hotline web application for the ARC Raiders universe, built for the [Twilio Web Dev Challenge](https://codetv.dev/blog/web-dev-challenge-hackathon-s2e11-code-powered-phone-hotline).
 
+1 XXX ARC-LINE (272-5463) (272-5463 not available)
+
++1 872 282 LINE (5463)
+
 ## ✨ Features
 
 - **5 Automated Hotlines:**
+
   - 🚁 Extraction Request Hotline - Request extractions from your location
   - 📦 Loot Locator Hotline - Search for valuable items
   - 🐔 Scrappy's Chicken Line - Fun sound clips and randomizers
@@ -12,6 +17,7 @@ A retro-styled, multi-hotline web application for the ARC Raiders universe, buil
   - ⏰ Wake-Up Call / Raid Alarm - Automated reminders
 
 - **Tech Stack:**
+
   - Next.js 14+ with App Router
   - TypeScript
   - Tailwind CSS with ARC Raiders color palette
@@ -39,31 +45,37 @@ A retro-styled, multi-hotline web application for the ARC Raiders universe, buil
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/jasonrundell/arcline.git
    cd arcline
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env.local
    ```
-   
+
    Edit `.env.local` with your credentials:
+
    - Supabase URL and keys
    - Twilio Account SID and Auth Token
    - Twilio phone numbers for each hotline
 
 4. **Set up database**
+
    - Go to your Supabase project
    - Run the SQL from `docs/DATABASE_SCHEMA.md` in the SQL Editor
 
 5. **Run development server**
+
    ```bash
    npm run dev
    ```
@@ -106,6 +118,7 @@ npm test
 ```
 
 Run with coverage:
+
 ```bash
 npm run test:coverage
 ```
@@ -151,6 +164,7 @@ npm start
 See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment instructions.
 
 Quick steps:
+
 1. Push to GitHub
 2. Connect to Vercel
 3. Configure environment variables
