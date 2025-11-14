@@ -1,5 +1,5 @@
-import { ConversationRelayRequest, ConversationRelayResponse } from "@/types/twilio";
-import { supabase } from "@/lib/supabase";
+import { ConversationRelayRequest, ConversationRelayResponse } from "../types/twilio";
+import { supabase } from "../supabase";
 
 export async function handleLootHotline(
   request: ConversationRelayRequest,

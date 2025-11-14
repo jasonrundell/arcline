@@ -1,4 +1,4 @@
-import { ConversationRelayRequest, ConversationRelayResponse } from "@/types/twilio";
+import { ConversationRelayRequest, ConversationRelayResponse } from "../types/twilio";
 
 export async function handleMainMenu(
   request: ConversationRelayRequest,

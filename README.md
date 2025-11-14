@@ -1,6 +1,6 @@
-# ARCline - ARC Raiders Multi-Hotline Web App
+# ARCline - ARC Raiders Multi-Hotline Voice System
 
-A retro-styled, multi-hotline web application for the ARC Raiders universe, built for the [Twilio Web Dev Challenge](https://codetv.dev/blog/web-dev-challenge-hackathon-s2e11-code-powered-phone-hotline).
+A voice-based multi-hotline system for the ARC Raiders universe, built with Twilio ConversationRelay. Users call a single phone number and select from 5 different hotlines by pressing 1-5.
 
 1 XXX ARC-LINE (272-5463) (272-5463 not available)
 
@@ -10,28 +10,19 @@ A retro-styled, multi-hotline web application for the ARC Raiders universe, buil
 
 - **5 Automated Hotlines:**
 
-  - 🚁 Extraction Request Hotline - Request extractions from your location
-  - 📦 Loot Locator Hotline - Search for valuable items
-  - 🐔 Scrappy's Chicken Line - Fun sound clips and randomizers
-  - 📢 Faction Gossip Line - Community rumors and news
-  - ⏰ Wake-Up Call / Raid Alarm - Automated reminders
+  - 🚁 Press **1** for Extraction Request - Request extractions from your location
+  - 📦 Press **2** for Loot Locator - Search for valuable items
+  - 🐔 Press **3** for Scrappy's Chicken Line - Fun sound clips and randomizers
+  - 📢 Press **4** for Faction News - Community rumors and news
+  - ⏰ Press **5** for Event Alarm - Automated reminders
 
 - **Tech Stack:**
 
-  - Next.js 14+ with App Router
-  - TypeScript
-  - Tailwind CSS with ARC Raiders color palette
+  - Node.js with TypeScript
+  - Fastify web server
+  - WebSocket support for Twilio ConversationRelay
   - Supabase for database
-  - Twilio ConversationRelay for voice/SMS
-  - PWA support with offline caching
-  - Jest + React Testing Library for unit tests
-  - Playwright for E2E tests
-
-- **Design:**
-  - Retro ARC Raiders-themed UI
-  - Mobile-first responsive design
-  - WCAG 2.1 AA accessibility compliance
-  - Terminal/monitor aesthetic with neon glow effects
+  - DTMF (Dual-Tone Multi-Frequency) detection for menu selection
 
 ## 🚀 Getting Started
 
@@ -39,7 +30,8 @@ A retro-styled, multi-hotline web application for the ARC Raiders universe, buil
 
 - Node.js 18+ and npm
 - Supabase account
-- Twilio account with phone numbers
+- Twilio account with a phone number
+- ngrok (for local development)
 - Git
 
 ### Installation
@@ -59,74 +51,76 @@ A retro-styled, multi-hotline web application for the ARC Raiders universe, buil
 
 3. **Set up environment variables**
 
-   ```bash
-   cp .env.example .env.local
+   Create a `.env` file in the root directory:
+
+   ```env
+   PORT=8080
+   DOMAIN=your-ngrok-domain.ngrok.io
+
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_ANON_KEY=your-anon-key
+
+   TWILIO_ACCOUNT_SID=your_account_sid
+   TWILIO_AUTH_TOKEN=your_auth_token
    ```
-
-   Edit `.env.local` with your credentials:
-
-   - Supabase URL and keys
-   - Twilio Account SID and Auth Token
-   - Twilio phone numbers for each hotline
 
 4. **Set up database**
 
    - Go to your Supabase project
    - Run the SQL from `docs/DATABASE_SCHEMA.md` in the SQL Editor
 
-5. **Run development server**
+5. **Start ngrok** (for local development)
+
+   ```bash
+   ngrok http 8080
+   ```
+
+   Copy the ngrok URL (e.g., `abc123.ngrok.io`) and update your `.env` file:
+   ```env
+   DOMAIN=abc123.ngrok.io
+   ```
+
+6. **Run development server**
 
    ```bash
    npm run dev
    ```
 
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+   The server will start on `http://localhost:8080`
+
+7. **Configure Twilio**
+
+   - Go to your Twilio Console
+   - Navigate to Phone Numbers > Manage > Active Numbers
+   - Click on your phone number
+   - Under "A CALL COMES IN", set the webhook URL to:
+     ```
+     https://your-ngrok-domain.ngrok.io/twiml
+     ```
+   - Set HTTP method to **GET**
+
+8. **Test the system**
+
+   Call your Twilio phone number and follow the voice prompts!
 
 ## 📁 Project Structure
 
 ```
 arcline/
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   │   └── twilio/       # Twilio webhook handlers
-│   ├── hotline/          # Hotline detail pages
-│   ├── layout.tsx        # Root layout
-│   ├── page.tsx          # Homepage
-│   └── globals.css       # Global styles
-├── components/            # React components
-│   ├── Header.tsx
-│   ├── Footer.tsx
-│   ├── HotlineCard.tsx
-│   ├── HotlineGrid.tsx
-│   └── HotlineDetail.tsx
+├── server.ts              # Main server file with WebSocket support
 ├── lib/                   # Utility libraries
 │   ├── supabase.ts       # Supabase client
 │   └── hotlines/         # Hotline handlers
+│       ├── menu.ts      # Main menu handler
+│       ├── extraction.ts
+│       ├── loot.ts
+│       ├── chicken.ts
+│       ├── gossip.ts
+│       └── alarm.ts
 ├── types/                 # TypeScript types
-├── __tests__/            # Unit tests
-├── e2e/                  # E2E tests
+│   └── twilio.ts        # Twilio ConversationRelay types
 ├── docs/                 # Documentation
-└── public/               # Static assets
-```
-
-## 🧪 Testing
-
-### Unit Tests
-
-```bash
-npm test
-```
-
-Run with coverage:
-
-```bash
-npm run test:coverage
-```
-
-### E2E Tests
-
-```bash
-npm run test:e2e
+└── package.json
 ```
 
 ## 🏗️ Building for Production
@@ -136,39 +130,43 @@ npm run build
 npm start
 ```
 
-## 📱 PWA Features
+## 🔧 How It Works
 
-- Installable as a mobile app
-- Offline support with service worker
-- Cache management via "Clear Cache" button
-- Responsive design for all screen sizes
+1. **Call Initiation**: When a user calls the Twilio phone number, Twilio requests the `/twiml` endpoint, which returns TwiML instructions to connect to the WebSocket server.
 
-## 🎨 Color Palette
+2. **WebSocket Connection**: Twilio connects to the `/ws` WebSocket endpoint, establishing a persistent connection for the call.
 
-- **Deep Space Black:** `#1a1a22`
-- **Burnt Orange:** `#ff6b32`
-- **Salvage Gray:** `#8f8f8f`
-- **Combat Sand:** `#ffe7a0`
-- **Accent Cyan:** `#00daff`
-- **Dark Olive:** `#273110`
+3. **Menu Selection**: The system presents a voice menu asking users to press 1-5. The system detects DTMF tones or voice input containing numbers.
+
+4. **Hotline Routing**: Based on the selection, the system routes to the appropriate hotline handler:
+   - 1 → Extraction Request
+   - 2 → Loot Locator
+   - 3 → Scrappy's Chicken Line
+   - 4 → Faction News
+   - 5 → Event Alarm
+
+5. **Conversation Flow**: Each hotline handler manages its own conversation flow using a state machine pattern with memory persistence.
 
 ## 📚 Documentation
 
 - [API Documentation](docs/API.md) - API endpoints and webhook details
 - [Database Schema](docs/DATABASE_SCHEMA.md) - Database structure and setup
-- [Deployment Guide](docs/DEPLOYMENT.md) - Deploying to Vercel
-- [Project Plan](docs/PROJECT.md) - Original project requirements
+- [Deployment Guide](docs/DEPLOYMENT.md) - Deployment instructions
+- [Twilio Setup](docs/TWILIO_SETUP.md) - Twilio ConversationRelay configuration
 
 ## 🚢 Deployment
 
-See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment instructions.
+The application can be deployed to any Node.js hosting platform:
 
-Quick steps:
+- **Heroku**: Add a `Procfile` with `web: node dist/server.js`
+- **Railway**: Configure build command `npm run build` and start command `npm start`
+- **Fly.io**: Use the provided Dockerfile
+- **AWS/GCP/Azure**: Deploy as a Node.js application
 
-1. Push to GitHub
-2. Connect to Vercel
-3. Configure environment variables
-4. Deploy!
+Make sure to:
+1. Set all environment variables
+2. Configure your Twilio phone number webhook to point to your deployed `/twiml` endpoint
+3. Use HTTPS (required for production WebSocket connections)
 
 ## 🤝 Contributing
 
@@ -183,3 +181,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built for the Twilio Web Dev Challenge
 - Inspired by ARC Raiders universe
 - Uses Twilio ConversationRelay for voice interactions
+- Based on [Twilio ConversationRelay Tutorial](https://www.twilio.com/en-us/blog/developers/tutorials/product/integrate-openai-twilio-voice-using-conversationrelay)
