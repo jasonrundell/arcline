@@ -1,0 +1,17 @@
+{
+  "functions": {
+    "api/twiml.ts": {
+      "maxDuration": 10
+    },
+    "api/twilio/conversation/webhook.ts": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/twiml",
+      "destination": "/api/twiml"
+    }
+  ]
+}
+

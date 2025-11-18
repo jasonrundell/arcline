@@ -2,6 +2,12 @@
 
 This guide covers deploying ARCline as a standalone Node.js voice system.
 
+## Deployment Options
+
+- **Single Platform**: Deploy everything (TwiML + WebSocket) on one platform (Railway, Fly.io, Heroku, etc.)
+- **Hybrid (Vercel)**: Deploy TwiML endpoint on Vercel, WebSocket server elsewhere
+  - See [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md) for Vercel-specific instructions
+
 ## Prerequisites
 
 - Node.js 18+ runtime

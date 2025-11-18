@@ -152,21 +152,37 @@ npm start
 - [API Documentation](docs/API.md) - API endpoints and webhook details
 - [Database Schema](docs/DATABASE_SCHEMA.md) - Database structure and setup
 - [Deployment Guide](docs/DEPLOYMENT.md) - Deployment instructions
+- [Vercel Deployment](docs/VERCEL_DEPLOYMENT.md) - Vercel-specific deployment guide
 - [Twilio Setup](docs/TWILIO_SETUP.md) - Twilio ConversationRelay configuration
 
 ## 🚢 Deployment
 
 The application can be deployed to any Node.js hosting platform:
 
+### Single Platform Deployment
+
 - **Heroku**: Add a `Procfile` with `web: node dist/server.js`
 - **Railway**: Configure build command `npm run build` and start command `npm start`
 - **Fly.io**: Use the provided Dockerfile
 - **AWS/GCP/Azure**: Deploy as a Node.js application
 
-Make sure to:
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed instructions.
+
+### Vercel Deployment (Recommended)
+
+Deploy everything on Vercel using ConversationRelay's webhook mode:
+- **TwiML Endpoint**: Vercel serverless function
+- **Webhook Handler**: Vercel serverless function
+- **No separate server needed** - Everything runs on Vercel!
+
+See [VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md) for Vercel-specific instructions.
+
+### Deployment Checklist
+
 1. Set all environment variables
 2. Configure your Twilio phone number webhook to point to your deployed `/twiml` endpoint
 3. Use HTTPS (required for production WebSocket connections)
+4. Verify WebSocket server is accessible
 
 ## 🤝 Contributing
 

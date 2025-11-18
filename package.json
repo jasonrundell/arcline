@@ -29,12 +29,14 @@
   "homepage": "https://github.com/jasonrundell/arcline#readme",
   "dependencies": {
     "@supabase/supabase-js": "^2.81.1",
+    "@vercel/node": "^3.0.0",
     "fastify": "^5.0.0",
     "twilio": "^5.10.5",
     "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "@types/vercel__node": "^1.15.4",
     "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
