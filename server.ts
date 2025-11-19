@@ -17,11 +17,20 @@ const sessions = new Map<string, Record<string, unknown>>();
 
 // TwiML endpoint - returns instructions to connect to WebSocket
 fastify.get("/twiml", async (request, reply) => {
+  // Auto-detect domain from request headers (works with ngrok)
+  // Priority: DOMAIN env var (if not localhost) > Host header > fallback to localhost
+  let domain = DOMAIN;
+  
+  // If DOMAIN is still localhost, try to get it from the request
+  if (domain.includes("localhost") && request.headers.host) {
+    domain = request.headers.host;
+  }
+  
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Connect>
     <ConversationRelay>
-      <WebSocket url="wss://${DOMAIN}/ws" />
+      <WebSocket url="wss://${domain}/ws" />
     </ConversationRelay>
   </Connect>
 </Response>`;

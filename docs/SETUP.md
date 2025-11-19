@@ -9,6 +9,33 @@ This guide covers setting up ARCline as a standalone voice system.
 - Twilio account with a phone number
 - ngrok (for local development)
 
+### Installing ngrok
+
+**Windows:**
+
+1. Download ngrok from [ngrok.com/download](https://ngrok.com/download)
+2. Extract the `ngrok.exe` file to a folder (e.g., `C:\ngrok`)
+3. Add the folder to your system PATH, or use the full path when running ngrok
+4. (Optional) Sign up for a free ngrok account at [dashboard.ngrok.com](https://dashboard.ngrok.com) and add your authtoken:
+   ```bash
+   ngrok config add-authtoken YOUR_AUTH_TOKEN
+   ```
+
+**macOS:**
+
+```bash
+brew install ngrok/ngrok/ngrok
+```
+
+**Linux:**
+
+```bash
+# Download and install
+curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+sudo apt update && sudo apt install ngrok
+```
+
 ## Step 1: Clone and Install
 
 ```bash
@@ -77,6 +104,7 @@ The server will start on `http://localhost:8080` and watch for file changes.
 1. **Get Your Webhook URL**
 
    Your TwiML endpoint will be:
+
    ```
    https://your-ngrok-domain.ngrok.io/twiml
    ```
@@ -101,6 +129,7 @@ The server will start on `http://localhost:8080` and watch for file changes.
 1. **Health Check**
 
    Visit `http://localhost:8080/health` in your browser. You should see:
+
    ```json
    {
      "status": "ok",
@@ -152,4 +181,3 @@ The server will start on `http://localhost:8080` and watch for file changes.
 - See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment
 - See [TWILIO_SETUP.md](TWILIO_SETUP.md) for advanced Twilio configuration
 - See [API.md](API.md) for API documentation
-
