@@ -1,4 +1,4 @@
-import { ConversationRelayRequest, ConversationRelayResponse } from "../types/twilio";
+import { ConversationRelayRequest, ConversationRelayResponse } from "../../types/twilio";
 
 const chickenSounds = [
   "Cluck cluck! Scrappy's here!",
