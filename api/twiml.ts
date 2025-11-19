@@ -8,10 +8,19 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const webhookUrl = `${protocol}://${host}`;
   const webhookPath = `${webhookUrl}/api/twilio/conversation/webhook`;
   
+  // Voice configuration: Set ttsProvider, voice, and language attributes on ConversationRelay
+  // Examples:
+  // - Google: ttsProvider="Google" voice="en-GB-Journey-F" language="en-GB"
+  // - Amazon: ttsProvider="Amazon" voice="Joanna-Neural" language="en-US"
+  // - ElevenLabs: ttsProvider="ElevenLabs" voice="NYC9WEgkq1u4jiqBseQ9" language="en-GB"
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Connect>
-    <ConversationRelay>
+    <ConversationRelay
+      ttsProvider="Google"
+      voice="en-GB-Journey-F"
+      language="en-GB"
+    >
       <Webhook url="${webhookPath}" />
     </ConversationRelay>
   </Connect>

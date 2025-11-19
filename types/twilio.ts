@@ -23,6 +23,6 @@ export type HotlineType =
   | "extraction"
   | "loot"
   | "chicken"
-  | "gossip"
+  | "intel"
   | "alarm";
 

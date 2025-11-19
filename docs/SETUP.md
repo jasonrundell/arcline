@@ -60,6 +60,10 @@ SUPABASE_ANON_KEY=your-anon-key
 # Twilio Configuration (optional - not required for basic setup)
 TWILIO_ACCOUNT_SID=your_account_sid
 TWILIO_AUTH_TOKEN=your_auth_token
+
+# Perplexity API (optional - for AI-generated responses)
+# If not provided, the system will use scripted fallback responses
+PERPLEXITY_API_KEY=your_perplexity_api_key
 ```
 
 **Note**: The `DOMAIN` variable should be your ngrok domain (without `https://`) for local development, or your production domain for deployed environments.

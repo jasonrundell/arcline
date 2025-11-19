@@ -1,3 +1,11 @@
+// Load environment variables from .env.local or .env file
+import dotenv from "dotenv";
+import { resolve } from "path";
+
+// Load .env first, then .env.local (so .env.local overrides .env)
+dotenv.config({ path: resolve(process.cwd(), ".env") });
+dotenv.config({ path: resolve(process.cwd(), ".env.local") });
+
 import Fastify from "fastify";
 import { WebSocketServer } from "ws";
 import formbody from "@fastify/formbody";
@@ -5,7 +13,7 @@ import { handleMainMenu } from "./lib/hotlines/menu";
 import { handleExtractionHotline } from "./lib/hotlines/extraction";
 import { handleLootHotline } from "./lib/hotlines/loot";
 import { handleChickenHotline } from "./lib/hotlines/chicken";
-import { handleGossipHotline } from "./lib/hotlines/gossip";
+import { handleIntelHotline } from "./lib/hotlines/intel";
 import { handleAlarmHotline } from "./lib/hotlines/alarm";
 import {
   ConversationRelayRequest,
@@ -21,6 +29,14 @@ fastify.register(formbody);
 
 // Store active call sessions
 const sessions = new Map<string, Record<string, unknown>>();
+
+// Voice configuration for all hotlines
+// Uses Shani's voice (1hlpeD1ydbI2ow0Tt3EW) for all hotlines
+const VOICE_CONFIG = {
+  ttsProvider: "ElevenLabs",
+  voice: "1hlpeD1ydbI2ow0Tt3EW", // Shani's voice
+  language: "en-GB",
+};
 
 // TwiML endpoint - returns instructions for ConversationRelay webhook
 fastify.get("/twiml", async (request, reply) => {
@@ -39,10 +55,16 @@ fastify.get("/twiml", async (request, reply) => {
   const websocketUrl = `${protocol}://${domain}/ws`;
 
   // Use WebSocket mode as documented in official Twilio ConversationRelay docs
+  // Voice configuration: Set ttsProvider, voice, and language attributes
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Connect>
-    <ConversationRelay url="${websocketUrl}" />
+    <ConversationRelay 
+      url="${websocketUrl}" 
+      ttsProvider="${VOICE_CONFIG.ttsProvider}"
+      voice="${VOICE_CONFIG.voice}"
+      language="${VOICE_CONFIG.language}"
+    />
   </Connect>
 </Response>`;
 
@@ -76,6 +98,11 @@ wss.on("connection", (ws, request) => {
           callSid = message.callSid;
           conversationSid = message.conversationSid;
 
+          if (!callSid) {
+            console.error("No call SID in setup message");
+            return;
+          }
+
           // Store call SID on WebSocket for later use
           (ws as any).callSid = callSid;
           (ws as any).conversationSid = conversationSid;
@@ -97,23 +124,20 @@ wss.on("connection", (ws, request) => {
             initialMemory
           );
 
+          // Update session memory with the updated memory from greeting response
+          if (greetingResponse.actions[0]?.remember) {
+            sessions.set(callSid, greetingResponse.actions[0].remember);
+          }
+
           // Send greeting message
+          // When last: false, ConversationRelay automatically listens, so no separate listen command needed
           ws.send(
             JSON.stringify({
               type: "text",
               token: greetingResponse.actions[0]?.say || "Welcome to ARCline.",
-              last: false,
+              last: !greetingResponse.actions[0]?.listen,
             })
           );
-
-          // If we need to listen for input, send listen command
-          if (greetingResponse.actions[0]?.listen) {
-            ws.send(
-              JSON.stringify({
-                type: "listen",
-              })
-            );
-          }
           break;
 
         case "prompt":
@@ -132,10 +156,20 @@ wss.on("connection", (ws, request) => {
           const hotlineType = memory.hotlineType as string | undefined;
           const step = memory.step as string | undefined;
 
+          console.log(
+            "Prompt routing - hotlineType:",
+            hotlineType,
+            "step:",
+            step,
+            "input:",
+            currentInput
+          );
+
           let response: ConversationRelayResponse;
 
-          // If no hotline selected yet, or still in menu/greeting phase, show main menu
-          if (!hotlineType || step === "menu" || step === "greeting") {
+          // If no hotline selected yet, show main menu
+          // Note: step === "menu" can occur within a hotline handler (e.g., gossip menu), so we check hotlineType first
+          if (!hotlineType) {
             // Handle DTMF input for menu selection
             if (dtmfMatch) {
               const selection = dtmfMatch[0];
@@ -143,7 +177,7 @@ wss.on("connection", (ws, request) => {
                 "1": "extraction",
                 "2": "loot",
                 "3": "chicken",
-                "4": "gossip",
+                "4": "intel",
                 "5": "alarm",
               };
 
@@ -151,26 +185,68 @@ wss.on("connection", (ws, request) => {
               memory.step = undefined; // Clear step so hotline handler starts fresh
               sessions.set(callSid, memory);
 
-              const confirmations: Record<string, string> = {
-                "1": "You selected Extraction Request. Please provide your location for extraction.",
-                "2": "You selected Loot Locator. What are you looking for?",
-                "3": "You selected Scrappy's Chicken Line. Welcome!",
-                "4": "You selected Faction News. Say 'latest' for rumors or 'submit' to share gossip.",
-                "5": "You selected Event Alarm. What time would you like to be alerted?",
+              // Immediately route to the selected hotline handler to initialize it properly
+              const hotlineRequest = {
+                ConversationSid: conversationSid || "",
+                CurrentInput: "", // Empty input triggers greeting in handler
+                CurrentInputType: "voice" as const,
+                Memory: JSON.stringify(memory),
               };
 
+              let hotlineResponse: ConversationRelayResponse;
+              switch (hotlineMap[selection]) {
+                case "extraction":
+                  hotlineResponse = await handleExtractionHotline(
+                    hotlineRequest,
+                    memory
+                  );
+                  break;
+                case "loot":
+                  hotlineResponse = await handleLootHotline(
+                    hotlineRequest,
+                    memory
+                  );
+                  break;
+                case "chicken":
+                  hotlineResponse = await handleChickenHotline(
+                    hotlineRequest,
+                    memory
+                  );
+                  break;
+                case "intel":
+                  hotlineResponse = await handleIntelHotline(
+                    hotlineRequest,
+                    memory
+                  );
+                  break;
+                case "alarm":
+                  hotlineResponse = await handleAlarmHotline(
+                    hotlineRequest,
+                    memory
+                  );
+                  break;
+                default:
+                  // Fallback
+                  hotlineResponse = await handleMainMenu(
+                    hotlineRequest,
+                    memory
+                  );
+              }
+
+              // Update session memory with the handler's response
+              if (hotlineResponse.actions[0]?.remember) {
+                sessions.set(callSid, hotlineResponse.actions[0].remember);
+              }
+
+              // Send the handler's greeting message
+              const shouldListen = hotlineResponse.actions[0]?.listen ?? false;
               ws.send(
                 JSON.stringify({
                   type: "text",
-                  token: confirmations[selection],
-                  last: true,
-                })
-              );
-
-              // Listen for next input
-              ws.send(
-                JSON.stringify({
-                  type: "listen",
+                  token:
+                    hotlineResponse.actions[0]?.say ||
+                    "Processing your request.",
+                  last: !shouldListen,
                 })
               );
               return;
@@ -222,8 +298,8 @@ wss.on("connection", (ws, request) => {
                   memory
                 );
                 break;
-              case "gossip":
-                response = await handleGossipHotline(
+              case "intel":
+                response = await handleIntelHotline(
                   {
                     ConversationSid: conversationSid || "",
                     CurrentInput: currentInput,
@@ -264,18 +340,19 @@ wss.on("connection", (ws, request) => {
           }
 
           // Send response text
+          // When last: false, ConversationRelay automatically listens after speech
+          // When last: true, ConversationRelay stops listening
           if (response.actions[0]?.say) {
+            const shouldListen = response.actions[0].listen ?? false;
             ws.send(
               JSON.stringify({
                 type: "text",
                 token: response.actions[0].say,
-                last: !response.actions[0].listen,
+                last: !shouldListen,
               })
             );
-          }
-
-          // If we need to listen for more input
-          if (response.actions[0]?.listen) {
+          } else if (response.actions[0]?.listen) {
+            // Edge case: no text to say but want to start listening
             ws.send(
               JSON.stringify({
                 type: "listen",
@@ -287,6 +364,16 @@ wss.on("connection", (ws, request) => {
         case "interrupt":
           console.log("Handling interruption");
           // Could implement interruption handling here
+          break;
+
+        case "error":
+          // Twilio sends error messages for transcription issues, audio quality, etc.
+          // These are typically non-fatal informational messages
+          console.log("Twilio error message:", {
+            error: message.error || message.message || "Unknown error",
+            details: message.details || message,
+          });
+          // Continue listening - don't disrupt the conversation flow
           break;
 
         case "dtmf":
@@ -304,7 +391,7 @@ wss.on("connection", (ws, request) => {
               "1": "extraction",
               "2": "loot",
               "3": "chicken",
-              "4": "gossip",
+              "4": "intel",
               "5": "alarm",
             };
 
@@ -316,34 +403,25 @@ wss.on("connection", (ws, request) => {
               "1": "You selected Extraction Request. Please provide your location for extraction.",
               "2": "You selected Loot Locator. What are you looking for?",
               "3": "You selected Scrappy's Chicken Line. Welcome!",
-              "4": "You selected Faction News. Say 'latest' for rumors or 'submit' to share gossip.",
+              "4": "You selected Faction News. Say 'latest' for intel or 'submit' to share intel.",
               "5": "You selected Event Alarm. What time would you like to be alerted?",
             };
 
+            // Send confirmation and continue listening (last: false automatically listens)
             ws.send(
               JSON.stringify({
                 type: "text",
                 token: confirmations[dtmfDigit],
-                last: true,
-              })
-            );
-
-            ws.send(
-              JSON.stringify({
-                type: "listen",
+                last: false,
               })
             );
           } else {
+            // Send error message and continue listening (last: false automatically listens)
             ws.send(
               JSON.stringify({
                 type: "text",
                 token: "Invalid selection. Please press 1, 2, 3, 4, or 5.",
-                last: true,
-              })
-            );
-            ws.send(
-              JSON.stringify({
-                type: "listen",
+                last: false,
               })
             );
           }
@@ -463,8 +541,8 @@ fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
         case "chicken":
           response = await handleChickenHotline(relayRequest, memoryObj);
           break;
-        case "gossip":
-          response = await handleGossipHotline(relayRequest, memoryObj);
+        case "intel":
+          response = await handleIntelHotline(relayRequest, memoryObj);
           break;
         case "alarm":
           response = await handleAlarmHotline(relayRequest, memoryObj);

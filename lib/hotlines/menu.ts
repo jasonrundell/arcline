@@ -1,4 +1,12 @@
-import { ConversationRelayRequest, ConversationRelayResponse } from "../../types/twilio";
+import {
+  ConversationRelayRequest,
+  ConversationRelayResponse,
+} from "../../types/twilio";
+import { handleExtractionHotline } from "./extraction";
+import { handleLootHotline } from "./loot";
+import { handleChickenHotline } from "./chicken";
+import { handleIntelHotline } from "./intel";
+import { handleAlarmHotline } from "./alarm";
 
 export async function handleMainMenu(
   request: ConversationRelayRequest,
@@ -15,7 +23,7 @@ export async function handleMainMenu(
       return {
         actions: [
           {
-            say: "Welcome to ARCline, the ARC Raiders Multi-Hotline system. Please select an option by pressing a number. Press 1 for Extraction Request. Press 2 for Loot Locator. Press 3 for Scrappy's Chicken Line. Press 4 for Faction News. Press 5 for Event Alarm.",
+            say: "Shani here. What do you need, raider? I can help you with getting an extraction, locating resources, speaking with Scrappy, getting Speranza intel, or setting an event alert. Go ahead.",
             listen: true,
             remember: updatedMemory,
           },
@@ -23,15 +31,40 @@ export async function handleMainMenu(
       };
 
     case "menu":
-      // User has selected an option
-      const selection = input.match(/[1-5]/)?.[0];
-      
-      if (!selection) {
+      // User has selected an option - check for voice commands
+      let hotlineType: string | undefined;
+
+      if (input.includes("extraction") || input.includes("extract")) {
+        hotlineType = "extraction";
+      } else if (
+        input.includes("loot") ||
+        input.includes("resource") ||
+        input.includes("material")
+      ) {
+        hotlineType = "loot";
+      } else if (input.includes("scrappy") || input.includes("chicken")) {
+        hotlineType = "chicken";
+      } else if (
+        input.includes("news") ||
+        input.includes("faction") ||
+        input.includes("intel") ||
+        input.includes("gossip")
+      ) {
+        hotlineType = "intel";
+      } else if (
+        input.includes("alarm") ||
+        input.includes("alert") ||
+        input.includes("event")
+      ) {
+        hotlineType = "alarm";
+      }
+
+      if (!hotlineType) {
         // Invalid selection, repeat menu
         return {
           actions: [
             {
-              say: "I didn't catch that. Please press 1 for Extraction, 2 for Loot, 3 for Scrappy, 4 for News, or 5 for Event Alarm.",
+              say: "Didn't catch that, Raider. Speak clearly. Say 'extraction' for an extraction point, 'loot' for resource locations, 'scrappy' for material updates, 'news' for Speranza intel, or 'alarm' for event alerts.",
               listen: true,
               remember: updatedMemory,
             },
@@ -39,45 +72,48 @@ export async function handleMainMenu(
         };
       }
 
-      // Map selection to hotline type
-      const hotlineMap: Record<string, string> = {
-        "1": "extraction",
-        "2": "loot",
-        "3": "chicken",
-        "4": "gossip",
-        "5": "alarm",
-      };
-
-      const hotlineType = hotlineMap[selection];
+      // Set hotline type and clear step so handler starts fresh
       updatedMemory.hotlineType = hotlineType;
-      // Clear step so hotline handler starts fresh
       delete updatedMemory.step;
-      
-      // Confirm selection - next input will route to hotline handler
-      const confirmations: Record<string, string> = {
-        "1": "You selected Extraction Request. Please provide your location for extraction.",
-        "2": "You selected Loot Locator. What are you looking for?",
-        "3": "You selected Scrappy's Chicken Line. Welcome!",
-        "4": "You selected Faction News. Say 'latest' for rumors or 'submit' to share gossip.",
-        "5": "You selected Event Alarm. What time would you like to be alerted?",
+
+      // Immediately route to the selected hotline handler with empty input to trigger greeting
+      const hotlineRequest: ConversationRelayRequest = {
+        ...request,
+        CurrentInput: "", // Empty input triggers greeting in handler
+        Memory: JSON.stringify(updatedMemory),
       };
 
-      return {
-        actions: [
-          {
-            say: confirmations[selection],
-            listen: true,
-            remember: updatedMemory,
-          },
-        ],
-      };
+      switch (hotlineType) {
+        case "extraction":
+          return await handleExtractionHotline(hotlineRequest, updatedMemory);
+        case "loot":
+          return await handleLootHotline(hotlineRequest, updatedMemory);
+        case "chicken":
+          return await handleChickenHotline(hotlineRequest, updatedMemory);
+        case "intel":
+          return await handleIntelHotline(hotlineRequest, updatedMemory);
+        case "alarm":
+          return await handleAlarmHotline(hotlineRequest, updatedMemory);
+        default:
+          // Fallback - shouldn't happen
+          updatedMemory.step = "greeting";
+          return {
+            actions: [
+              {
+                say: "Speranza Security hotline. Shani here. What do you need, Raider?",
+                listen: true,
+                remember: updatedMemory,
+              },
+            ],
+          };
+      }
 
     default:
       updatedMemory.step = "greeting";
       return {
         actions: [
           {
-            say: "Welcome to ARCline. Please select an option.",
+            say: "Speranza Security hotline. Shani here. What do you need, Raider?",
             listen: true,
             remember: updatedMemory,
           },
@@ -85,4 +121,3 @@ export async function handleMainMenu(
       };
   }
 }
-
