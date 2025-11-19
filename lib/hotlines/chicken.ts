@@ -8,12 +8,17 @@ import {
   createExitResponse,
   isEndCallRequest,
   createEndCallResponse,
+  isMenuNavigationRequest,
 } from "../utils/exit";
+import { handleExtractionHotline } from "./extraction";
+import { handleLootHotline } from "./loot";
+import { handleIntelHotline } from "./intel";
+import { detectHotlineType } from "../utils/hotline-detection";
 
 // Scripted responses for standard flows (greeting, exit, fallback)
 const SCRIPTED_RESPONSES = {
   greeting:
-    "Scrappy isn't back yet from his latest run. I can relay your message to him when he gets back. What do you need to know?",
+    "Scrappy isn't back yet from his latest run. I can relay your message to him when he gets back. What's your message?",
   exit: "Copy that. What else do you need, Raider?",
   default: "What do you need, Raider?",
 };
@@ -63,23 +68,31 @@ export async function handleChickenHotline(
       };
 
     case "listening":
-      // Check if user wants to exit or go to menu
-      if (
-        input.includes("bye") ||
-        input.includes("exit") ||
-        input.includes("goodbye") ||
-        input.includes("done") ||
-        input.includes("finished") ||
-        input.includes("menu") ||
-        input.includes("back") ||
-        input.includes("main") ||
-        input.includes("other") ||
-        input.includes("different") ||
-        input.includes("extraction") ||
-        input.includes("loot") ||
-        input.includes("intel") ||
-        input.includes("news")
-      ) {
+      // Check if user wants to switch to another hotline
+      const targetHotline = detectHotlineType(input);
+      if (targetHotline && targetHotline !== "chicken") {
+        // Route to the detected hotline
+        updatedMemory.hotlineType = targetHotline;
+        delete updatedMemory.step;
+        const hotlineRequest: ConversationRelayRequest = {
+          ...request,
+          CurrentInput: "",
+          Memory: JSON.stringify(updatedMemory),
+        };
+
+        switch (targetHotline) {
+          case "extraction":
+            return await handleExtractionHotline(hotlineRequest, updatedMemory);
+          case "loot":
+            return await handleLootHotline(hotlineRequest, updatedMemory);
+          case "intel":
+            return await handleIntelHotline(hotlineRequest, updatedMemory);
+        }
+      } else if (isEndCallRequest(input)) {
+        // User wants to end the call
+        return createEndCallResponse(updatedMemory);
+      } else if (isMenuNavigationRequest(input)) {
+        // User wants to return to menu
         return createExitResponse(updatedMemory);
       }
 
@@ -91,7 +104,7 @@ export async function handleChickenHotline(
         // Generate AI response with context about Scrappy
         const aiResponse = await generateShaniResponse({
           context:
-            "Scrappy's material collection channel - monitoring and relaying updates about a rooster that collects materials topside",
+            "Scrappy's hotline is where Shani can relay a message to Scrappy. Scrappy is a rooster that collects materials topside in the video game ARC Raiders by Embark Studios.",
           userInput: request.CurrentInput,
           additionalContext:
             "Scrappy is a rooster that collects materials for Raiders. He's been around a long time and has good instincts for avoiding ARC threats. Shani monitors his operations and relays his status.",
@@ -114,7 +127,7 @@ export async function handleChickenHotline(
         // Fallback to scripted response if AI fails
         console.error("Error generating AI response, using fallback:", error);
         const fallbackResponse =
-          "Scrappy's reporting successful material collection. That rooster's been busy topside—brought back standard salvage. No ARC contact detected during his run. Anything else you need to know about Scrappy's operations?";
+          "That rooster's been busy topside.. brought back standard salvage. No ARC contact detected during his run. Anything else you need to know about Scrappy's operations?";
         updatedMemory.lastResponse = fallbackResponse;
         return {
           actions: [

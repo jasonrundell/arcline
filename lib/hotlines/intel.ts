@@ -9,7 +9,12 @@ import {
   createContinueOrExitResponse,
   isEndCallRequest,
   createEndCallResponse,
+  isMenuNavigationRequest,
 } from "../utils/exit";
+import { handleExtractionHotline } from "./extraction";
+import { handleLootHotline } from "./loot";
+import { handleChickenHotline } from "./chicken";
+import { detectHotlineType } from "../utils/hotline-detection";
 
 export async function handleIntelHotline(
   request: ConversationRelayRequest,
@@ -209,18 +214,7 @@ export async function handleIntelHotline(
 
       // Check if user is trying to cancel or go back
       const submitInput = (intelContent || "").toLowerCase().trim();
-      if (
-        submitInput.includes("cancel") ||
-        submitInput.includes("back") ||
-        submitInput.includes("go back") ||
-        submitInput.includes("back to menu") ||
-        submitInput.includes("back to main menu") ||
-        submitInput.includes("back to the menu") ||
-        submitInput.includes("back to the main menu") ||
-        submitInput.includes("menu") ||
-        submitInput.includes("never mind") ||
-        submitInput.includes("nevermind")
-      ) {
+      if (isMenuNavigationRequest(submitInput)) {
         // User wants to cancel submission
         updatedMemory.step = "menu";
         const cancelResponse =
@@ -288,16 +282,28 @@ export async function handleIntelHotline(
     case "complete":
       // After completing an intel action, allow user to do more or return to menu
       const completeInput = (request.CurrentInput || "").toLowerCase().trim();
-      if (
-        completeInput.includes("menu") ||
-        completeInput.includes("back") ||
-        completeInput.includes("main") ||
-        completeInput.includes("other") ||
-        completeInput.includes("different") ||
-        completeInput.includes("extraction") ||
-        completeInput.includes("loot") ||
-        completeInput.includes("scrappy")
-      ) {
+
+      // Check if user wants to switch to another hotline
+      const targetHotline = detectHotlineType(completeInput);
+      if (targetHotline && targetHotline !== "intel") {
+        // Route to the detected hotline
+        updatedMemory.hotlineType = targetHotline;
+        delete updatedMemory.step;
+        const hotlineRequest: ConversationRelayRequest = {
+          ...request,
+          CurrentInput: "",
+          Memory: JSON.stringify(updatedMemory),
+        };
+
+        switch (targetHotline) {
+          case "extraction":
+            return await handleExtractionHotline(hotlineRequest, updatedMemory);
+          case "loot":
+            return await handleLootHotline(hotlineRequest, updatedMemory);
+          case "chicken":
+            return await handleChickenHotline(hotlineRequest, updatedMemory);
+        }
+      } else if (isMenuNavigationRequest(completeInput)) {
         // Return to main menu
         return createExitResponse(updatedMemory);
       } else if (

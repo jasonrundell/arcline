@@ -51,7 +51,7 @@ export function createContinueOrExitResponse(
     ...memory,
   };
 
-  const response = `${contextMessage} Anything else you need help with? I can ${continueOption}, or you can ask about extraction, Scrappy, or Speranza intel.`;
+  const response = `${contextMessage} ${continueOption}`;
   updatedMemory.lastResponse = response;
 
   return {
@@ -63,6 +63,30 @@ export function createContinueOrExitResponse(
       },
     ],
   };
+}
+
+/**
+ * Checks if the user input indicates they want to return to the main menu
+ * @param input - User input to check (should be lowercase and trimmed)
+ * @returns true if user wants to go back to menu
+ */
+export function isMenuNavigationRequest(input: string): boolean {
+  const normalized = input.toLowerCase().trim();
+  return (
+    normalized.includes("cancel") ||
+    normalized.includes("back") ||
+    normalized.includes("go back") ||
+    normalized.includes("back to menu") ||
+    normalized.includes("back to main menu") ||
+    normalized.includes("back to the menu") ||
+    normalized.includes("back to the main menu") ||
+    normalized.includes("menu") ||
+    normalized.includes("never mind") ||
+    normalized.includes("nevermind") ||
+    normalized.includes("main") ||
+    normalized.includes("other") ||
+    normalized.includes("different")
+  );
 }
 
 /**
@@ -79,7 +103,14 @@ export function isEndCallRequest(input: string): boolean {
     normalized === "see you" ||
     normalized === "later" ||
     normalized === "laters" ||
+    normalized === "exit" ||
+    normalized === "done" ||
+    normalized === "finished" ||
     normalized.includes("goodbye") ||
+    normalized.includes("bye") ||
+    normalized.includes("exit") ||
+    normalized.includes("done") ||
+    normalized.includes("finished") ||
     normalized.includes(" see ya") ||
     normalized.includes(" see you") ||
     (normalized.includes("later") && !normalized.includes("get"))
@@ -115,4 +146,3 @@ export function createEndCallResponse(
     ],
   };
 }
-

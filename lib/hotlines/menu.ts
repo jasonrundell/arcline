@@ -8,6 +8,7 @@ import { handleChickenHotline } from "./chicken";
 import { handleIntelHotline } from "./intel";
 import { isRepeatRequest } from "../utils/repeat";
 import { isEndCallRequest, createEndCallResponse } from "../utils/exit";
+import { detectHotlineType } from "../utils/hotline-detection";
 
 export async function handleMainMenu(
   request: ConversationRelayRequest,
@@ -54,38 +55,7 @@ export async function handleMainMenu(
 
     case "menu":
       // User has selected an option - check for voice commands
-      let hotlineType: string | undefined;
-
-      if (input.includes("extraction") || input.includes("extract")) {
-        hotlineType = "extraction";
-      } else if (
-        input.includes("loot") ||
-        input.includes("loots") ||
-        input.includes("loop") ||
-        input.includes("loops") ||
-        input.includes("lou") ||
-        input.includes("lous") ||
-        input.includes("item") ||
-        input.includes("items") ||
-        input.includes("resource") ||
-        input.includes("resources") ||
-        input.includes("material") ||
-        input.includes("materials") ||
-        input.includes("What's the latest news?") ||
-        input.includes("What's the latest intel?")
-      ) {
-        hotlineType = "loot";
-      } else if (input.includes("scrappy") || input.includes("chicken")) {
-        hotlineType = "chicken";
-      } else if (
-        input.includes("news") ||
-        input.includes("rumors") ||
-        input.includes("faction") ||
-        input.includes("intel") ||
-        input.includes("gossip")
-      ) {
-        hotlineType = "intel";
-      }
+      const hotlineType = detectHotlineType(input);
 
       if (!hotlineType) {
         // Invalid selection, repeat menu

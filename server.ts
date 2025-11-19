@@ -198,14 +198,11 @@ wss.on("connection", (ws, request) => {
           const hotlineType = memory.hotlineType as string | undefined;
           const step = memory.step as string | undefined;
 
-          console.log(
-            "Prompt routing - hotlineType:",
-            hotlineType,
-            "step:",
-            step,
-            "input:",
-            currentInput
-          );
+          console.log("Prompt routing - current state:", {
+            hotlineType: hotlineType || "(none - at menu)",
+            step: step || "(none)",
+            input: currentInput,
+          });
 
           let response: ConversationRelayResponse;
 
@@ -356,7 +353,22 @@ wss.on("connection", (ws, request) => {
 
           // Update memory from response
           if (response.actions[0]?.remember) {
-            sessions.set(callSid, response.actions[0].remember);
+            const updatedMemory = response.actions[0].remember as Record<
+              string,
+              unknown
+            >;
+            sessions.set(callSid, updatedMemory);
+
+            // Log the selected hotline after processing
+            const selectedHotline = updatedMemory.hotlineType as
+              | string
+              | undefined;
+            if (selectedHotline && !hotlineType) {
+              console.log("Menu selection detected:", {
+                selectedHotline,
+                input: currentInput,
+              });
+            }
           }
 
           // Send response text

@@ -8,7 +8,12 @@ import {
   createExitResponse,
   isEndCallRequest,
   createEndCallResponse,
+  isMenuNavigationRequest,
 } from "../utils/exit";
+import { handleExtractionHotline } from "./extraction";
+import { handleChickenHotline } from "./chicken";
+import { handleIntelHotline } from "./intel";
+import { detectHotlineType } from "../utils/hotline-detection";
 
 export async function handleLootHotline(
   request: ConversationRelayRequest,
@@ -111,33 +116,29 @@ export async function handleLootHotline(
       }
     case "complete":
       // After completing a lookup, allow user to search again or return to main menu
-      // Check if user wants to search for something else or go back to menu
-      if (
-        input.includes("menu") ||
-        input.includes("back") ||
-        input.includes("main") ||
-        input.includes("other") ||
-        input.includes("different") ||
-        input.includes("extraction") ||
-        input.includes("scrappy") ||
-        input.includes("intel") ||
-        input.includes("news")
-      ) {
-        // Return to main menu
-        delete updatedMemory.hotlineType;
-        updatedMemory.step = "menu";
-        const menuResponse =
-          "Copy that. What else do you need? I can help with extraction, resources, Scrappy, or Speranza intel.";
-        updatedMemory.lastResponse = menuResponse;
-        return {
-          actions: [
-            {
-              say: menuResponse,
-              listen: true,
-              remember: updatedMemory,
-            },
-          ],
+      // Check if user wants to switch to another hotline
+      const targetHotline = detectHotlineType(input);
+      if (targetHotline && targetHotline !== "loot") {
+        // Route to the detected hotline
+        updatedMemory.hotlineType = targetHotline;
+        delete updatedMemory.step;
+        const hotlineRequest: ConversationRelayRequest = {
+          ...request,
+          CurrentInput: "",
+          Memory: JSON.stringify(updatedMemory),
         };
+
+        switch (targetHotline) {
+          case "extraction":
+            return await handleExtractionHotline(hotlineRequest, updatedMemory);
+          case "chicken":
+            return await handleChickenHotline(hotlineRequest, updatedMemory);
+          case "intel":
+            return await handleIntelHotline(hotlineRequest, updatedMemory);
+        }
+      } else if (isMenuNavigationRequest(input)) {
+        // Return to main menu
+        return createExitResponse(updatedMemory);
       } else if (
         input.includes("search") ||
         input.includes("look") ||

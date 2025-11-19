@@ -2,14 +2,18 @@ import {
   ConversationRelayRequest,
   ConversationRelayResponse,
 } from "../../types/twilio";
-import { supabase } from "../supabase";
 import { isRepeatRequest } from "../utils/repeat";
 import {
   createExitResponse,
   createContinueOrExitResponse,
   isEndCallRequest,
   createEndCallResponse,
+  isMenuNavigationRequest,
 } from "../utils/exit";
+import { handleLootHotline } from "./loot";
+import { handleChickenHotline } from "./chicken";
+import { handleIntelHotline } from "./intel";
+import { detectHotlineType } from "../utils/hotline-detection";
 
 export async function handleExtractionHotline(
   request: ConversationRelayRequest,
@@ -61,42 +65,39 @@ export async function handleExtractionHotline(
     case "location":
       const location = request.CurrentInput;
       updatedMemory.location = location;
-      updatedMemory.step = "confirm";
+      updatedMemory.step = "complete";
 
-      // Store extraction request in database
-      try {
-        const phoneNumber = (memory.phoneNumber as string) || "unknown";
-        await supabase.from("extraction_requests").insert({
-          phone_number: phoneNumber,
-          location: location,
-          status: "pending",
-        });
-      } catch (error) {
-        console.error("Error storing extraction request:", error);
-      }
-
-      const locationResponse = `Copy that. Extraction request logged for ${location}. I've marked your position and routed it to the nearest hatch. Watch your six—ARC activity's unpredictable topside. Stay low, stay fast, and make it back to Speranza. Request acknowledged.`;
+      const locationResponse = `Copy that. Extraction sequence initiated. Elevator departing in 5 seconds. Stay low, stay fast, and make it back to Speranza.`;
       updatedMemory.step = "complete";
       updatedMemory.lastResponse = locationResponse;
       return createContinueOrExitResponse(
         updatedMemory,
         locationResponse,
-        "help with another extraction"
+        "Anything else you need help with while you're topside? I can help you get in touch with  Scrappy, or share intel."
       );
 
     case "complete":
-      // After completing extraction request, allow user to request another or return to menu
-      if (
-        input.includes("menu") ||
-        input.includes("back") ||
-        input.includes("main") ||
-        input.includes("other") ||
-        input.includes("different") ||
-        input.includes("loot") ||
-        input.includes("scrappy") ||
-        input.includes("intel") ||
-        input.includes("news")
-      ) {
+      // Check if user wants to switch to another hotline
+      const targetHotline = detectHotlineType(input);
+      if (targetHotline && targetHotline !== "extraction") {
+        // Route to the detected hotline
+        updatedMemory.hotlineType = targetHotline;
+        delete updatedMemory.step;
+        const hotlineRequest: ConversationRelayRequest = {
+          ...request,
+          CurrentInput: "",
+          Memory: JSON.stringify(updatedMemory),
+        };
+
+        switch (targetHotline) {
+          case "loot":
+            return await handleLootHotline(hotlineRequest, updatedMemory);
+          case "chicken":
+            return await handleChickenHotline(hotlineRequest, updatedMemory);
+          case "intel":
+            return await handleIntelHotline(hotlineRequest, updatedMemory);
+        }
+      } else if (isMenuNavigationRequest(input)) {
         // Return to main menu
         return createExitResponse(updatedMemory);
       } else if (
