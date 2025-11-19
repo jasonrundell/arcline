@@ -9,11 +9,8 @@ dotenv.config({ path: resolve(process.cwd(), ".env.local") });
 import Fastify from "fastify";
 import { WebSocketServer } from "ws";
 import formbody from "@fastify/formbody";
-import { handleMainMenu } from "./lib/hotlines/menu";
-import { handleExtractionHotline } from "./lib/hotlines/extraction";
-import { handleLootHotline } from "./lib/hotlines/loot";
-import { handleChickenHotline } from "./lib/hotlines/chicken";
-import { handleIntelHotline } from "./lib/hotlines/intel";
+import twilio from "twilio";
+import { routeToHotline, handleDTMFSelection } from "./lib/utils/router";
 import {
   ConversationRelayRequest,
   ConversationRelayResponse,
@@ -29,6 +26,19 @@ fastify.register(formbody);
 
 // Store active call sessions
 const sessions = new Map<string, Record<string, unknown>>();
+
+// Store phone numbers by call SID (from TwiML request)
+const phoneNumbersByCallSid = new Map<string, string>();
+
+// Initialize Twilio client for SMS and call info
+function getTwilioClient() {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  if (!accountSid || !authToken) {
+    return null;
+  }
+  return twilio(accountSid, authToken);
+}
 
 /**
  * Sends a text message via WebSocket and ends the call if listen is false
@@ -72,6 +82,16 @@ const VOICE_CONFIG = {
 
 // TwiML endpoint - returns instructions for ConversationRelay webhook
 fastify.get("/twiml", async (request, reply) => {
+  // Get caller's phone number from query params
+  const callSid = (request.query as { CallSid?: string })?.CallSid;
+  const fromNumber = (request.query as { From?: string })?.From;
+
+  // Store phone number if we have both callSid and fromNumber
+  if (callSid && fromNumber) {
+    phoneNumbersByCallSid.set(callSid, fromNumber);
+    console.log("Stored phone number for call:", { callSid, fromNumber });
+  }
+
   // Auto-detect domain from request headers (works with ngrok)
   // Priority: DOMAIN env var (if not localhost) > Host header > fallback to localhost
   let domain = DOMAIN;
@@ -139,14 +159,36 @@ wss.on("connection", (ws, request) => {
           (ws as any).callSid = callSid;
           (ws as any).conversationSid = conversationSid;
 
-          // Initialize session memory
+          // Try to get phone number from stored map or fetch from Twilio
+          let phoneNumber = phoneNumbersByCallSid.get(callSid);
+          if (!phoneNumber) {
+            // Try to fetch from Twilio API
+            const twilioClient = getTwilioClient();
+            if (twilioClient) {
+              try {
+                const call = await twilioClient.calls(callSid).fetch();
+                phoneNumber = call.from;
+                if (phoneNumber) {
+                  phoneNumbersByCallSid.set(callSid, phoneNumber);
+                }
+              } catch (error) {
+                console.error("Error fetching call info from Twilio:", error);
+              }
+            }
+          }
+
+          // Initialize session memory with phone number if available
           const initialMemory: Record<string, unknown> = {
             step: "greeting",
           };
+          if (phoneNumber) {
+            initialMemory.phoneNumber = phoneNumber;
+            console.log("Stored phone number in session:", phoneNumber);
+          }
           sessions.set(callSid, initialMemory);
 
           // Send greeting with menu
-          const greetingResponse = await handleMainMenu(
+          const greetingResponse = await routeToHotline(
             {
               ConversationSid: conversationSid || "",
               CurrentInput: "",
@@ -193,163 +235,50 @@ wss.on("connection", (ws, request) => {
             return;
           }
 
-          // Check for DTMF digits (1-4)
-          const dtmfMatch = currentInput.match(/[1-4]/);
           const hotlineType = memory.hotlineType as string | undefined;
           const step = memory.step as string | undefined;
 
           console.log("Prompt routing - current state:", {
-            hotlineType: hotlineType || "(none - at menu)",
+            hotlineType: hotlineType || "(none)",
             step: step || "(none)",
             input: currentInput,
           });
 
-          let response: ConversationRelayResponse;
-
-          // If no hotline selected yet, show main menu
-          // Note: step === "menu" can occur within a hotline handler (e.g., gossip menu), so we check hotlineType first
-          if (!hotlineType) {
-            // Handle DTMF input for menu selection
-            if (dtmfMatch) {
-              const selection = dtmfMatch[0];
-              const hotlineMap: Record<string, string> = {
-                "1": "extraction",
-                "2": "loot",
-                "3": "chicken",
-                "4": "intel",
-              };
-
-              memory.hotlineType = hotlineMap[selection];
-              memory.step = undefined; // Clear step so hotline handler starts fresh
-              sessions.set(callSid, memory);
-
-              // Immediately route to the selected hotline handler to initialize it properly
-              const hotlineRequest = {
-                ConversationSid: conversationSid || "",
-                CurrentInput: "", // Empty input triggers greeting in handler
-                CurrentInputType: "voice" as const,
-                Memory: JSON.stringify(memory),
-              };
-
-              let hotlineResponse: ConversationRelayResponse;
-              switch (hotlineMap[selection]) {
-                case "extraction":
-                  hotlineResponse = await handleExtractionHotline(
-                    hotlineRequest,
-                    memory
-                  );
-                  break;
-                case "loot":
-                  hotlineResponse = await handleLootHotline(
-                    hotlineRequest,
-                    memory
-                  );
-                  break;
-                case "chicken":
-                  hotlineResponse = await handleChickenHotline(
-                    hotlineRequest,
-                    memory
-                  );
-                  break;
-                case "intel":
-                  hotlineResponse = await handleIntelHotline(
-                    hotlineRequest,
-                    memory
-                  );
-                  break;
-                default:
-                  // Fallback
-                  hotlineResponse = await handleMainMenu(
-                    hotlineRequest,
-                    memory
-                  );
-              }
-
-              // Update session memory with the handler's response
-              if (hotlineResponse.actions[0]?.remember) {
-                sessions.set(callSid, hotlineResponse.actions[0].remember);
-              }
-
-              // Send the handler's greeting message
-              const shouldListen = hotlineResponse.actions[0]?.listen ?? false;
-              sendTextAndEndIfNeeded(
-                ws,
-                hotlineResponse.actions[0]?.say || "Processing your request.",
-                shouldListen
-              );
-              return;
+          // Check for DTMF input first
+          const dtmfResponse = handleDTMFSelection(currentInput, step, memory);
+          if (dtmfResponse) {
+            // DTMF was processed - update session and send confirmation
+            if (dtmfResponse.actions[0]?.remember) {
+              sessions.set(callSid, dtmfResponse.actions[0].remember);
             } else {
-              // Handle menu navigation
-              response = await handleMainMenu(
-                {
-                  ConversationSid: conversationSid || "",
-                  CurrentInput: currentInput,
-                  CurrentInputType: "voice",
-                  Memory: JSON.stringify(memory),
-                },
-                memory
-              );
+              sessions.set(callSid, memory);
             }
-          } else {
-            // Route to appropriate hotline handler based on selection
-            switch (hotlineType) {
-              case "extraction":
-                response = await handleExtractionHotline(
-                  {
-                    ConversationSid: conversationSid || "",
-                    CurrentInput: currentInput,
-                    CurrentInputType: "voice",
-                    Memory: JSON.stringify(memory),
-                  },
-                  memory
-                );
-                break;
-              case "loot":
-                response = await handleLootHotline(
-                  {
-                    ConversationSid: conversationSid || "",
-                    CurrentInput: currentInput,
-                    CurrentInputType: "voice",
-                    Memory: JSON.stringify(memory),
-                  },
-                  memory
-                );
-                break;
-              case "chicken":
-                response = await handleChickenHotline(
-                  {
-                    ConversationSid: conversationSid || "",
-                    CurrentInput: currentInput,
-                    CurrentInputType: "voice",
-                    Memory: JSON.stringify(memory),
-                  },
-                  memory
-                );
-                break;
-              case "intel":
-                response = await handleIntelHotline(
-                  {
-                    ConversationSid: conversationSid || "",
-                    CurrentInput: currentInput,
-                    CurrentInputType: "voice",
-                    Memory: JSON.stringify(memory),
-                  },
-                  memory
-                );
-                break;
-              default:
-                // Fallback to menu if unknown hotline type
-                response = await handleMainMenu(
-                  {
-                    ConversationSid: conversationSid || "",
-                    CurrentInput: currentInput,
-                    CurrentInputType: "voice",
-                    Memory: JSON.stringify(memory),
-                  },
-                  memory
-                );
-            }
+
+            // Send DTMF confirmation
+            const shouldListen = dtmfResponse.actions[0]?.listen ?? true;
+            sendTextAndEndIfNeeded(
+              ws,
+              dtmfResponse.actions[0]?.say || "Processing your request.",
+              shouldListen
+            );
+            return;
           }
+
+          // Use centralized router for all routing decisions
+          const request = {
+            ConversationSid: conversationSid || "",
+            CurrentInput: currentInput,
+            CurrentInputType: "voice" as const,
+            Memory: JSON.stringify(memory),
+          };
+
+          const response = await routeToHotline(request, memory);
+          console.log("Server - received response from router:", {
+            hasActions: !!response.actions,
+            actionCount: response.actions?.length,
+            firstActionSay: response.actions?.[0]?.say,
+            firstActionListen: response.actions?.[0]?.listen,
+          });
 
           // Update memory from response
           if (response.actions[0]?.remember) {
@@ -375,24 +304,30 @@ wss.on("connection", (ws, request) => {
           // When last: false, ConversationRelay automatically listens after speech
           // When last: true, ConversationRelay stops listening
           if (response.actions[0]?.say) {
-            const shouldListen = response.actions[0].listen ?? false;
-            sendTextAndEndIfNeeded(ws, response.actions[0].say, shouldListen);
-
-            // If step is "looking_up" for loot hotline, automatically continue to lookup
             const updatedMemory = response.actions[0]?.remember as
               | Record<string, unknown>
               | undefined;
-            if (
+
+            // Check if this is a loot lookup that needs to continue automatically
+            // If so, don't end the call even if listen is false
+            const isLootLookup =
               updatedMemory?.hotlineType === "loot" &&
               updatedMemory?.step === "looking_up" &&
-              callSid
-            ) {
+              callSid;
+
+            const shouldListen = isLootLookup
+              ? true
+              : response.actions[0].listen ?? false;
+            sendTextAndEndIfNeeded(ws, response.actions[0].say, shouldListen);
+
+            // If step is "looking_up" for loot hotline, automatically continue to lookup
+            if (isLootLookup) {
               // Wait a moment for "One sec" to be spoken, then trigger lookup
               const currentCallSid = callSid; // Capture for closure
               setTimeout(async () => {
                 const lookupMemory =
                   sessions.get(currentCallSid) || updatedMemory || {};
-                const lookupResponse = await handleLootHotline(
+                const lookupResponse = await routeToHotline(
                   {
                     ConversationSid: conversationSid || "",
                     CurrentInput: "",
@@ -551,67 +486,23 @@ fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
 
     let response: ConversationRelayResponse;
 
-    // Check if user has selected a hotline from the menu
-    const hotlineType = memoryObj.hotlineType as string | undefined;
+    // Check for DTMF input first
     const step = memoryObj.step as string | undefined;
+    const dtmfResponse = handleDTMFSelection(currentInput, step, memoryObj);
 
-    // Handle DTMF input for menu selection
-    const input = currentInput.toLowerCase().trim();
-    const dtmfMatch = input.match(/[1-4]/);
-
-    // If no hotline selected yet, or still in menu/greeting phase, show main menu
-    if (!hotlineType || step === "menu" || step === "greeting") {
-      // Handle DTMF input for menu selection
-      if (dtmfMatch && step === "menu") {
-        const selection = dtmfMatch[0];
-        const hotlineMap: Record<string, string> = {
-          "1": "extraction",
-          "2": "loot",
-          "3": "chicken",
-          "4": "intel",
-        };
-
-        memoryObj.hotlineType = hotlineMap[selection];
-        memoryObj.step = undefined; // Clear step so hotline handler starts fresh
-
-        const confirmations: Record<string, string> = {
-          "1": "You selected Extraction Request. Please provide your location for extraction.",
-          "2": "You selected Loot Locator. What are you looking for?",
-          "3": "You selected Scrappy's Chicken Line. Welcome!",
-          "4": "You selected Faction News. Say 'latest' for intel or 'submit' to share intel.",
-        };
-
-        response = {
-          actions: [
-            {
-              say: confirmations[selection],
-              listen: true,
-              remember: memoryObj,
-            },
-          ],
-        };
-      } else {
-        response = await handleMainMenu(relayRequest, memoryObj);
-      }
+    if (dtmfResponse) {
+      // DTMF was processed - route to selected hotline with empty input
+      const hotlineRequest: ConversationRelayRequest = {
+        ...relayRequest,
+        CurrentInput: "",
+      };
+      response = await routeToHotline(
+        hotlineRequest,
+        dtmfResponse.actions[0]?.remember || memoryObj
+      );
     } else {
-      // Route to appropriate hotline handler based on selection
-      switch (hotlineType) {
-        case "extraction":
-          response = await handleExtractionHotline(relayRequest, memoryObj);
-          break;
-        case "loot":
-          response = await handleLootHotline(relayRequest, memoryObj);
-          break;
-        case "chicken":
-          response = await handleChickenHotline(relayRequest, memoryObj);
-          break;
-        case "intel":
-          response = await handleIntelHotline(relayRequest, memoryObj);
-          break;
-        default:
-          // Fallback to menu if unknown hotline type
-          response = await handleMainMenu(relayRequest, memoryObj);
-      }
+      // Use centralized router for all routing decisions
+      response = await routeToHotline(relayRequest, memoryObj);
     }
 
     reply.type("application/json").send(response);

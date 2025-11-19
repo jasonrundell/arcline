@@ -4,54 +4,28 @@ This document describes the Supabase database schema for ARCline.
 
 ## Tables
 
-### extraction_requests
+### intel
 
-Stores extraction requests from users.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | uuid | Primary key (auto-generated) |
-| phone_number | text | User's phone number |
-| location | text | Location for extraction |
-| status | text | Status: 'pending', 'confirmed', 'completed' |
-| created_at | timestamp | Creation timestamp |
-
-### loot_items
-
-Stores information about loot items in the ARC universe.
+Stores faction intel and rumors (formerly gossip).
 
 | Column | Type | Description |
 |--------|------|-------------|
 | id | uuid | Primary key (auto-generated) |
-| name | text | Item name |
-| location | text | Location where item can be found |
-| rarity | text | Rarity: 'common', 'uncommon', 'rare', 'epic', 'legendary' |
-| coordinates | text | Optional coordinates |
-| created_at | timestamp | Creation timestamp |
-
-### alarms
-
-Stores wake-up call and raid alarm requests.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | uuid | Primary key (auto-generated) |
-| phone_number | text | User's phone number |
-| alarm_time | timestamp | When to send the alarm |
-| message | text | Message to send |
-| status | text | Status: 'pending', 'sent', 'cancelled' |
-| created_at | timestamp | Creation timestamp |
-
-### gossip
-
-Stores faction gossip and rumors.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | uuid | Primary key (auto-generated) |
-| content | text | Gossip content |
+| content | text | Intel content |
 | faction | text | Optional faction name |
-| verified | boolean | Whether gossip is verified |
+| verified | boolean | Whether intel is verified |
+| created_at | timestamp | Creation timestamp |
+
+### scrappy_messages
+
+Stores messages left for Scrappy via the chicken hotline.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary key (auto-generated) |
+| content | text | Message content |
+| faction | text | Optional faction name |
+| verified | boolean | Whether message is verified |
 | created_at | timestamp | Creation timestamp |
 
 ## SQL Setup
@@ -59,37 +33,17 @@ Stores faction gossip and rumors.
 Run these SQL commands in your Supabase SQL editor:
 
 ```sql
--- Extraction Requests Table
-CREATE TABLE extraction_requests (
+-- Intel Table (formerly gossip)
+CREATE TABLE intel (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  phone_number TEXT NOT NULL,
-  location TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'completed')),
+  content TEXT NOT NULL,
+  faction TEXT,
+  verified BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Loot Items Table
-CREATE TABLE loot_items (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  location TEXT NOT NULL,
-  rarity TEXT NOT NULL DEFAULT 'common' CHECK (rarity IN ('common', 'uncommon', 'rare', 'epic', 'legendary')),
-  coordinates TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Alarms Table
-CREATE TABLE alarms (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  phone_number TEXT NOT NULL,
-  alarm_time TIMESTAMP WITH TIME ZONE NOT NULL,
-  message TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'cancelled')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Gossip Table
-CREATE TABLE gossip (
+-- Scrappy Messages Table
+CREATE TABLE scrappy_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   content TEXT NOT NULL,
   faction TEXT,
@@ -98,14 +52,10 @@ CREATE TABLE gossip (
 );
 
 -- Create indexes for better query performance
-CREATE INDEX idx_extraction_requests_status ON extraction_requests(status);
-CREATE INDEX idx_extraction_requests_created_at ON extraction_requests(created_at);
-CREATE INDEX idx_loot_items_name ON loot_items(name);
-CREATE INDEX idx_loot_items_rarity ON loot_items(rarity);
-CREATE INDEX idx_alarms_status ON alarms(status);
-CREATE INDEX idx_alarms_alarm_time ON alarms(alarm_time);
-CREATE INDEX idx_gossip_created_at ON gossip(created_at);
-CREATE INDEX idx_gossip_verified ON gossip(verified);
+CREATE INDEX idx_intel_created_at ON intel(created_at);
+CREATE INDEX idx_intel_verified ON intel(verified);
+CREATE INDEX idx_scrappy_messages_created_at ON scrappy_messages(created_at);
+CREATE INDEX idx_scrappy_messages_verified ON scrappy_messages(verified);
 ```
 
 ## Row Level Security (RLS)
@@ -114,34 +64,28 @@ Enable RLS policies as needed for your use case. For public read/write access (a
 
 ```sql
 -- Enable RLS
-ALTER TABLE extraction_requests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE loot_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE alarms ENABLE ROW LEVEL SECURITY;
-ALTER TABLE gossip ENABLE ROW LEVEL SECURITY;
+ALTER TABLE intel ENABLE ROW LEVEL SECURITY;
+ALTER TABLE scrappy_messages ENABLE ROW LEVEL SECURITY;
 
--- Example policies (adjust based on your needs)
--- Allow anonymous inserts for extraction_requests
-CREATE POLICY "Allow anonymous inserts" ON extraction_requests
-  FOR INSERT TO anon
-  WITH CHECK (true);
-
--- Allow anonymous reads for loot_items
-CREATE POLICY "Allow anonymous reads" ON loot_items
+-- Intel Policies
+-- Allow anonymous users to read intel
+CREATE POLICY "Allow anonymous reads" ON intel
   FOR SELECT TO anon
   USING (true);
 
--- Allow anonymous reads for gossip
-CREATE POLICY "Allow anonymous reads" ON gossip
-  FOR SELECT TO anon
-  USING (true);
-
--- Allow anonymous inserts for gossip
-CREATE POLICY "Allow anonymous inserts" ON gossip
+-- Allow anonymous users to insert intel
+CREATE POLICY "Allow anonymous inserts" ON intel
   FOR INSERT TO anon
   WITH CHECK (true);
 
--- Allow anonymous inserts for alarms
-CREATE POLICY "Allow anonymous inserts" ON alarms
+-- Scrappy Messages Policies
+-- Allow anonymous users to read scrappy messages
+CREATE POLICY "Allow anonymous reads" ON scrappy_messages
+  FOR SELECT TO anon
+  USING (true);
+
+-- Allow anonymous users to insert scrappy messages
+CREATE POLICY "Allow anonymous inserts" ON scrappy_messages
   FOR INSERT TO anon
   WITH CHECK (true);
 ```

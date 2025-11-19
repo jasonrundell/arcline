@@ -67,7 +67,7 @@ export async function handleExtractionHotline(
       updatedMemory.location = location;
       updatedMemory.step = "complete";
 
-      const locationResponse = `Copy that. Extraction sequence initiated. Elevator departing in 5 seconds. Stay low, stay fast, and make it back to Speranza.`;
+      const locationResponse = `Copy that - extraction sequence initiated. Elevator departing in 5 seconds. Stay low, stay fast, and make it back to Speranza.`;
       updatedMemory.step = "complete";
       updatedMemory.lastResponse = locationResponse;
       return createContinueOrExitResponse(

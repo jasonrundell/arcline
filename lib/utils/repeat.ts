@@ -14,8 +14,9 @@ export function isRepeatRequest(input: string): boolean {
     "repeat that",
     "again",
     "pardon",
-    "what",
-    "huh",
+    // Removed "what" and "huh" as they're too generic and match too many legitimate questions
+    // "what",
+    // "huh",
   ];
 
   return repeatKeywords.some((keyword) => normalized.includes(keyword));

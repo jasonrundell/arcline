@@ -72,12 +72,10 @@ PERPLEXITY_API_KEY=your_perplexity_api_key
 
 1. Go to your Supabase project dashboard
 2. Navigate to SQL Editor
-3. Run the SQL from `docs/DATABASE_SCHEMA.md`
+3. Run the SQL from `docs/DATABASE_SCHEMA.md` or use `database_schema.sql`
 4. Verify tables are created:
-   - `extraction_requests`
-   - `loot_items`
-   - `gossip`
-   - `alarms`
+   - `intel`
+   - `scrappy_messages`
 
 ## Step 4: Local Development Setup
 

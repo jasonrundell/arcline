@@ -14,6 +14,7 @@ import { handleExtractionHotline } from "./extraction";
 import { handleChickenHotline } from "./chicken";
 import { handleIntelHotline } from "./intel";
 import { detectHotlineType } from "../utils/hotline-detection";
+import { sendSMS } from "../utils/sms";
 
 export async function handleLootHotline(
   request: ConversationRelayRequest,
@@ -85,6 +86,8 @@ export async function handleLootHotline(
         const lootInfo = await lookupLootLocation(itemToSearch);
 
         updatedMemory.step = "complete";
+        // Store loot info separately so it doesn't get overwritten by confirmation messages
+        updatedMemory.lootInfo = lootInfo;
         // Store just the loot info for repeat functionality
         updatedMemory.lastResponse = lootInfo;
         // After providing loot info, listen for user response to continue or return to menu
@@ -115,6 +118,91 @@ export async function handleLootHotline(
         };
       }
     case "complete":
+      // Check if user wants to receive loot info via SMS/text
+      const wantsSMS =
+        input.includes("text") ||
+        input.includes("sms") ||
+        input.includes("send") ||
+        input.includes("message") ||
+        (input.includes("can you") && input.includes("text"));
+
+      if (wantsSMS) {
+        // User wants loot info sent via SMS
+        const phoneNumber = memory.phoneNumber as string | undefined;
+        // Use lootInfo if available, otherwise fall back to lastResponse
+        const lootInfo =
+          (memory.lootInfo as string) || (memory.lastResponse as string);
+
+        if (!lootInfo) {
+          // No loot info available to send
+          const noLootInfoResponse =
+            "I don't have any loot information to send right now. Try searching for something first.";
+          updatedMemory.lastResponse = noLootInfoResponse;
+          return {
+            actions: [
+              {
+                say: noLootInfoResponse,
+                listen: true,
+                remember: updatedMemory,
+              },
+            ],
+          };
+        }
+
+        if (!phoneNumber) {
+          // No phone number available
+          const noPhoneResponse =
+            "I don't have your number on file. I can only text information if you call from a registered number. Anything else you need help with?";
+          updatedMemory.lastResponse = noPhoneResponse;
+          return {
+            actions: [
+              {
+                say: noPhoneResponse,
+                listen: true,
+                remember: updatedMemory,
+              },
+            ],
+          };
+        }
+
+        // Send SMS with loot information
+        // Keep the lootInfo in memory so it can be sent again if requested
+        try {
+          await sendSMS(phoneNumber, lootInfo);
+          const smsSentResponse =
+            "Copy that. I've sent that information to your phone. Give the Sporanza network some time to get it to your communication device. Anything else you need help with?";
+          // Don't overwrite lootInfo, only update lastResponse for voice
+          updatedMemory.lastResponse = smsSentResponse;
+          // Keep lootInfo in memory for future SMS requests
+          updatedMemory.lootInfo = lootInfo;
+          return {
+            actions: [
+              {
+                say: smsSentResponse,
+                listen: true,
+                remember: updatedMemory,
+              },
+            ],
+          };
+        } catch (error) {
+          console.error("Error sending SMS:", error);
+          const smsErrorResponse =
+            "Had trouble sending that text. Network might be down. I can repeat the information if you need it.";
+          updatedMemory.lastResponse = smsErrorResponse;
+          // Keep lootInfo in memory even if SMS fails
+          updatedMemory.lootInfo = lootInfo;
+          return {
+            actions: [
+              {
+                say: smsErrorResponse,
+                listen: true,
+                remember: updatedMemory,
+              },
+            ],
+          };
+        }
+      }
+
       // After completing a lookup, allow user to search again or return to main menu
       // Check if user wants to switch to another hotline
       const targetHotline = detectHotlineType(input);

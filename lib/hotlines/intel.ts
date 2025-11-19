@@ -151,11 +151,13 @@ export async function handleIntelHotline(
           "not set"
       );
       try {
-        const { data, error } = await supabase
-          .from("gossip")
+        // Fetch a larger set of verified intel entries, then randomly select 3
+        const { data: allVerifiedIntel, error } = await supabase
+          .from("intel")
           .select("*")
+          .eq("verified", true)
           .order("created_at", { ascending: false })
-          .limit(3);
+          .limit(50); // Fetch up to 50 entries to have a good pool for randomization
 
         if (error) {
           console.error("Supabase query error:", {
@@ -167,6 +169,14 @@ export async function handleIntelHotline(
           throw error;
         }
 
+        // Randomly select 3 entries from the fetched results
+        const data =
+          allVerifiedIntel && allVerifiedIntel.length > 0
+            ? allVerifiedIntel
+                .sort(() => Math.random() - 0.5) // Shuffle array
+                .slice(0, 3) // Take first 3
+            : [];
+
         console.log("Intel data retrieved:", data?.length || 0, "items");
 
         if (data && data.length > 0) {
@@ -175,7 +185,7 @@ export async function handleIntelHotline(
             .join(". ");
 
           updatedMemory.step = "complete";
-          const successResponse = `Here's what's circulating in Speranza: ${intelText}. Stay sharp, Raider. That's all the intel I've got.`;
+          const successResponse = `Here's what's circulating in Speranza: ${intelText}.`;
           updatedMemory.lastResponse = successResponse;
           console.log("Returning intel response with", data.length, "items");
           return createContinueOrExitResponse(
@@ -186,7 +196,7 @@ export async function handleIntelHotline(
         } else {
           updatedMemory.step = "complete";
           const noDataResponse =
-            "Nothing new in the rumor mill right now. The underground's quiet. Check back after your next run to Speranza.";
+            "Nothing new in the rumor mill right now. The underground's quiet.";
           updatedMemory.lastResponse = noDataResponse;
           console.log("No intel found in database");
           return createContinueOrExitResponse(
@@ -199,7 +209,7 @@ export async function handleIntelHotline(
         console.error("Error fetching intel:", error);
         updatedMemory.step = "complete";
         const errorResponse =
-          "Intel network's down. Can't access the rumor database right now. Try again after you've made it back to Speranza.";
+          "Intel network's down due to a recent ARC attack. Give us some time to get it back up and running.";
         updatedMemory.lastResponse = errorResponse;
         return createContinueOrExitResponse(
           updatedMemory,
@@ -251,7 +261,7 @@ export async function handleIntelHotline(
       const phoneNumber = (memory.phoneNumber as string) || "unknown";
 
       try {
-        await supabase.from("gossip").insert({
+        await supabase.from("intel").insert({
           content: intelContent,
           faction: "Raider Report",
           verified: false,

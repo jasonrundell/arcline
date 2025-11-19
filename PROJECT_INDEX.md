@@ -99,10 +99,8 @@ arcline/
   - Supabase client singleton
   - Environment variable configuration
   - TypeScript interfaces:
-    - `ExtractionRequest`
-    - `LootItem`
-    - `Alarm`
-    - `Gossip`
+    - `Intel`
+    - `ScrappyMessage`
 
 ### Hotline Handlers (`lib/hotlines/`)
 
@@ -371,10 +369,8 @@ npm run seed:gossip  # Seed gossip database
 
 ### Database Tables
 
-- `extraction_requests` - Extraction request records
-- `loot_items` - Loot item catalog
-- `alarms` - Alarm/reminder records
-- `gossip` - Faction news/gossip entries
+- `intel` - Faction intel and rumors (formerly gossip)
+- `scrappy_messages` - Messages left for Scrappy via the chicken hotline
 
 ---
 

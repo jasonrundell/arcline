@@ -14,6 +14,7 @@ import { handleExtractionHotline } from "./extraction";
 import { handleLootHotline } from "./loot";
 import { handleIntelHotline } from "./intel";
 import { detectHotlineType } from "../utils/hotline-detection";
+import { supabase } from "../supabase";
 
 // Scripted responses for standard flows (greeting, exit, fallback)
 const SCRIPTED_RESPONSES = {
@@ -68,7 +69,81 @@ export async function handleChickenHotline(
       };
 
     case "listening":
-      // Check if user wants to switch to another hotline
+      // Only check for end call or menu navigation - don't allow hotline switching while giving message
+      if (isEndCallRequest(input)) {
+        // User wants to end the call
+        return createEndCallResponse(updatedMemory);
+      } else if (isMenuNavigationRequest(input)) {
+        // User wants to return to menu
+        return createExitResponse(updatedMemory);
+      }
+
+      // Save message to Scrappy to database
+      const messageContent = request.CurrentInput.trim();
+      if (!messageContent) {
+        // Empty message - ask again
+        const emptyResponse =
+          "Didn't catch that. What message would you like me to relay to Scrappy?";
+        updatedMemory.lastResponse = emptyResponse;
+        return {
+          actions: [
+            {
+              say: emptyResponse,
+              listen: true,
+              remember: updatedMemory,
+            },
+          ],
+        };
+      }
+
+      // Try to save the message
+      try {
+        const { error: saveError } = await supabase
+          .from("scrappy_messages")
+          .insert({
+            content: messageContent,
+            faction: "Scrappy's Hotline",
+            verified: false,
+          });
+
+        if (saveError) {
+          throw saveError;
+        }
+
+        // Message saved successfully - confirm and transition to message_saved step
+        updatedMemory.step = "message_saved";
+        const confirmationResponse =
+          "I'll make sure Scrappy gets that message. Is there anything else you need?";
+        updatedMemory.lastResponse = confirmationResponse;
+
+        return {
+          actions: [
+            {
+              say: confirmationResponse,
+              listen: true,
+              remember: updatedMemory,
+            },
+          ],
+        };
+      } catch (error) {
+        // Log error and inform user
+        console.error("Error saving message to Scrappy:", error);
+        const errorResponse =
+          "Had trouble saving your message. Try again, or say 'menu' to go back.";
+        updatedMemory.lastResponse = errorResponse;
+        return {
+          actions: [
+            {
+              say: errorResponse,
+              listen: true,
+              remember: updatedMemory,
+            },
+          ],
+        };
+      }
+
+    case "message_saved":
+      // Now that message is saved, allow hotline switching and other navigation
       const targetHotline = detectHotlineType(input);
       if (targetHotline && targetHotline !== "chicken") {
         // Route to the detected hotline
@@ -94,50 +169,42 @@ export async function handleChickenHotline(
       } else if (isMenuNavigationRequest(input)) {
         // User wants to return to menu
         return createExitResponse(updatedMemory);
-      }
-
-      // Use AI to generate dynamic response for user questions
-      // This handles unexpected inputs and provides varied, contextual responses
-      updatedMemory.step = "listening";
-
-      try {
-        // Generate AI response with context about Scrappy
-        const aiResponse = await generateShaniResponse({
-          context:
-            "Scrappy's hotline is where Shani can relay a message to Scrappy. Scrappy is a rooster that collects materials topside in the video game ARC Raiders by Embark Studios.",
-          userInput: request.CurrentInput,
-          additionalContext:
-            "Scrappy is a rooster that collects materials for Raiders. He's been around a long time and has good instincts for avoiding ARC threats. Shani monitors his operations and relays his status.",
-        });
-
-        // Append follow-up question to keep conversation flowing
-        const response = `${aiResponse} Anything else you need to know about Scrappy's operations?`;
-        updatedMemory.lastResponse = response;
-
-        return {
-          actions: [
-            {
-              say: response,
-              listen: true,
-              remember: updatedMemory,
-            },
-          ],
-        };
-      } catch (error) {
-        // Fallback to scripted response if AI fails
-        console.error("Error generating AI response, using fallback:", error);
-        const fallbackResponse =
-          "That rooster's been busy topside.. brought back standard salvage. No ARC contact detected during his run. Anything else you need to know about Scrappy's operations?";
-        updatedMemory.lastResponse = fallbackResponse;
-        return {
-          actions: [
-            {
-              say: fallbackResponse,
-              listen: true,
-              remember: updatedMemory,
-            },
-          ],
-        };
+      } else {
+        // User wants to send another message or continue conversation
+        // Check if they want to send another message
+        if (
+          input.includes("message") ||
+          input.includes("scrappy") ||
+          input.includes("tell") ||
+          input.includes("relay")
+        ) {
+          updatedMemory.step = "listening";
+          const anotherMessageResponse =
+            "What message would you like me to relay to Scrappy?";
+          updatedMemory.lastResponse = anotherMessageResponse;
+          return {
+            actions: [
+              {
+                say: anotherMessageResponse,
+                listen: true,
+                remember: updatedMemory,
+              },
+            ],
+          };
+        } else {
+          // Default: ask what they need
+          const defaultResponse = "What else do you need, Raider?";
+          updatedMemory.lastResponse = defaultResponse;
+          return {
+            actions: [
+              {
+                say: defaultResponse,
+                listen: true,
+                remember: updatedMemory,
+              },
+            ],
+          };
+        }
       }
 
     default:

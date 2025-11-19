@@ -5,6 +5,7 @@
  */
 export function detectHotlineType(input: string): string | undefined {
   const normalizedInput = input.toLowerCase().trim();
+  console.log("detectHotlineType - normalized input:", normalizedInput);
 
   // Check for extraction hotline
   if (
@@ -50,8 +51,11 @@ export function detectHotlineType(input: string): string | undefined {
     normalizedInput.includes("faction") ||
     normalizedInput.includes("intel") ||
     normalizedInput.includes("gossip") ||
-    normalizedInput.includes("what's the latest news?") ||
-    normalizedInput.includes("what's the latest intel?")
+    // Check for phrases like "latest intel", "latest news", "what's the latest"
+    (normalizedInput.includes("latest") &&
+      (normalizedInput.includes("intel") ||
+        normalizedInput.includes("news") ||
+        normalizedInput.includes("rumor")))
   ) {
     return "intel";
   }

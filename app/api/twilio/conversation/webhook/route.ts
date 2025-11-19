@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ConversationRelayRequest, ConversationRelayResponse } from "@/types/twilio";
-import { handleMainMenu } from "@/lib/hotlines/menu";
-import { handleExtractionHotline } from "@/lib/hotlines/extraction";
-import { handleLootHotline } from "@/lib/hotlines/loot";
-import { handleChickenHotline } from "@/lib/hotlines/chicken";
-import { handleGossipHotline } from "@/lib/hotlines/gossip";
-import { handleAlarmHotline } from "@/lib/hotlines/alarm";
+import {
+  ConversationRelayRequest,
+  ConversationRelayResponse,
+} from "@/types/twilio";
+import { routeToHotline, handleDTMFSelection } from "@/lib/utils/router";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,37 +30,24 @@ export async function POST(request: NextRequest) {
       CurrentTask: currentTask || undefined,
     };
 
-    let response: ConversationRelayResponse;
-
-    // Check if user has selected a hotline from the menu
-    const hotlineType = memoryObj.hotlineType as string | undefined;
+    // Check for DTMF input first
     const step = memoryObj.step as string | undefined;
+    const dtmfResponse = handleDTMFSelection(currentInput, step, memoryObj);
 
-    // If no hotline selected yet, or still in menu/greeting phase, show main menu
-    if (!hotlineType || step === "menu" || step === "greeting") {
-      response = await handleMainMenu(relayRequest, memoryObj);
+    let response: ConversationRelayResponse;
+    if (dtmfResponse) {
+      // DTMF was processed - route to selected hotline with empty input
+      const hotlineRequest: ConversationRelayRequest = {
+        ...relayRequest,
+        CurrentInput: "",
+      };
+      response = await routeToHotline(
+        hotlineRequest,
+        dtmfResponse.actions[0]?.remember || memoryObj
+      );
     } else {
-      // Route to appropriate hotline handler based on selection
-      switch (hotlineType) {
-        case "extraction":
-          response = await handleExtractionHotline(relayRequest, memoryObj);
-          break;
-        case "loot":
-          response = await handleLootHotline(relayRequest, memoryObj);
-          break;
-        case "chicken":
-          response = await handleChickenHotline(relayRequest, memoryObj);
-          break;
-        case "gossip":
-          response = await handleGossipHotline(relayRequest, memoryObj);
-          break;
-        case "alarm":
-          response = await handleAlarmHotline(relayRequest, memoryObj);
-          break;
-        default:
-          // Fallback to menu if unknown hotline type
-          response = await handleMainMenu(relayRequest, memoryObj);
-      }
+      // Use centralized router for all routing decisions
+      response = await routeToHotline(relayRequest, memoryObj);
     }
 
     return NextResponse.json(response);
@@ -81,4 +66,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
