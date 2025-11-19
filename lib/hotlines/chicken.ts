@@ -3,6 +3,12 @@ import {
   ConversationRelayResponse,
 } from "../../types/twilio";
 import { generateShaniResponse } from "../ai/shaniresponse";
+import { isRepeatRequest } from "../utils/repeat";
+import {
+  createExitResponse,
+  isEndCallRequest,
+  createEndCallResponse,
+} from "../utils/exit";
 
 // Scripted responses for standard flows (greeting, exit, fallback)
 const SCRIPTED_RESPONSES = {
@@ -23,10 +29,29 @@ export async function handleChickenHotline(
     hotlineType: "chicken",
   };
 
+  // Check for end call request
+  if (isEndCallRequest(request.CurrentInput)) {
+    return createEndCallResponse(updatedMemory);
+  }
+
+  // Check for repeat request
+  if (isRepeatRequest(request.CurrentInput) && memory.lastResponse) {
+    return {
+      actions: [
+        {
+          say: memory.lastResponse as string,
+          listen: true,
+          remember: updatedMemory,
+        },
+      ],
+    };
+  }
+
   switch (step) {
     case "greeting":
       // Scripted greeting - always use this for consistency
       updatedMemory.step = "listening";
+      updatedMemory.lastResponse = SCRIPTED_RESPONSES.greeting;
       return {
         actions: [
           {
@@ -38,24 +63,24 @@ export async function handleChickenHotline(
       };
 
     case "listening":
-      // Check if user wants to exit - scripted response
+      // Check if user wants to exit or go to menu
       if (
         input.includes("bye") ||
         input.includes("exit") ||
         input.includes("goodbye") ||
         input.includes("done") ||
-        input.includes("finished")
+        input.includes("finished") ||
+        input.includes("menu") ||
+        input.includes("back") ||
+        input.includes("main") ||
+        input.includes("other") ||
+        input.includes("different") ||
+        input.includes("extraction") ||
+        input.includes("loot") ||
+        input.includes("intel") ||
+        input.includes("news")
       ) {
-        updatedMemory.step = "complete";
-        return {
-          actions: [
-            {
-              say: SCRIPTED_RESPONSES.exit,
-              listen: false,
-              remember: updatedMemory,
-            },
-          ],
-        };
+        return createExitResponse(updatedMemory);
       }
 
       // Use AI to generate dynamic response for user questions
@@ -74,6 +99,7 @@ export async function handleChickenHotline(
 
         // Append follow-up question to keep conversation flowing
         const response = `${aiResponse} Anything else you need to know about Scrappy's operations?`;
+        updatedMemory.lastResponse = response;
 
         return {
           actions: [
@@ -89,6 +115,7 @@ export async function handleChickenHotline(
         console.error("Error generating AI response, using fallback:", error);
         const fallbackResponse =
           "Scrappy's reporting successful material collection. That rooster's been busy topside—brought back standard salvage. No ARC contact detected during his run. Anything else you need to know about Scrappy's operations?";
+        updatedMemory.lastResponse = fallbackResponse;
         return {
           actions: [
             {
@@ -101,16 +128,7 @@ export async function handleChickenHotline(
       }
 
     default:
-      // Scripted default response
-      updatedMemory.step = "greeting";
-      return {
-        actions: [
-          {
-            say: SCRIPTED_RESPONSES.default,
-            listen: true,
-            remember: updatedMemory,
-          },
-        ],
-      };
+      // Return to main menu with natural Shani response
+      return createExitResponse(updatedMemory);
   }
 }

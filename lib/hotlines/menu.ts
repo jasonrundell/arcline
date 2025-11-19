@@ -6,6 +6,8 @@ import { handleExtractionHotline } from "./extraction";
 import { handleLootHotline } from "./loot";
 import { handleChickenHotline } from "./chicken";
 import { handleIntelHotline } from "./intel";
+import { isRepeatRequest } from "../utils/repeat";
+import { isEndCallRequest, createEndCallResponse } from "../utils/exit";
 
 export async function handleMainMenu(
   request: ConversationRelayRequest,
@@ -15,14 +17,35 @@ export async function handleMainMenu(
   const step = (memory.step as string) || "greeting";
   const updatedMemory: Record<string, unknown> = { ...memory };
 
+  // Check for end call request
+  if (isEndCallRequest(request.CurrentInput)) {
+    return createEndCallResponse(updatedMemory);
+  }
+
+  // Check for repeat request
+  if (isRepeatRequest(request.CurrentInput) && memory.lastResponse) {
+    return {
+      actions: [
+        {
+          say: memory.lastResponse as string,
+          listen: true,
+          remember: updatedMemory,
+        },
+      ],
+    };
+  }
+
   switch (step) {
     case "greeting":
       // First time caller - present menu
       updatedMemory.step = "menu";
+      const greetingResponse =
+        "Speranze Security: Shani here. What do you need, raider? I can help you with getting an extraction.. locating resources.. speaking with Scrappy.. or getting Speranza intel. Go ahead.";
+      updatedMemory.lastResponse = greetingResponse;
       return {
         actions: [
           {
-            say: "Speranze Security: Shani here. What do you need, raider? I can help you with getting an extraction, locating resources, speaking with Scrappy, or getting Speranza intel. Go ahead.",
+            say: greetingResponse,
             listen: true,
             remember: updatedMemory,
           },
@@ -37,14 +60,26 @@ export async function handleMainMenu(
         hotlineType = "extraction";
       } else if (
         input.includes("loot") ||
+        input.includes("loots") ||
+        input.includes("loop") ||
+        input.includes("loops") ||
+        input.includes("lou") ||
+        input.includes("lous") ||
+        input.includes("item") ||
+        input.includes("items") ||
         input.includes("resource") ||
-        input.includes("material")
+        input.includes("resources") ||
+        input.includes("material") ||
+        input.includes("materials") ||
+        input.includes("What's the latest news?") ||
+        input.includes("What's the latest intel?")
       ) {
         hotlineType = "loot";
       } else if (input.includes("scrappy") || input.includes("chicken")) {
         hotlineType = "chicken";
       } else if (
         input.includes("news") ||
+        input.includes("rumors") ||
         input.includes("faction") ||
         input.includes("intel") ||
         input.includes("gossip")
@@ -54,10 +89,13 @@ export async function handleMainMenu(
 
       if (!hotlineType) {
         // Invalid selection, repeat menu
+        const errorResponse =
+          "Didn't catch that, Raider. Speak clearly. Say 'extraction' for an extraction point, 'loot' for resource locations, 'scrappy' for material updates, or 'news' for Speranza intel.";
+        updatedMemory.lastResponse = errorResponse;
         return {
           actions: [
             {
-              say: "Didn't catch that, Raider. Speak clearly. Say 'extraction' for an extraction point, 'loot' for resource locations, 'scrappy' for material updates, or 'news' for Speranza intel.",
+              say: errorResponse,
               listen: true,
               remember: updatedMemory,
             },

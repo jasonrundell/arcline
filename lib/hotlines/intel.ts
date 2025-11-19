@@ -3,6 +3,13 @@ import {
   ConversationRelayResponse,
 } from "../../types/twilio";
 import { supabase } from "../supabase";
+import { isRepeatRequest } from "../utils/repeat";
+import {
+  createExitResponse,
+  createContinueOrExitResponse,
+  isEndCallRequest,
+  createEndCallResponse,
+} from "../utils/exit";
 
 export async function handleIntelHotline(
   request: ConversationRelayRequest,
@@ -14,13 +21,34 @@ export async function handleIntelHotline(
     hotlineType: "intel",
   };
 
+  // Check for end call request
+  if (isEndCallRequest(request.CurrentInput)) {
+    return createEndCallResponse(updatedMemory);
+  }
+
+  // Check for repeat request
+  if (isRepeatRequest(request.CurrentInput) && memory.lastResponse) {
+    return {
+      actions: [
+        {
+          say: memory.lastResponse as string,
+          listen: false,
+          remember: updatedMemory,
+        },
+      ],
+    };
+  }
+
   switch (step) {
     case "greeting":
       updatedMemory.step = "menu";
+      const greetingResponse =
+        "Okay. Do you want the latest intel or to submit intel?";
+      updatedMemory.lastResponse = greetingResponse;
       return {
         actions: [
           {
-            say: "Okay. Do you want the latest intel or to submit intel?",
+            say: greetingResponse,
             listen: true,
             remember: updatedMemory,
           },
@@ -45,8 +73,31 @@ export async function handleIntelHotline(
         JSON.stringify(memory)
       );
 
-      // Check for "latest" first (exact match or contains)
+      // Check for "submit" FIRST to avoid "submit intel" matching the "latest" condition
       if (
+        input === "submit" ||
+        input.includes("submit") ||
+        input.includes("share") ||
+        input.includes("report")
+      ) {
+        console.log(
+          "User requested to submit intel, transitioning to submitting step"
+        );
+        updatedMemory.step = "submitting";
+        const submittingPrompt =
+          "Copy that. What intel have you got? Report what you've seen or heard. Speak clearly.";
+        updatedMemory.lastResponse = submittingPrompt;
+        return {
+          actions: [
+            {
+              say: submittingPrompt,
+              listen: true,
+              remember: updatedMemory,
+            },
+          ],
+        };
+      } else if (
+        // Check for "latest" after submit to avoid conflicts
         input === "latest" ||
         input.includes("latest") ||
         input.includes("what's new") ||
@@ -54,7 +105,8 @@ export async function handleIntelHotline(
         input === "news" ||
         input.includes("rumor") ||
         input.includes("rumors") ||
-        input.includes("intel")
+        // Only match "intel" if it's not part of "submit intel"
+        (input.includes("intel") && !input.includes("submit"))
       ) {
         console.log(
           "User requested latest intel, transitioning to reading step"
@@ -67,33 +119,17 @@ export async function handleIntelHotline(
           CurrentInput: "", // Clear input for reading step
         };
         return await handleIntelHotline(readingRequest, updatedMemory);
-      } else if (
-        input === "submit" ||
-        input.includes("submit") ||
-        input.includes("share") ||
-        input.includes("report")
-      ) {
-        console.log(
-          "User requested to submit intel, transitioning to submitting step"
-        );
-        updatedMemory.step = "submitting";
-        return {
-          actions: [
-            {
-              say: "Copy that. What intel have you got? Report what you've seen or heard. Speak clearly.",
-              listen: true,
-              remember: updatedMemory,
-            },
-          ],
-        };
       } else {
         console.log(
           "Unrecognized input in intel menu, asking for clarification"
         );
+        const clarificationResponse =
+          "Didn't catch that, Raider. Speak clearly. Say 'latest' for current intel, or 'submit' to report what you've heard. What's your call?";
+        updatedMemory.lastResponse = clarificationResponse;
         return {
           actions: [
             {
-              say: "Didn't catch that, Raider. Speak clearly. Say 'latest' for current intel, or 'submit' to report what you've heard. What's your call?",
+              say: clarificationResponse,
               listen: true,
               remember: updatedMemory,
             },
@@ -134,45 +170,90 @@ export async function handleIntelHotline(
             .join(". ");
 
           updatedMemory.step = "complete";
+          const successResponse = `Here's what's circulating in Speranza: ${intelText}. Stay sharp, Raider. That's all the intel I've got.`;
+          updatedMemory.lastResponse = successResponse;
           console.log("Returning intel response with", data.length, "items");
-          return {
-            actions: [
-              {
-                say: `Here's what's circulating in Speranza: ${intelText}. Stay sharp, Raider. That's all the intel I've got.`,
-                listen: false,
-                remember: updatedMemory,
-              },
-            ],
-          };
+          return createContinueOrExitResponse(
+            updatedMemory,
+            successResponse,
+            "get more intel or submit intel"
+          );
         } else {
           updatedMemory.step = "complete";
+          const noDataResponse =
+            "Nothing new in the rumor mill right now. The underground's quiet. Check back after your next run to Speranza.";
+          updatedMemory.lastResponse = noDataResponse;
           console.log("No intel found in database");
-          return {
-            actions: [
-              {
-                say: "Nothing new in the rumor mill right now. The underground's quiet. Check back after your next run topside.",
-                listen: false,
-                remember: updatedMemory,
-              },
-            ],
-          };
+          return createContinueOrExitResponse(
+            updatedMemory,
+            noDataResponse,
+            "get more intel or submit intel"
+          );
         }
       } catch (error) {
         console.error("Error fetching intel:", error);
         updatedMemory.step = "complete";
+        const errorResponse =
+          "Intel network's down. Can't access the rumor database right now. Try again after you've made it back to Speranza.";
+        updatedMemory.lastResponse = errorResponse;
+        return createContinueOrExitResponse(
+          updatedMemory,
+          errorResponse,
+          "try again later"
+        );
+      }
+
+    case "submitting":
+      // Only submit if we're in the submitting step (user explicitly requested to submit)
+      const intelContent = request.CurrentInput;
+
+      // Check if user is trying to cancel or go back
+      const submitInput = (intelContent || "").toLowerCase().trim();
+      if (
+        submitInput.includes("cancel") ||
+        submitInput.includes("back") ||
+        submitInput.includes("go back") ||
+        submitInput.includes("back to menu") ||
+        submitInput.includes("back to main menu") ||
+        submitInput.includes("back to the menu") ||
+        submitInput.includes("back to the main menu") ||
+        submitInput.includes("menu") ||
+        submitInput.includes("never mind") ||
+        submitInput.includes("nevermind")
+      ) {
+        // User wants to cancel submission
+        updatedMemory.step = "menu";
+        const cancelResponse =
+          "Copy that. Cancelled. Do you want the latest intel or to submit intel?";
+        updatedMemory.lastResponse = cancelResponse;
         return {
           actions: [
             {
-              say: "Intel network's down. Can't access the rumor database right now. Try again after you've made it back topside.",
-              listen: false,
+              say: cancelResponse,
+              listen: true,
               remember: updatedMemory,
             },
           ],
         };
       }
 
-    case "submitting":
-      const intelContent = request.CurrentInput;
+      // Validate that we have actual content to submit (not empty or just keywords)
+      if (!intelContent || intelContent.trim().length === 0) {
+        const emptyResponse =
+          "Didn't catch that. What intel have you got? Report what you've seen or heard. Speak clearly.";
+        updatedMemory.lastResponse = emptyResponse;
+        return {
+          actions: [
+            {
+              say: emptyResponse,
+              listen: true,
+              remember: updatedMemory,
+            },
+          ],
+        };
+      }
+
+      // User has explicitly requested to submit and provided content - proceed with submission
       const phoneNumber = (memory.phoneNumber as string) || "unknown";
 
       try {
@@ -183,39 +264,86 @@ export async function handleIntelHotline(
         });
 
         updatedMemory.step = "complete";
-        return {
-          actions: [
-            {
-              say: "Intel logged. Your report's been added to the network. We'll verify it with other Raiders. Stay safe out there.",
-              listen: false,
-              remember: updatedMemory,
-            },
-          ],
-        };
+        const submitSuccessResponse =
+          "Intel logged. Your report's been added to the network. We'll verify it with other Raiders. Stay safe out there.";
+        updatedMemory.lastResponse = submitSuccessResponse;
+        return createContinueOrExitResponse(
+          updatedMemory,
+          submitSuccessResponse,
+          "submit more intel or get latest intel"
+        );
       } catch (error) {
         console.error("Error submitting intel:", error);
         updatedMemory.step = "complete";
+        const submitErrorResponse =
+          "Failed to log your intel. Network's having issues. Try submitting again after your next extraction.";
+        updatedMemory.lastResponse = submitErrorResponse;
+        return createContinueOrExitResponse(
+          updatedMemory,
+          submitErrorResponse,
+          "try submitting again"
+        );
+      }
+
+    case "complete":
+      // After completing an intel action, allow user to do more or return to menu
+      const completeInput = (request.CurrentInput || "").toLowerCase().trim();
+      if (
+        completeInput.includes("menu") ||
+        completeInput.includes("back") ||
+        completeInput.includes("main") ||
+        completeInput.includes("other") ||
+        completeInput.includes("different") ||
+        completeInput.includes("extraction") ||
+        completeInput.includes("loot") ||
+        completeInput.includes("scrappy")
+      ) {
+        // Return to main menu
+        return createExitResponse(updatedMemory);
+      } else if (
+        completeInput.includes("latest") ||
+        completeInput.includes("intel") ||
+        completeInput.includes("news") ||
+        completeInput.includes("read")
+      ) {
+        // Get latest intel again
+        updatedMemory.step = "reading";
+        const readingRequest = {
+          ...request,
+          CurrentInput: "",
+        };
+        return await handleIntelHotline(readingRequest, updatedMemory);
+      } else if (
+        completeInput.includes("submit") ||
+        completeInput.includes("share") ||
+        completeInput.includes("report")
+      ) {
+        // Submit intel again
+        updatedMemory.step = "submitting";
+        const submittingPrompt =
+          "Copy that. What intel have you got? Report what you've seen or heard. Speak clearly.";
+        updatedMemory.lastResponse = submittingPrompt;
         return {
           actions: [
             {
-              say: "Failed to log your intel. Network's having issues. Try submitting again after your next extraction.",
-              listen: false,
+              say: submittingPrompt,
+              listen: true,
               remember: updatedMemory,
             },
           ],
         };
+      } else {
+        // Default: offer to help with something else
+        updatedMemory.step = "complete";
+        return createContinueOrExitResponse(
+          updatedMemory,
+          "Copy that.",
+          "get more intel or submit intel"
+        );
       }
 
     default:
-      updatedMemory.step = "greeting";
-      return {
-        actions: [
-          {
-            say: "Faction intel channel closing. Stay alert, Raider. Watch your back topside.",
-            listen: false,
-            remember: updatedMemory,
-          },
-        ],
-      };
+      // Return to main menu with natural Shani response
+      return createExitResponse(updatedMemory);
   }
 }

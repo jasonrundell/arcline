@@ -29,6 +29,38 @@ fastify.register(formbody);
 // Store active call sessions
 const sessions = new Map<string, Record<string, unknown>>();
 
+/**
+ * Sends a text message via WebSocket and ends the call if listen is false
+ * @param ws - WebSocket connection
+ * @param text - Text to send
+ * @param shouldListen - Whether to continue listening (if false, call will end)
+ */
+function sendTextAndEndIfNeeded(
+  ws: any,
+  text: string,
+  shouldListen: boolean
+): void {
+  ws.send(
+    JSON.stringify({
+      type: "text",
+      token: text,
+      last: !shouldListen,
+    })
+  );
+
+  // If we shouldn't listen, send an end message after a short delay
+  // to allow the text to be spoken before ending the call
+  if (!shouldListen) {
+    setTimeout(() => {
+      ws.send(
+        JSON.stringify({
+          type: "end",
+        })
+      );
+    }, 2000); // Wait 2 seconds for the message to be spoken
+  }
+}
+
 // Voice configuration for all hotlines
 // Uses Shani's voice (1hlpeD1ydbI2ow0Tt3EW) for all hotlines
 const VOICE_CONFIG = {
@@ -130,12 +162,10 @@ wss.on("connection", (ws, request) => {
 
           // Send greeting message
           // When last: false, ConversationRelay automatically listens, so no separate listen command needed
-          ws.send(
-            JSON.stringify({
-              type: "text",
-              token: greetingResponse.actions[0]?.say || "Welcome to ARCline.",
-              last: !greetingResponse.actions[0]?.listen,
-            })
+          sendTextAndEndIfNeeded(
+            ws,
+            greetingResponse.actions[0]?.say || "Welcome to ARCline.",
+            greetingResponse.actions[0]?.listen ?? true
           );
           break;
 
@@ -232,14 +262,10 @@ wss.on("connection", (ws, request) => {
 
               // Send the handler's greeting message
               const shouldListen = hotlineResponse.actions[0]?.listen ?? false;
-              ws.send(
-                JSON.stringify({
-                  type: "text",
-                  token:
-                    hotlineResponse.actions[0]?.say ||
-                    "Processing your request.",
-                  last: !shouldListen,
-                })
+              sendTextAndEndIfNeeded(
+                ws,
+                hotlineResponse.actions[0]?.say || "Processing your request.",
+                shouldListen
               );
               return;
             } else {
@@ -325,13 +351,52 @@ wss.on("connection", (ws, request) => {
           // When last: true, ConversationRelay stops listening
           if (response.actions[0]?.say) {
             const shouldListen = response.actions[0].listen ?? false;
-            ws.send(
-              JSON.stringify({
-                type: "text",
-                token: response.actions[0].say,
-                last: !shouldListen,
-              })
-            );
+            sendTextAndEndIfNeeded(ws, response.actions[0].say, shouldListen);
+
+            // If step is "looking_up" for loot hotline, automatically continue to lookup
+            const updatedMemory = response.actions[0]?.remember as
+              | Record<string, unknown>
+              | undefined;
+            if (
+              updatedMemory?.hotlineType === "loot" &&
+              updatedMemory?.step === "looking_up" &&
+              callSid
+            ) {
+              // Wait a moment for "One sec" to be spoken, then trigger lookup
+              const currentCallSid = callSid; // Capture for closure
+              setTimeout(async () => {
+                const lookupMemory =
+                  sessions.get(currentCallSid) || updatedMemory || {};
+                const lookupResponse = await handleLootHotline(
+                  {
+                    ConversationSid: conversationSid || "",
+                    CurrentInput: "",
+                    CurrentInputType: "voice",
+                    Memory: JSON.stringify(lookupMemory),
+                  },
+                  lookupMemory
+                );
+
+                // Update session memory
+                if (lookupResponse.actions[0]?.remember && currentCallSid) {
+                  sessions.set(
+                    currentCallSid,
+                    lookupResponse.actions[0].remember
+                  );
+                }
+
+                // Send the lookup result
+                if (lookupResponse.actions[0]?.say) {
+                  const shouldListenAfter =
+                    lookupResponse.actions[0].listen ?? false;
+                  sendTextAndEndIfNeeded(
+                    ws,
+                    lookupResponse.actions[0].say,
+                    shouldListenAfter
+                  );
+                }
+              }, 1000); // Wait 1 second for "One sec" to be spoken
+            }
           } else if (response.actions[0]?.listen) {
             // Edge case: no text to say but want to start listening
             ws.send(
@@ -412,13 +477,10 @@ wss.on("connection", (ws, request) => {
       }
     } catch (error) {
       console.error("Error processing WebSocket message:", error);
-      ws.send(
-        JSON.stringify({
-          type: "text",
-          token:
-            "I'm experiencing technical difficulties. Please try again later.",
-          last: true,
-        })
+      sendTextAndEndIfNeeded(
+        ws,
+        "I'm experiencing technical difficulties. Please try again later.",
+        false
       );
     }
   });

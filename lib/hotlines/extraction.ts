@@ -3,6 +3,13 @@ import {
   ConversationRelayResponse,
 } from "../../types/twilio";
 import { supabase } from "../supabase";
+import { isRepeatRequest } from "../utils/repeat";
+import {
+  createExitResponse,
+  createContinueOrExitResponse,
+  isEndCallRequest,
+  createEndCallResponse,
+} from "../utils/exit";
 
 export async function handleExtractionHotline(
   request: ConversationRelayRequest,
@@ -17,13 +24,34 @@ export async function handleExtractionHotline(
     hotlineType: "extraction",
   };
 
+  // Check for end call request
+  if (isEndCallRequest(request.CurrentInput)) {
+    return createEndCallResponse(updatedMemory);
+  }
+
+  // Check for repeat request
+  if (isRepeatRequest(request.CurrentInput) && memory.lastResponse) {
+    return {
+      actions: [
+        {
+          say: memory.lastResponse as string,
+          listen: false,
+          remember: updatedMemory,
+        },
+      ],
+    };
+  }
+
   switch (step) {
     case "greeting":
       updatedMemory.step = "location";
+      const greetingResponse =
+        "Where are you topside? Give me your location and I'll help you get back to Speranza.";
+      updatedMemory.lastResponse = greetingResponse;
       return {
         actions: [
           {
-            say: "Where are you topside? Give me your location and I'll help you get back to Speranza.",
+            say: greetingResponse,
             listen: true,
             remember: updatedMemory,
           },
@@ -47,26 +75,62 @@ export async function handleExtractionHotline(
         console.error("Error storing extraction request:", error);
       }
 
-      return {
-        actions: [
-          {
-            say: `Copy that. Extraction request logged for ${location}. I've marked your position and routed it to the nearest hatch. Watch your six—ARC activity's unpredictable topside. Stay low, stay fast, and make it back to Speranza. Request acknowledged.`,
-            listen: false,
-            remember: updatedMemory,
-          },
-        ],
-      };
+      const locationResponse = `Copy that. Extraction request logged for ${location}. I've marked your position and routed it to the nearest hatch. Watch your six—ARC activity's unpredictable topside. Stay low, stay fast, and make it back to Speranza. Request acknowledged.`;
+      updatedMemory.step = "complete";
+      updatedMemory.lastResponse = locationResponse;
+      return createContinueOrExitResponse(
+        updatedMemory,
+        locationResponse,
+        "help with another extraction"
+      );
+
+    case "complete":
+      // After completing extraction request, allow user to request another or return to menu
+      if (
+        input.includes("menu") ||
+        input.includes("back") ||
+        input.includes("main") ||
+        input.includes("other") ||
+        input.includes("different") ||
+        input.includes("loot") ||
+        input.includes("scrappy") ||
+        input.includes("intel") ||
+        input.includes("news")
+      ) {
+        // Return to main menu
+        return createExitResponse(updatedMemory);
+      } else if (
+        input.includes("extraction") ||
+        input.includes("extract") ||
+        input.includes("another") ||
+        input.includes("more")
+      ) {
+        // Request another extraction
+        updatedMemory.step = "location";
+        const greetingResponse =
+          "Where are you topside? Give me your location and I'll help you get back to Speranza.";
+        updatedMemory.lastResponse = greetingResponse;
+        return {
+          actions: [
+            {
+              say: greetingResponse,
+              listen: true,
+              remember: updatedMemory,
+            },
+          ],
+        };
+      } else {
+        // Default: offer to help with something else
+        updatedMemory.step = "complete";
+        return createContinueOrExitResponse(
+          updatedMemory,
+          "Copy that.",
+          "help with another extraction"
+        );
+      }
 
     default:
-      updatedMemory.step = "greeting";
-      return {
-        actions: [
-          {
-            say: "Extraction coordination closed. Stay safe out there, Raider. Speranza Security out.",
-            listen: false,
-            remember: updatedMemory,
-          },
-        ],
-      };
+      // Return to main menu with natural Shani response
+      return createExitResponse(updatedMemory);
   }
 }
