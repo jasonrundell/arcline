@@ -1,37 +1,48 @@
 import Fastify from "fastify";
 import { WebSocketServer } from "ws";
+import formbody from "@fastify/formbody";
 import { handleMainMenu } from "./lib/hotlines/menu";
 import { handleExtractionHotline } from "./lib/hotlines/extraction";
 import { handleLootHotline } from "./lib/hotlines/loot";
 import { handleChickenHotline } from "./lib/hotlines/chicken";
 import { handleGossipHotline } from "./lib/hotlines/gossip";
 import { handleAlarmHotline } from "./lib/hotlines/alarm";
-import { ConversationRelayRequest, ConversationRelayResponse } from "./types/twilio";
+import {
+  ConversationRelayRequest,
+  ConversationRelayResponse,
+} from "./types/twilio";
 
 const fastify = Fastify({ logger: true });
 const PORT = process.env.PORT || 8080;
 const DOMAIN = process.env.DOMAIN || "localhost:8080";
 
+// Register form body parser for Twilio webhooks
+fastify.register(formbody);
+
 // Store active call sessions
 const sessions = new Map<string, Record<string, unknown>>();
 
-// TwiML endpoint - returns instructions to connect to WebSocket
+// TwiML endpoint - returns instructions for ConversationRelay webhook
 fastify.get("/twiml", async (request, reply) => {
   // Auto-detect domain from request headers (works with ngrok)
   // Priority: DOMAIN env var (if not localhost) > Host header > fallback to localhost
   let domain = DOMAIN;
-  
+
   // If DOMAIN is still localhost, try to get it from the request
   if (domain.includes("localhost") && request.headers.host) {
     domain = request.headers.host;
   }
-  
+
+  // Use wss:// for WebSocket connection (ngrok provides HTTPS/WSS)
+  // According to official docs: url attribute on <ConversationRelay> is for WebSocket connections
+  const protocol = domain.includes("localhost") ? "ws" : "wss";
+  const websocketUrl = `${protocol}://${domain}/ws`;
+
+  // Use WebSocket mode as documented in official Twilio ConversationRelay docs
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Connect>
-    <ConversationRelay>
-      <WebSocket url="wss://${domain}/ws" />
-    </ConversationRelay>
+    <ConversationRelay url="${websocketUrl}" />
   </Connect>
 </Response>`;
 
@@ -64,7 +75,7 @@ wss.on("connection", (ws, request) => {
           console.log("Setting up ConversationRelay connection");
           callSid = message.callSid;
           conversationSid = message.conversationSid;
-          
+
           // Store call SID on WebSocket for later use
           (ws as any).callSid = callSid;
           (ws as any).conversationSid = conversationSid;
@@ -107,7 +118,7 @@ wss.on("connection", (ws, request) => {
 
         case "prompt":
           console.log("Received prompt:", message.voicePrompt);
-          
+
           if (!callSid) {
             console.error("No call SID available");
             return;
@@ -115,7 +126,7 @@ wss.on("connection", (ws, request) => {
 
           const memory = sessions.get(callSid) || {};
           const currentInput = message.voicePrompt || "";
-          
+
           // Check for DTMF digits (1-5)
           const dtmfMatch = currentInput.match(/[1-5]/);
           const hotlineType = memory.hotlineType as string | undefined;
@@ -280,7 +291,7 @@ wss.on("connection", (ws, request) => {
 
         case "dtmf":
           console.log("Received DTMF:", message.dtmf);
-          
+
           if (!callSid) {
             console.error("No call SID available");
             return;
@@ -347,7 +358,8 @@ wss.on("connection", (ws, request) => {
       ws.send(
         JSON.stringify({
           type: "text",
-          token: "I'm experiencing technical difficulties. Please try again later.",
+          token:
+            "I'm experiencing technical difficulties. Please try again later.",
           last: true,
         })
       );
@@ -366,6 +378,117 @@ wss.on("connection", (ws, request) => {
   });
 });
 
+// ConversationRelay webhook endpoint
+fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
+  try {
+    // Twilio sends form-urlencoded data
+    const body = request.body as Record<string, string> | undefined;
+    const conversationSid = body?.ConversationSid || "";
+    const currentInput = body?.CurrentInput || "";
+    const currentInputType = body?.CurrentInputType || "voice";
+    const memory = body?.Memory || "{}";
+    const currentTask = body?.CurrentTask || null;
+
+    // Parse memory JSON
+    let memoryObj: Record<string, unknown> = {};
+    try {
+      memoryObj = memory ? JSON.parse(memory) : {};
+    } catch {
+      // Memory might be empty or invalid, use empty object
+    }
+
+    const relayRequest: ConversationRelayRequest = {
+      ConversationSid: conversationSid,
+      CurrentInput: currentInput,
+      CurrentInputType: currentInputType,
+      Memory: memory,
+      CurrentTask: currentTask || undefined,
+    };
+
+    let response: ConversationRelayResponse;
+
+    // Check if user has selected a hotline from the menu
+    const hotlineType = memoryObj.hotlineType as string | undefined;
+    const step = memoryObj.step as string | undefined;
+
+    // Handle DTMF input for menu selection
+    const input = currentInput.toLowerCase().trim();
+    const dtmfMatch = input.match(/[1-5]/);
+
+    // If no hotline selected yet, or still in menu/greeting phase, show main menu
+    if (!hotlineType || step === "menu" || step === "greeting") {
+      // Handle DTMF input for menu selection
+      if (dtmfMatch && step === "menu") {
+        const selection = dtmfMatch[0];
+        const hotlineMap: Record<string, string> = {
+          "1": "extraction",
+          "2": "loot",
+          "3": "chicken",
+          "4": "gossip",
+          "5": "alarm",
+        };
+
+        memoryObj.hotlineType = hotlineMap[selection];
+        memoryObj.step = undefined; // Clear step so hotline handler starts fresh
+
+        const confirmations: Record<string, string> = {
+          "1": "You selected Extraction Request. Please provide your location for extraction.",
+          "2": "You selected Loot Locator. What are you looking for?",
+          "3": "You selected Scrappy's Chicken Line. Welcome!",
+          "4": "You selected Faction News. Say 'latest' for rumors or 'submit' to share gossip.",
+          "5": "You selected Event Alarm. What time would you like to be alerted?",
+        };
+
+        response = {
+          actions: [
+            {
+              say: confirmations[selection],
+              listen: true,
+              remember: memoryObj,
+            },
+          ],
+        };
+      } else {
+        response = await handleMainMenu(relayRequest, memoryObj);
+      }
+    } else {
+      // Route to appropriate hotline handler based on selection
+      switch (hotlineType) {
+        case "extraction":
+          response = await handleExtractionHotline(relayRequest, memoryObj);
+          break;
+        case "loot":
+          response = await handleLootHotline(relayRequest, memoryObj);
+          break;
+        case "chicken":
+          response = await handleChickenHotline(relayRequest, memoryObj);
+          break;
+        case "gossip":
+          response = await handleGossipHotline(relayRequest, memoryObj);
+          break;
+        case "alarm":
+          response = await handleAlarmHotline(relayRequest, memoryObj);
+          break;
+        default:
+          // Fallback to menu if unknown hotline type
+          response = await handleMainMenu(relayRequest, memoryObj);
+      }
+    }
+
+    reply.type("application/json").send(response);
+  } catch (error) {
+    console.error("Twilio webhook error:", error);
+    reply.status(500).send({
+      actions: [
+        {
+          say: "I'm experiencing technical difficulties. Please try again later.",
+          listen: false,
+        },
+      ],
+    });
+  }
+});
+
 // Health check endpoint
 fastify.get("/health", async (request, reply) => {
   return { status: "ok", timestamp: new Date().toISOString() };
@@ -377,7 +500,9 @@ const start = async () => {
     await fastify.listen({ port: Number(PORT), host: "0.0.0.0" });
     console.log(`Server running at http://localhost:${PORT}`);
     console.log(`TwiML endpoint: http://localhost:${PORT}/twiml`);
-    console.log(`WebSocket endpoint: wss://${DOMAIN}/ws`);
+    console.log(
+      `Webhook endpoint: http://localhost:${PORT}/api/twilio/conversation/webhook`
+    );
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
@@ -385,4 +510,3 @@ const start = async () => {
 };
 
 start();
-

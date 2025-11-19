@@ -76,6 +76,7 @@ A voice-based multi-hotline system for the ARC Raiders universe, built with Twil
    ```
 
    Copy the ngrok URL (e.g., `abc123.ngrok.io`) and update your `.env` file:
+
    ```env
    DOMAIN=abc123.ngrok.io
    ```
@@ -139,6 +140,7 @@ npm start
 3. **Menu Selection**: The system presents a voice menu asking users to press 1-5. The system detects DTMF tones or voice input containing numbers.
 
 4. **Hotline Routing**: Based on the selection, the system routes to the appropriate hotline handler:
+
    - 1 → Extraction Request
    - 2 → Loot Locator
    - 3 → Scrappy's Chicken Line
@@ -154,6 +156,7 @@ npm start
 - [Deployment Guide](docs/DEPLOYMENT.md) - Deployment instructions
 - [Vercel Deployment](docs/VERCEL_DEPLOYMENT.md) - Vercel-specific deployment guide
 - [Twilio Setup](docs/TWILIO_SETUP.md) - Twilio ConversationRelay configuration
+- [Twilio ConversationRelay](https://www.twilio.com/docs/voice/conversationrelay) - Twilio ConversationRelay official documentation
 
 ## 🚢 Deployment
 
@@ -171,6 +174,7 @@ See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed instructions.
 ### Vercel Deployment (Recommended)
 
 Deploy everything on Vercel using ConversationRelay's webhook mode:
+
 - **TwiML Endpoint**: Vercel serverless function
 - **Webhook Handler**: Vercel serverless function
 - **No separate server needed** - Everything runs on Vercel!
