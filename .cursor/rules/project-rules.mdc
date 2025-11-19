@@ -1,0 +1,13 @@
+---
+alwaysApply: true
+---
+
+- Index projects and keep index up-to-date
+- Make changes but do not handle commits
+- Make commit messages short and concise and use the Conventional Commit message
+  convention
+- Supabase: Row Level Security should always be enabled on all tables and policies should
+  be created when necessary to ensure all features function correctly
+- Do not try to automatically connect to any database and make changes. All database changes must be done manually by me. Create migration files.
+- Don't use fallback data aproaches, instead, log and throw an error when
+  something required is missing or has an error.
