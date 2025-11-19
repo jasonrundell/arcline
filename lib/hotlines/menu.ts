@@ -6,7 +6,6 @@ import { handleExtractionHotline } from "./extraction";
 import { handleLootHotline } from "./loot";
 import { handleChickenHotline } from "./chicken";
 import { handleIntelHotline } from "./intel";
-import { handleAlarmHotline } from "./alarm";
 
 export async function handleMainMenu(
   request: ConversationRelayRequest,
@@ -23,7 +22,7 @@ export async function handleMainMenu(
       return {
         actions: [
           {
-            say: "Shani here. What do you need, raider? I can help you with getting an extraction, locating resources, speaking with Scrappy, getting Speranza intel, or setting an event alert. Go ahead.",
+            say: "Speranze Security: Shani here. What do you need, raider? I can help you with getting an extraction, locating resources, speaking with Scrappy, or getting Speranza intel. Go ahead.",
             listen: true,
             remember: updatedMemory,
           },
@@ -51,12 +50,6 @@ export async function handleMainMenu(
         input.includes("gossip")
       ) {
         hotlineType = "intel";
-      } else if (
-        input.includes("alarm") ||
-        input.includes("alert") ||
-        input.includes("event")
-      ) {
-        hotlineType = "alarm";
       }
 
       if (!hotlineType) {
@@ -64,7 +57,7 @@ export async function handleMainMenu(
         return {
           actions: [
             {
-              say: "Didn't catch that, Raider. Speak clearly. Say 'extraction' for an extraction point, 'loot' for resource locations, 'scrappy' for material updates, 'news' for Speranza intel, or 'alarm' for event alerts.",
+              say: "Didn't catch that, Raider. Speak clearly. Say 'extraction' for an extraction point, 'loot' for resource locations, 'scrappy' for material updates, or 'news' for Speranza intel.",
               listen: true,
               remember: updatedMemory,
             },
@@ -92,8 +85,6 @@ export async function handleMainMenu(
           return await handleChickenHotline(hotlineRequest, updatedMemory);
         case "intel":
           return await handleIntelHotline(hotlineRequest, updatedMemory);
-        case "alarm":
-          return await handleAlarmHotline(hotlineRequest, updatedMemory);
         default:
           // Fallback - shouldn't happen
           updatedMemory.step = "greeting";

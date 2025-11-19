@@ -14,7 +14,6 @@ import { handleExtractionHotline } from "./lib/hotlines/extraction";
 import { handleLootHotline } from "./lib/hotlines/loot";
 import { handleChickenHotline } from "./lib/hotlines/chicken";
 import { handleIntelHotline } from "./lib/hotlines/intel";
-import { handleAlarmHotline } from "./lib/hotlines/alarm";
 import {
   ConversationRelayRequest,
   ConversationRelayResponse,
@@ -151,8 +150,8 @@ wss.on("connection", (ws, request) => {
           const memory = sessions.get(callSid) || {};
           const currentInput = message.voicePrompt || "";
 
-          // Check for DTMF digits (1-5)
-          const dtmfMatch = currentInput.match(/[1-5]/);
+          // Check for DTMF digits (1-4)
+          const dtmfMatch = currentInput.match(/[1-4]/);
           const hotlineType = memory.hotlineType as string | undefined;
           const step = memory.step as string | undefined;
 
@@ -178,7 +177,6 @@ wss.on("connection", (ws, request) => {
                 "2": "loot",
                 "3": "chicken",
                 "4": "intel",
-                "5": "alarm",
               };
 
               memory.hotlineType = hotlineMap[selection];
@@ -215,12 +213,6 @@ wss.on("connection", (ws, request) => {
                   break;
                 case "intel":
                   hotlineResponse = await handleIntelHotline(
-                    hotlineRequest,
-                    memory
-                  );
-                  break;
-                case "alarm":
-                  hotlineResponse = await handleAlarmHotline(
                     hotlineRequest,
                     memory
                   );
@@ -309,17 +301,6 @@ wss.on("connection", (ws, request) => {
                   memory
                 );
                 break;
-              case "alarm":
-                response = await handleAlarmHotline(
-                  {
-                    ConversationSid: conversationSid || "",
-                    CurrentInput: currentInput,
-                    CurrentInputType: "voice",
-                    Memory: JSON.stringify(memory),
-                  },
-                  memory
-                );
-                break;
               default:
                 // Fallback to menu if unknown hotline type
                 response = await handleMainMenu(
@@ -385,14 +366,13 @@ wss.on("connection", (ws, request) => {
           }
 
           const dtmfDigit = message.dtmf;
-          if (dtmfDigit >= "1" && dtmfDigit <= "5") {
+          if (dtmfDigit >= "1" && dtmfDigit <= "4") {
             const memory = sessions.get(callSid) || {};
             const hotlineMap: Record<string, string> = {
               "1": "extraction",
               "2": "loot",
               "3": "chicken",
               "4": "intel",
-              "5": "alarm",
             };
 
             memory.hotlineType = hotlineMap[dtmfDigit];
@@ -404,7 +384,6 @@ wss.on("connection", (ws, request) => {
               "2": "You selected Loot Locator. What are you looking for?",
               "3": "You selected Scrappy's Chicken Line. Welcome!",
               "4": "You selected Faction News. Say 'latest' for intel or 'submit' to share intel.",
-              "5": "You selected Event Alarm. What time would you like to be alerted?",
             };
 
             // Send confirmation and continue listening (last: false automatically listens)
@@ -420,7 +399,7 @@ wss.on("connection", (ws, request) => {
             ws.send(
               JSON.stringify({
                 type: "text",
-                token: "Invalid selection. Please press 1, 2, 3, 4, or 5.",
+                token: "Invalid selection. Please press 1, 2, 3, or 4.",
                 last: false,
               })
             );
@@ -491,7 +470,7 @@ fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
 
     // Handle DTMF input for menu selection
     const input = currentInput.toLowerCase().trim();
-    const dtmfMatch = input.match(/[1-5]/);
+    const dtmfMatch = input.match(/[1-4]/);
 
     // If no hotline selected yet, or still in menu/greeting phase, show main menu
     if (!hotlineType || step === "menu" || step === "greeting") {
@@ -502,8 +481,7 @@ fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
           "1": "extraction",
           "2": "loot",
           "3": "chicken",
-          "4": "gossip",
-          "5": "alarm",
+          "4": "intel",
         };
 
         memoryObj.hotlineType = hotlineMap[selection];
@@ -513,8 +491,7 @@ fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
           "1": "You selected Extraction Request. Please provide your location for extraction.",
           "2": "You selected Loot Locator. What are you looking for?",
           "3": "You selected Scrappy's Chicken Line. Welcome!",
-          "4": "You selected Faction News. Say 'latest' for rumors or 'submit' to share gossip.",
-          "5": "You selected Event Alarm. What time would you like to be alerted?",
+          "4": "You selected Faction News. Say 'latest' for intel or 'submit' to share intel.",
         };
 
         response = {
@@ -543,9 +520,6 @@ fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
           break;
         case "intel":
           response = await handleIntelHotline(relayRequest, memoryObj);
-          break;
-        case "alarm":
-          response = await handleAlarmHotline(relayRequest, memoryObj);
           break;
         default:
           // Fallback to menu if unknown hotline type
