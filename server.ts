@@ -18,6 +18,7 @@ import {
   ConversationRelayRequest,
   ConversationRelayResponse,
 } from "./types/twilio";
+import { isEndCallRequest, createEndCallResponse } from "./lib/utils/exit";
 
 const fastify = Fastify({ logger: true });
 const PORT = process.env.PORT || 8080;
@@ -179,6 +180,18 @@ wss.on("connection", (ws, request) => {
 
           const memory = sessions.get(callSid) || {};
           const currentInput = message.voicePrompt || "";
+
+          // Check for end call request first, before any routing
+          if (isEndCallRequest(currentInput)) {
+            const endCallResponse = createEndCallResponse(memory);
+            sendTextAndEndIfNeeded(
+              ws,
+              endCallResponse.actions[0]?.say ||
+                "Copy that, Raider. Stay safe out there. Goodbye.",
+              false
+            );
+            return;
+          }
 
           // Check for DTMF digits (1-4)
           const dtmfMatch = currentInput.match(/[1-4]/);
