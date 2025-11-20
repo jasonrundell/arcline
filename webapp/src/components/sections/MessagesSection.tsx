@@ -5,6 +5,7 @@ import scrappyImage from "@/assets/scrappy.webp";
 import { useMessages } from "@/hooks/use-messages";
 import { format } from "date-fns";
 import { sanitizeText } from "@/lib/sanitize";
+import { CONTACT } from "@/constants";
 
 /**
  * MessagesSection Component
@@ -68,7 +69,12 @@ export const MessagesSection = () => {
             Messages for Scrappy
           </h3>
           <p className="text-muted-foreground drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-            Scrappy prefers it when you leave a message for him.
+            Real messages from other radiers that have sent Scrappy messages on
+            the hotline{" "}
+            <a href={`tel:${CONTACT.PHONE}`} className="underline">
+              {CONTACT.PHONE}
+            </a>
+            .
           </p>
         </div>
         <div className="max-w-4xl mx-auto space-y-6">
@@ -91,7 +97,7 @@ export const MessagesSection = () => {
                 return (
                   <Card
                     key={message.id}
-                    className="bg-gradient-to-br from-secondary via-secondary to-secondary/90 border-2 border-primary/30 shadow-[0_6px_16px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05),inset_0_-2px_6px_rgba(0,0,0,0.4)] relative before:absolute before:inset-0 before:rounded-lg before:bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.03)_2px,rgba(0,0,0,0.03)_4px)] group overflow-hidden"
+                    className="bg-gradient-to-br from-secondary via-secondary to-secondary/90 border-2 border-primary/30 relative before:absolute before:inset-0 before:rounded-lg before:bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.03)_2px,rgba(0,0,0,0.03)_4px)] group overflow-hidden"
                   >
                     <img
                       src={scrappyImage}

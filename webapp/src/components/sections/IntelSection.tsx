@@ -1,13 +1,9 @@
 import { useMemo } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIntel } from "@/hooks/use-intel";
 import { formatDistanceToNow } from "date-fns";
 import { sanitizeText } from "@/lib/sanitize";
+import { CONTACT } from "@/constants";
 
 /**
  * IntelSection Component
@@ -54,7 +50,11 @@ export const IntelSection = () => {
             Intel Submissions
           </h3>
           <p className="text-muted-foreground drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
-            Anonymous intelligence reports from the field
+            Anonymous intelligence reports from real raiders that have called
+            the hotline{" "}
+            <a href={`tel:${CONTACT.PHONE}`} className="underline">
+              {CONTACT.PHONE}
+            </a>
           </p>
         </div>
         <div className="max-w-4xl mx-auto space-y-6">
@@ -77,7 +77,7 @@ export const IntelSection = () => {
                 return (
                   <Card
                     key={report.id}
-                    className="bg-gradient-to-br from-card to-secondary border-2 border-border shadow-[0_8px_20px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-2px_8px_rgba(0,0,0,0.3)]"
+                    className="bg-gradient-to-br from-card to-secondary border-2 border-border"
                   >
                     <CardHeader>
                       <div className="flex items-center justify-between">
@@ -99,9 +99,6 @@ export const IntelSection = () => {
                             {report.priority}
                           </span>
                         )}
-                        <span className="px-3 py-1 bg-gradient-to-b from-muted to-muted/80 text-muted-foreground text-xs rounded-full border border-border shadow-[0_2px_6px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]">
-                          Verified
-                        </span>
                       </div>
                     </CardContent>
                   </Card>
@@ -120,4 +117,3 @@ export const IntelSection = () => {
     </section>
   );
 };
-

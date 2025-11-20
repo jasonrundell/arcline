@@ -25,9 +25,7 @@ export const Header = () => {
   return (
     <header className="bg-gradient-to-b from-header to-header/90 text-header-foreground py-4 px-6 border-b-4 border-header-foreground/20 sticky top-0 z-50 shadow-[0_8px_16px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.3)]">
       <div className="container mx-auto flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-          {APP_NAME}
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight">{APP_NAME}</h1>
         {/* Desktop Navigation */}
         <nav className="hidden md:flex gap-6">
           <a
