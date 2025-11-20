@@ -1,6 +1,4 @@
 {
-  "buildCommand": "",
-  "framework": null,
   "functions": {
     "api/twiml.ts": {
       "maxDuration": 10
