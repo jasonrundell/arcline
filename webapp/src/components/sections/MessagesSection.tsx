@@ -87,6 +87,8 @@ export const MessagesSection = () => {
                     <img
                       src={scrappyImage}
                       alt="Scrappy"
+                      loading="lazy"
+                      decoding="async"
                       className="absolute top-8 -right-8 w-1/2 h-1/2 object-contain opacity-0 group-hover:opacity-100 group-hover:animate-vibrate transition-opacity duration-300 pointer-events-none z-10"
                     />
                     <CardHeader>
