@@ -3,7 +3,8 @@ import { supabase } from "@/lib/supabase";
 
 export interface ScrappyMessage {
   id: string;
-  message: string;
+  content: string;
+  faction?: string;
   created_at: string;
   verified: boolean;
 }
@@ -31,4 +32,3 @@ export const useMessages = () => {
     },
   });
 };
-
