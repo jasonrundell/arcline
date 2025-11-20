@@ -1,14 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-
-export interface Intel {
-  id: string;
-  faction: string;
-  content: string;
-  priority?: string;
-  created_at: string;
-  verified: boolean;
-}
+import type { Intel } from "@/types/database";
 
 export const useIntel = () => {
   return useQuery({
@@ -34,4 +26,3 @@ export const useIntel = () => {
     },
   });
 };
-

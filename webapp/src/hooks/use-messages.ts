@@ -1,13 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-
-export interface ScrappyMessage {
-  id: string;
-  content: string;
-  faction?: string;
-  created_at: string;
-  verified: boolean;
-}
+import type { ScrappyMessage } from "@/types/database";
 
 export const useMessages = () => {
   return useQuery({
