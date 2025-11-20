@@ -1,9 +1,12 @@
+import { useState } from "react";
 import {
   Phone,
   Navigation,
   Package,
   Music,
   Radio as RadioIcon,
+  Menu,
+  X,
 } from "lucide-react";
 import {
   Card,
@@ -13,8 +16,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import scrappyBg from "@/assets/scrappy-messages-bg.webp";
+import scrappyImage from "@/assets/scrappy.webp";
+import { useMessages } from "@/hooks/use-messages";
+import { useIntel } from "@/hooks/use-intel";
+import { format, formatDistanceToNow } from "date-fns";
 
 const Index = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const {
+    data: messages,
+    isLoading: messagesLoading,
+    error: messagesError,
+  } = useMessages();
+  const {
+    data: intel,
+    isLoading: intelLoading,
+    error: intelError,
+  } = useIntel();
+
+  const handleNavClick = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-background/95">
       {/* Header */}
@@ -23,6 +46,7 @@ const Index = () => {
           <h1 className="text-2xl font-bold tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
             ARCline
           </h1>
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex gap-6">
             <a
               href="#features"
@@ -43,7 +67,47 @@ const Index = () => {
               Intel
             </a>
           </nav>
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 rounded hover:bg-header-foreground/10 transition-colors"
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
         </div>
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <nav className="md:hidden mt-4 pb-4 border-t border-header-foreground/20 pt-4">
+            <div className="container mx-auto flex flex-col gap-2">
+              <a
+                href="#features"
+                onClick={handleNavClick}
+                className="hover:text-primary transition-all px-3 py-2 rounded hover:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)] text-center"
+              >
+                Features
+              </a>
+              <a
+                href="#messages"
+                onClick={handleNavClick}
+                className="hover:text-primary transition-all px-3 py-2 rounded hover:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)] text-center"
+              >
+                Messages
+              </a>
+              <a
+                href="#intel"
+                onClick={handleNavClick}
+                className="hover:text-primary transition-all px-3 py-2 rounded hover:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)] text-center"
+              >
+                Intel
+              </a>
+            </div>
+          </nav>
+        )}
       </header>
 
       {/* Hero Section */}
@@ -60,18 +124,17 @@ const Index = () => {
 
         <div className="container mx-auto text-center relative z-10">
           <h2 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-b from-foreground via-foreground to-primary bg-clip-text text-transparent drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]">
-            Welcome to ARCline
+            ARCline
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
-            Your secure communication channel. Leave a message, share intel,
-            stay connected.
+            Extract. Loot. Intel. Scrappy!
           </p>
           <div className="inline-block px-8 py-6 bg-gradient-to-b from-card to-secondary rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-4px_12px_rgba(0,0,0,0.4)] border-2 border-border/50">
             <div className="flex items-center justify-center gap-3 mb-2">
               <Phone className="w-8 h-8 text-primary animate-pulse drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]" />
               <a
                 href="tel:+18722822546"
-                className="text-4xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+                className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] animate-pulse"
               >
                 +1 (872) 282-LINE
               </a>
@@ -102,7 +165,7 @@ const Index = () => {
                       Extraction Request
                     </CardTitle>
                     <CardDescription>
-                      Request extractions from your location
+                      "I need an extract, Shani!"
                     </CardDescription>
                   </div>
                 </div>
@@ -119,7 +182,9 @@ const Index = () => {
                     <CardTitle className="text-primary drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)] mb-2">
                       Loot Locator
                     </CardTitle>
-                    <CardDescription>Search for valuable items</CardDescription>
+                    <CardDescription>
+                      "Where can I find rusted gears?"
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -136,7 +201,7 @@ const Index = () => {
                       Scrappy's Chicken Line
                     </CardTitle>
                     <CardDescription>
-                      Fun sound clips and randomizers
+                      "I need to talk to Scrappy, bruh."
                     </CardDescription>
                   </div>
                 </div>
@@ -154,7 +219,7 @@ const Index = () => {
                       Intel Hub
                     </CardTitle>
                     <CardDescription>
-                      Submit and listen to faction intel and verified news
+                      "I have intel to share/What's the latest intel?"
                     </CardDescription>
                   </div>
                 </div>
@@ -181,55 +246,70 @@ const Index = () => {
         <div className="container mx-auto relative z-10">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold mb-4 drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
-              Scrappy Messages
+              Messages for Scrappy
             </h3>
-            <p className="text-muted-foreground drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
-              Messages from the line - 1980s answering machine aesthetic
+            <p className="text-muted-foreground drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+              Scrappy prefers it when you leave a message for him.
             </p>
           </div>
           <div className="max-w-4xl mx-auto space-y-6">
-            {/* Placeholder messages with retro aesthetic */}
-            <Card className="bg-gradient-to-br from-secondary via-secondary to-secondary/90 border-2 border-primary/30 shadow-[0_6px_16px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05),inset_0_-2px_6px_rgba(0,0,0,0.4)] relative before:absolute before:inset-0 before:rounded-lg before:bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.03)_2px,rgba(0,0,0,0.03)_4px)]">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-mono text-primary drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]">
-                    ► MESSAGE 001
-                  </CardTitle>
-                  <span className="text-xs text-muted-foreground font-mono bg-background/40 px-2 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
-                    12/15/2024 23:47
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-foreground font-mono text-sm leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                  *static* Testing the line... this is operational. Over.
-                  *click*
+            {messagesLoading && (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                  Loading messages...
                 </p>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-secondary via-secondary to-secondary/90 border-2 border-primary/30 shadow-[0_6px_16px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05),inset_0_-2px_6px_rgba(0,0,0,0.4)] relative before:absolute before:inset-0 before:rounded-lg before:bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.03)_2px,rgba(0,0,0,0.03)_4px)]">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-mono text-primary drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]">
-                    ► MESSAGE 002
-                  </CardTitle>
-                  <span className="text-xs text-muted-foreground font-mono bg-background/40 px-2 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
-                    12/16/2024 08:12
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-foreground font-mono text-sm leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                  *beep* Got eyes on the situation. Package arriving soon. Stand
-                  by. *beep*
+              </div>
+            )}
+            {messagesError && (
+              <div className="text-center py-8">
+                <p className="text-destructive drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                  Error loading messages. Please try again later.
                 </p>
-              </CardContent>
-            </Card>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground italic drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                More messages will appear as they're received...
-              </p>
-            </div>
+              </div>
+            )}
+            {messages && messages.length > 0
+              ? messages.map((message, index) => {
+                  console.log("MESSAGE:", message);
+                  const messageDate = new Date(message.created_at || "");
+                  const formattedDate = format(messageDate, "MM/dd/yyyy HH:mm");
+                  const messageNumber = String(index + 1).padStart(3, "0");
+
+                  return (
+                    <Card
+                      key={message.id}
+                      className="bg-gradient-to-br from-secondary via-secondary to-secondary/90 border-2 border-primary/30 shadow-[0_6px_16px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05),inset_0_-2px_6px_rgba(0,0,0,0.4)] relative before:absolute before:inset-0 before:rounded-lg before:bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.03)_2px,rgba(0,0,0,0.03)_4px)] group overflow-hidden"
+                    >
+                      <img
+                        src={scrappyImage}
+                        alt="Scrappy"
+                        className="absolute top-8 -right-8 w-1/2 h-1/2 object-contain opacity-0 group-hover:opacity-100 group-hover:animate-vibrate transition-opacity duration-300 pointer-events-none z-10"
+                      />
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg font-mono text-primary drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]">
+                            ► MESSAGE {messageNumber || ""}
+                          </CardTitle>
+                          <span className="text-xs text-muted-foreground font-mono bg-background/40 px-2 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                            {formattedDate || ""}
+                          </span>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-foreground font-mono text-sm leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                          {message.content || ""}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              : !messagesLoading &&
+                !messagesError && (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground italic drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                      More messages will appear as they're received...
+                    </p>
+                  </div>
+                )}
           </div>
         </div>
       </section>
@@ -247,62 +327,69 @@ const Index = () => {
             </p>
           </div>
           <div className="max-w-4xl mx-auto space-y-6">
-            <Card className="bg-gradient-to-br from-card to-secondary border-2 border-border shadow-[0_8px_20px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-2px_8px_rgba(0,0,0,0.3)]">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
-                    Report #A-1047
-                  </CardTitle>
-                  <span className="text-xs text-muted-foreground bg-background/30 px-2 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
-                    2 days ago
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-3 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                  Unusual activity detected in sector 7. Recommend increased
-                  monitoring protocols.
+            {intelLoading && (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                  Loading intel reports...
                 </p>
-                <div className="flex gap-2">
-                  <span className="px-3 py-1 bg-gradient-to-b from-primary/20 to-primary/10 text-primary text-xs rounded-full border border-primary/40 shadow-[0_2px_6px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]">
-                    High Priority
-                  </span>
-                  <span className="px-3 py-1 bg-gradient-to-b from-muted to-muted/80 text-muted-foreground text-xs rounded-full border border-border shadow-[0_2px_6px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]">
-                    Verified
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-card to-secondary border-2 border-border shadow-[0_8px_20px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-2px_8px_rgba(0,0,0,0.3)]">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
-                    Report #A-1046
-                  </CardTitle>
-                  <span className="text-xs text-muted-foreground bg-background/30 px-2 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
-                    5 days ago
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-3 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                  Supply chain analysis complete. All systems nominal.
+              </div>
+            )}
+            {intelError && (
+              <div className="text-center py-8">
+                <p className="text-destructive drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                  Error loading intel reports. Please try again later.
                 </p>
-                <div className="flex gap-2">
-                  <span className="px-3 py-1 bg-gradient-to-b from-muted to-muted/80 text-muted-foreground text-xs rounded-full border border-border shadow-[0_2px_6px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]">
-                    Standard
-                  </span>
-                  <span className="px-3 py-1 bg-gradient-to-b from-muted to-muted/80 text-muted-foreground text-xs rounded-full border border-border shadow-[0_2px_6px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]">
-                    Processed
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground italic drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                Submit intel by calling the hotline...
-              </p>
-            </div>
+              </div>
+            )}
+            {intel && intel.length > 0
+              ? intel.map((report) => {
+                  const reportDate = new Date(report.created_at);
+                  const formattedDate = formatDistanceToNow(reportDate, {
+                    addSuffix: true,
+                  });
+                  const reportId = report.id.slice(0, 8).toUpperCase();
+
+                  return (
+                    <Card
+                      key={report.id}
+                      className="bg-gradient-to-br from-card to-secondary border-2 border-border shadow-[0_8px_20px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-2px_8px_rgba(0,0,0,0.3)]"
+                    >
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                            Report #{reportId}
+                          </CardTitle>
+                          <span className="text-xs text-muted-foreground bg-background/30 px-2 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                            {formattedDate}
+                          </span>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-muted-foreground mb-3 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                          {report.content}
+                        </p>
+                        <div className="flex gap-2">
+                          {report.priority && (
+                            <span className="px-3 py-1 bg-gradient-to-b from-primary/20 to-primary/10 text-primary text-xs rounded-full border border-primary/40 shadow-[0_2px_6px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]">
+                              {report.priority}
+                            </span>
+                          )}
+                          <span className="px-3 py-1 bg-gradient-to-b from-muted to-muted/80 text-muted-foreground text-xs rounded-full border border-border shadow-[0_2px_6px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]">
+                            Verified
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              : !intelLoading &&
+                !intelError && (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground italic drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                      Submit intel by calling the hotline...
+                    </p>
+                  </div>
+                )}
           </div>
         </div>
       </section>

@@ -7,7 +7,7 @@ Comprehensive index of the ARC Raiders Multi-Hotline Voice System codebase.
 **Name:** ARCline  
 **Version:** 2.0.0  
 **Type:** Multi-Hotline Voice System for ARC Raiders  
-**Tech Stack:** Node.js, TypeScript, Fastify, Next.js, Twilio ConversationRelay, Supabase  
+**Tech Stack:** Node.js, TypeScript, Fastify, Vite, React, Twilio ConversationRelay, Supabase  
 **License:** MIT
 
 ---
@@ -18,14 +18,24 @@ Comprehensive index of the ARC Raiders Multi-Hotline Voice System codebase.
 arcline/
 ├── __tests__/              # Test files
 ├── api/                    # API routes (legacy/alternative)
-├── app/                    # Next.js App Router
-├── components/             # React components
+├── app/                    # Next.js App Router (legacy)
+├── components/             # React components (legacy)
 ├── docs/                   # Documentation
 ├── e2e/                    # End-to-end tests
 ├── lib/                    # Library/utility code
+│   ├── ai/                 # AI modules
+│   ├── hotlines/           # Hotline handlers
+│   └── utils/              # Utility functions
 ├── public/                 # Static assets
 ├── scripts/                # Utility scripts
+├── sql/                    # Database schema
 ├── types/                  # TypeScript type definitions
+├── webapp/                 # Vite + React web application
+│   └── src/
+│       ├── components/     # React components
+│       ├── hooks/          # React hooks
+│       ├── lib/            # Utilities
+│       └── pages/          # Page components
 └── [config files]          # Configuration files
 ```
 
@@ -35,11 +45,12 @@ arcline/
 
 ### Entry Points & Server
 
-- **`server.ts`** (569 lines)
+- **`server.ts`** (541 lines)
   - Main Fastify server with WebSocket support
   - Handles Twilio ConversationRelay WebSocket connections
   - Routes to hotline handlers based on user selection
   - Manages call sessions and state
+  - Session-aware logging with database persistence
   - Endpoints:
     - `GET /twiml` - Returns TwiML for ConversationRelay connection
     - `WS /ws` - WebSocket server for ConversationRelay
@@ -50,7 +61,7 @@ arcline/
 
 - **`package.json`**
   - Dependencies: Fastify, Twilio, Supabase, WebSocket
-  - Scripts: dev, start, build, test, lint, seed:gossip
+  - Scripts: dev, start, build, test, lint
   - Keywords: arc-raiders, twilio, hotline, voice, conversationrelay
 
 - **`tsconfig.json`**
@@ -61,7 +72,7 @@ arcline/
   - Excludes tests from build
 
 - **`next.config.ts`**
-  - Next.js configuration
+  - Next.js configuration (legacy)
   - React strict mode enabled
   - PWA-ready
 
@@ -89,6 +100,30 @@ arcline/
 - **`Procfile`**
   - Heroku deployment configuration
 
+### Webapp Configuration (`webapp/`)
+
+- **`webapp/package.json`**
+  - Vite + React application
+  - Dependencies: React, React Router, TanStack Query, Supabase, shadcn/ui, Sonner
+  - Scripts: dev, build, build:dev, lint, preview
+
+- **`webapp/vite.config.ts`**
+  - Vite configuration
+  - React SWC plugin
+  - Path aliases configured
+
+- **`webapp/tsconfig.json`**
+  - TypeScript configuration for webapp
+  - React-specific settings
+  - Path aliases: `@/*` maps to `src/*`
+
+- **`webapp/tailwind.config.ts`**
+  - Tailwind CSS configuration for webapp
+  - ARC Raiders theme integration
+
+- **`webapp/components.json`**
+  - shadcn/ui component configuration
+
 ---
 
 ## Library Code (`lib/`)
@@ -102,6 +137,16 @@ arcline/
     - `Intel`
     - `ScrappyMessage`
 
+### AI Modules (`lib/ai/`)
+
+- **`lib/ai/lootlookup.ts`**
+  - AI-powered loot lookup functionality
+  - Processes loot search queries
+
+- **`lib/ai/shaniresponse.ts`**
+  - AI response generation for Shani character
+  - Voice response formatting
+
 ### Hotline Handlers (`lib/hotlines/`)
 
 Each hotline handler implements the same interface:
@@ -114,7 +159,7 @@ Each hotline handler implements the same interface:
   - Presents 5 hotline options (1-5)
   - Routes to specific hotlines based on selection
 
-- **`lib/hotlines/extraction.ts`** (68 lines)
+- **`lib/hotlines/extraction.ts`**
   - Extraction Request hotline (#1)
   - Collects user location
   - Creates extraction requests in database
@@ -124,48 +169,139 @@ Each hotline handler implements the same interface:
   - Loot Locator hotline (#2)
   - Searches for items in database
   - Returns location and rarity information
+  - Uses AI for enhanced lookup
 
-- **`lib/hotlines/chicken.ts`** (81 lines)
+- **`lib/hotlines/chicken.ts`**
   - Scrappy's Chicken Line (#3)
   - Fun sound clips and randomizers
   - Entertainment-focused interactions
+  - Manages scrappy_messages table
 
-- **`lib/hotlines/gossip.ts`** (188 lines)
-  - Faction News hotline (#4)
-  - Users can submit gossip or get latest rumors
-  - Retrieves and creates gossip entries
+- **`lib/hotlines/listen-intel.ts`**
+  - Listen to Intel hotline (Faction News)
+  - Retrieves verified intel entries
+  - Reads intel content to caller
+  - Pagination support
 
-- **`lib/hotlines/alarm.ts`** (120 lines)
-  - Event Alarm hotline (#5)
-  - Sets up automated reminders
-  - Creates alarm records in database
+- **`lib/hotlines/submit-intel.ts`**
+  - Submit Intel hotline (Faction News)
+  - Allows users to submit intel/rumors
+  - Collects faction, content, and priority
+  - Creates intel entries in database
+
+### Utility Functions (`lib/utils/`)
+
+- **`lib/utils/router.ts`**
+  - Centralized routing logic
+  - Routes requests to appropriate hotline handlers
+  - Handles menu navigation
+
+- **`lib/utils/hotline-detection.ts`**
+  - Detects hotline type from user input
+  - Number-based and voice-based detection
+
+- **`lib/utils/exit.ts`**
+  - End call detection
+  - Exit response generation
+  - Menu navigation helpers
+
+- **`lib/utils/repeat.ts`**
+  - Repeat request detection
+  - Repeats last message functionality
+
+- **`lib/utils/session-logger.ts`**
+  - Session-aware logging system
+  - Associates logs with call sessions (callSid)
+  - In-memory log storage
+
+- **`lib/utils/save-logs.ts`**
+  - Saves session logs to database
+  - Persists logs to `logs` table on session end
+
+- **`lib/utils/sms.ts`**
+  - SMS sending utilities
+  - Twilio SMS integration
 
 ---
 
-## Next.js App (`app/`)
+## Webapp Application (`webapp/`)
 
-### Pages
+### Entry Point
 
-- **`app/page.tsx`**
-  - Homepage
+- **`webapp/src/main.tsx`**
+  - Vite entry point
+  - React root rendering
+  - Global styles import
+
+- **`webapp/src/App.tsx`**
+  - Main application component
+  - React Router setup
+  - TanStack Query provider
+  - Route definitions
+
+### Pages (`webapp/src/pages/`)
+
+- **`webapp/src/pages/index.tsx`**
+  - Homepage/main page
   - Displays hotline information
+  - Shows intel entries (Raider Report)
+  - Shows Scrappy messages
+  - Real-time data fetching with React Query
 
-- **`app/layout.tsx`**
-  - Root layout component
-  - PWA configuration
-  - Global styles
+- **`webapp/src/pages/NotFound.tsx`**
+  - 404 Not Found page
+  - Error handling component
 
-- **`app/manifest.ts`**
-  - PWA manifest generation
+### Components (`webapp/src/components/`)
 
-- **`app/not-found.tsx`**
-  - 404 page
+- **`webapp/src/components/NavLink.tsx`**
+  - Navigation link component
+  - React Router integration
 
-- **`app/hotline/[id]/page.tsx`**
-  - Dynamic route for individual hotline pages
-  - Shows hotline details
+- **`webapp/src/components/ui/card.tsx`**
+  - shadcn/ui Card component
+  - Reusable card UI component
+  - Subcomponents: CardHeader, CardTitle, CardDescription, CardContent
 
-### API Routes
+### Hooks (`webapp/src/hooks/`)
+
+- **`webapp/src/hooks/use-intel.ts`**
+  - React Query hook for fetching intel
+  - Fetches from `intel` table filtered by faction
+  - Returns: data, isLoading, error
+
+- **`webapp/src/hooks/use-messages.ts`**
+  - React Query hook for fetching Scrappy messages
+  - Fetches from `scrappy_messages` table
+  - Returns: data, isLoading, error
+
+- **`webapp/src/hooks/use-mobile.tsx`**
+  - Mobile detection hook
+  - Responsive UI utilities
+
+### Library (`webapp/src/lib/`)
+
+- **`webapp/src/lib/supabase.ts`**
+  - Supabase client for webapp
+  - Browser-optimized configuration
+
+- **`webapp/src/lib/utils.ts`**
+  - Utility functions
+  - `cn()` function for className merging (tailwind-merge + clsx)
+
+### Assets (`webapp/src/assets/`)
+
+- **`webapp/src/assets/scrappy-messages-bg.png`**
+  - Background image for Scrappy messages section
+
+- **`webapp/src/assets/scrappy-messages-bg.webp`**
+  - WebP version of Scrappy background image
+
+---
+
+## Next.js App (`app/`) - Legacy
+
+Legacy Next.js App Router structure (may be deprecated):
 
 - **`app/api/twilio/conversation/webhook/route.ts`**
   - Next.js API route for Twilio webhook
@@ -176,17 +312,11 @@ Each hotline handler implements the same interface:
   - Service worker route
   - PWA offline support
 
-### Styles
-
-- **`app/globals.css`**
-  - Global CSS styles
-  - Tailwind imports
-
 ---
 
-## Components (`components/`)
+## Components (`components/`) - Legacy
 
-All React components for the web UI:
+Legacy React components (may be deprecated in favor of webapp):
 
 - **`components/Header.tsx`**
   - Site header component
@@ -217,8 +347,9 @@ All React components for the web UI:
     - "extraction"
     - "loot"
     - "chicken"
-    - "gossip"
-    - "alarm"
+    - "listen-intel"
+    - "submit-intel"
+    - "menu"
 
 ---
 
@@ -236,9 +367,23 @@ Legacy or alternative API implementations:
 
 ## Scripts (`scripts/`)
 
-- **`scripts/seed-gossip.ts`** (229 lines)
-  - Seeds gossip database with initial entries
-  - Run with: `npm run seed:gossip`
+- **`scripts/test-supabase.ts`**
+  - Supabase connection testing script
+  - Database connectivity verification
+
+---
+
+## SQL (`sql/`)
+
+- **`sql/database_schema.sql`**
+  - Complete database schema
+  - Table definitions:
+    - `intel` - Faction intel and rumors
+    - `scrappy_messages` - Messages left for Scrappy
+    - `logs` - Session debugging logs
+  - Indexes for performance
+  - Row Level Security (RLS) policies
+  - Anonymous access policies
 
 ---
 
@@ -276,17 +421,21 @@ Comprehensive documentation files:
 - **`docs/SETUP_CHECKLIST.md`** - Setup checklist
 - **`docs/TWILIO_SETUP.md`** - Twilio ConversationRelay configuration
 - **`docs/VERCEL_DEPLOYMENT.md`** - Vercel-specific deployment guide
+- **`docs/VOICE_SWITCHING_LIMITATION.md`** - Voice switching limitations
 
 ### Character Documentation
 
 ARC Raiders character documentation:
 
-- **`docs/ARC_RADIERS_CHARACTER_SHANI-SECURITY.md`** - Shani character (security/tactical)
-- **`docs/ARC_RAIDERS_CHARACTER_APOLLO-GRENADES-GADGETS.md`** - Apollo character
-- **`docs/ARC_RAIDERS_CHARACTER_CELESTE.md`** - Celeste character
-- **`docs/ARC_RAIDERS_CHARACTER_LANCE-CLINIC.md`** - Lance character (clinic/alarm)
-- **`docs/ARC_RAIDERS_CHARACTER_SCRAPPY.md`** - Scrappy character (chicken line)
-- **`docs/ARC_RAIDERS_CHARACTER_TIAN_WEN-GUN_SHOP.md`** - Tian Wen character
+- **`docs/personas/APOLLO.md`** - Apollo character
+- **`docs/personas/CELESTE.md`** - Celeste character
+- **`docs/personas/LANCE.md`** - Lance character (clinic/alarm)
+- **`docs/personas/SCRAPPY.md`** - Scrappy character (chicken line)
+- **`docs/personas/SHANI.md`** - Shani character (security/tactical)
+- **`docs/personas/TIAN_WEN.md`** - Tian Wen character
+
+### Lore & Dialog
+
 - **`docs/ARC_RAIDERS_DIALOG_AND_LORE.md`** - Dialog and lore reference
 
 ---
@@ -299,11 +448,16 @@ ARC Raiders character documentation:
 - **`public/sw.js`**
   - Service worker script for offline support
 
+### Webapp Static Assets (`webapp/public/`)
+
+- **`webapp/public/robots.txt`**
+  - Search engine robots configuration
+
 ---
 
 ## Environment Variables
 
-Required environment variables (`.env`):
+Required environment variables (`.env` or `.env.local`):
 
 ```
 PORT=8080
@@ -323,10 +477,10 @@ TWILIO_AUTH_TOKEN=your_auth_token
 ### Hotlines (1-5)
 
 1. **Extraction Request** - Request extractions from location
-2. **Loot Locator** - Search for valuable items
+2. **Loot Locator** - Search for valuable items with AI enhancement
 3. **Scrappy's Chicken Line** - Fun sound clips and randomizers
-4. **Faction News** - Community rumors and news
-5. **Event Alarm** - Automated reminders
+4. **Faction News** - Listen to intel or submit new intel/rumors
+5. **Event Alarm** - Automated reminders (may be implemented)
 
 ### Voice Configuration
 
@@ -339,11 +493,16 @@ TWILIO_AUTH_TOKEN=your_auth_token
 ### Technologies
 
 - **Backend:** Fastify server with WebSocket support
-- **Frontend:** Next.js 14+ with App Router
+- **Frontend:** 
+  - Primary: Vite + React (in `webapp/`)
+  - Legacy: Next.js 14+ with App Router (in `app/`)
 - **Database:** Supabase (PostgreSQL)
 - **Voice:** Twilio ConversationRelay
 - **Styling:** Tailwind CSS with ARC Raiders theme
-- **PWA:** Service worker for offline support
+- **State Management:** TanStack Query (React Query)
+- **Routing:** React Router (webapp)
+- **UI Components:** shadcn/ui
+- **Notifications:** Sonner (toast notifications)
 
 ---
 
@@ -351,13 +510,23 @@ TWILIO_AUTH_TOKEN=your_auth_token
 
 ### Development Commands
 
+#### Main Server
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
+npm run dev          # Start development server (tsx watch)
+npm run build        # Build for production (TypeScript compile)
 npm start            # Start production server
 npm test             # Run tests
 npm run lint         # Lint code
-npm run seed:gossip  # Seed gossip database
+```
+
+#### Webapp
+```bash
+cd webapp
+npm run dev          # Start Vite dev server
+npm run build        # Build for production
+npm run build:dev    # Build in development mode
+npm run preview      # Preview production build
+npm run lint         # Lint code
 ```
 
 ### Key Endpoints
@@ -369,19 +538,31 @@ npm run seed:gossip  # Seed gossip database
 
 ### Database Tables
 
-- `intel` - Faction intel and rumors (formerly gossip)
+- `intel` - Faction intel and rumors
+  - Fields: id, faction, content, priority, created_at, verified
+  - Indexed on: created_at, verified
 - `scrappy_messages` - Messages left for Scrappy via the chicken hotline
+  - Fields: id, message, created_at, verified
+  - Indexed on: created_at, verified
+- `logs` - Session debugging logs
+  - Fields: id, session_id, message, level, metadata, created_at
+  - Indexed on: session_id, created_at, level
+
+### Row Level Security (RLS)
+
+All tables have RLS enabled with anonymous read/write policies for application functionality.
 
 ---
 
 ## Project Status
 
-- ✅ Core server implementation
-- ✅ All 5 hotlines implemented
-- ✅ Web UI (Next.js)
-- ✅ PWA support
+- ✅ Core server implementation (Fastify + WebSocket)
+- ✅ All 5+ hotlines implemented
+- ✅ Web UI (Vite + React in webapp/)
 - ✅ Database integration (Supabase)
+- ✅ Session logging system
 - ✅ Testing setup (Jest + Playwright)
+- ✅ PWA support (legacy)
 - 📚 Comprehensive documentation
 - 🚀 Deployable to Vercel/Heroku/Railway
 
@@ -395,6 +576,5 @@ npm run seed:gossip  # Seed gossip database
 
 ---
 
-*Last indexed: Generated automatically*  
+*Last indexed: 2024-12-19*  
 *For questions or updates, see `docs/` directory or project README*
-
