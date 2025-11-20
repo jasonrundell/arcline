@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { useIntel } from "@/hooks/use-intel";
 import { formatDistanceToNow } from "date-fns";
+import { sanitizeText } from "@/lib/sanitize";
 
 export const IntelSection = () => {
   const {
@@ -77,7 +78,7 @@ export const IntelSection = () => {
                     </CardHeader>
                     <CardContent>
                       <p className="text-muted-foreground mb-3 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                        {report.content}
+                        {sanitizeText(report.content)}
                       </p>
                       <div className="flex gap-2">
                         {report.priority && (

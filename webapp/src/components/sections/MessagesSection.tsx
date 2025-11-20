@@ -4,6 +4,7 @@ import scrappyBg from "@/assets/scrappy-messages-bg.webp";
 import scrappyImage from "@/assets/scrappy.webp";
 import { useMessages } from "@/hooks/use-messages";
 import { format } from "date-fns";
+import { sanitizeText } from "@/lib/sanitize";
 
 export const MessagesSection = () => {
   const {
@@ -98,7 +99,7 @@ export const MessagesSection = () => {
                     </CardHeader>
                     <CardContent>
                       <p className="text-foreground font-mono text-sm leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                        {message.content || ""}
+                        {sanitizeText(message.content)}
                       </p>
                     </CardContent>
                   </Card>
