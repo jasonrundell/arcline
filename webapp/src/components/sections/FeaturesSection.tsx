@@ -95,8 +95,8 @@ export const FeaturesSection = () => {
               </h4>
               <p>Intel is the lifeblood of the Raider network.</p>
               <p className={descriptionClasses}>
-                Call and say <strong>"I have intel to share"</strong> if you wan
-                to share intel with the Raider network.
+                Call and say <strong>"I have intel to share"</strong> if you
+                want to share intel with the Raider network.
               </p>
               <p className={descriptionClasses}>
                 Once verified, your intel will go up on this site for everyone

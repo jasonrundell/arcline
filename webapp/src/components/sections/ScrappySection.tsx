@@ -92,7 +92,7 @@ export const ScrappySection = () => {
             Messages for Scrappy
           </h3>
           <p className="text-muted-foreground">
-            Real messages from other radiers that have sent Scrappy messages on
+            Real messages from other raiders that have sent Scrappy messages on
             the hotline{" "}
             <a href={`tel:${CONTACT.PHONE}`} className="underline">
               {CONTACT.PHONE}

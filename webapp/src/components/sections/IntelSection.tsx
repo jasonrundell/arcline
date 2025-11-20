@@ -112,7 +112,7 @@ export const IntelSection = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="font-mono font-mono text-secondary">
+                      <p className="font-mono text-secondary">
                         {sanitizeText(report.content)}
                       </p>
                       <div className="flex gap-2">
