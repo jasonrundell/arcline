@@ -17,8 +17,7 @@ import { ArrowLeftRight, Package, Egg, Radio as RadioIcon } from "lucide-react";
 export const FeaturesSection = () => {
   const serviceItemClasses =
     "flex flex-col items-start gap-4 p-6 rounded-lg transition-all bg-secondary/95";
-  const iconClasses =
-    "inline mr-2 w-7 h-7 text-primary drop-shadow-[0_0_6px_rgba(251,146,60,0.6)]";
+  const iconClasses = "inline mr-2 w-7 h-7 text-primary";
   const titleClasses = "text-primary mb-2 font-bold text-lg";
   const descriptionClasses = "text-muted-foreground";
 

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import scrappyBg from "@/assets/scrappy-messages-bg.webp";
 import scrappyImage from "@/assets/scrappy.webp";
@@ -6,7 +6,6 @@ import { useMessages } from "@/hooks/use-messages";
 import { format } from "date-fns";
 import { sanitizeText } from "@/lib/sanitize";
 import { CONTACT } from "@/constants";
-import { Phone } from "lucide-react";
 
 /**
  * ScrappySection Component
@@ -27,6 +26,9 @@ export const ScrappySection = () => {
     isLoading: messagesLoading,
     error: messagesError,
   } = useMessages();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const messagesPerPage = 3;
 
   const formattedMessages = useMemo(() => {
     if (!messages) return [];
@@ -50,6 +52,26 @@ export const ScrappySection = () => {
     });
   }, [messages]);
 
+  const totalPages = Math.ceil(formattedMessages.length / messagesPerPage);
+  const startIndex = (currentPage - 1) * messagesPerPage;
+  const endIndex = startIndex + messagesPerPage;
+  const paginatedMessages = formattedMessages.slice(startIndex, endIndex);
+
+  // Reset to page 1 when messages change and current page is out of bounds
+  useEffect(() => {
+    if (formattedMessages.length > 0 && currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [formattedMessages.length, currentPage, totalPages]);
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  };
+
   return (
     <section
       id="messages"
@@ -66,10 +88,10 @@ export const ScrappySection = () => {
 
       <div className="container mx-auto relative z-10">
         <div className="text-center mb-12">
-          <h3 className="text-3xl font-bold mb-4 drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
+          <h3 className="text-3xl font-bold mb-4 tracking-widest">
             Messages for Scrappy
           </h3>
-          <p className="text-muted-foreground drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+          <p className="text-muted-foreground">
             Real messages from other radiers that have sent Scrappy messages on
             the hotline{" "}
             <a href={`tel:${CONTACT.PHONE}`} className="underline">
@@ -81,20 +103,19 @@ export const ScrappySection = () => {
         <div className="max-w-4xl mx-auto space-y-6">
           {messagesLoading && (
             <div className="text-center py-8">
-              <p className="text-muted-foreground drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                Loading messages...
-              </p>
+              <p className="text-muted-foreground">Loading messages...</p>
             </div>
           )}
           {messagesError && (
             <div className="text-center py-8">
-              <p className="text-destructive drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+              <p className="text-destructive">
                 Error loading messages. Please try again later.
               </p>
             </div>
           )}
-          {formattedMessages.length > 0
-            ? formattedMessages.map((message) => {
+          {formattedMessages.length > 0 ? (
+            <>
+              {paginatedMessages.map((message) => {
                 return (
                   <Card
                     key={message.id}
@@ -109,41 +130,65 @@ export const ScrappySection = () => {
                     />
                     <CardHeader>
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg font-mono text-primary drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]">
-                          ► MESSAGE {message.messageNumber}
+                        <CardTitle className="text-lg font-mono text-primary">
+                          MESSAGE #{message.messageNumber}
                         </CardTitle>
-                        <span className="text-xs text-muted-foreground font-mono bg-background/40 px-2 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                        <span className="text-xs text-muted-foreground font-mono bg-background/40 px-2 py-1 rounded">
                           {message.formattedDate}
                         </span>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-foreground font-mono text-sm leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                      <p className="text-foreground font-mono text-sm leading-relaxed">
                         {sanitizeText(message.content)}
                       </p>
                     </CardContent>
                   </Card>
                 );
-              })
-            : !messagesLoading &&
-              !messagesError && (
-                <div className="text-center py-8">
-                  <p className="text-sm text-muted-foreground italic drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                    More messages will appear as they're received...
-                  </p>
+              })}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 pt-6">
+                  <button
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 font-mono text-sm bg-secondary border-2 border-primary/30 rounded hover:bg-secondary/80 hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    ◄ PREV
+                  </button>
+                  <span className="text-sm font-mono text-muted-foreground bg-background/40 px-3 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                    PAGE {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 font-mono text-sm bg-secondary border-2 border-primary/30 rounded hover:bg-secondary/80 hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    NEXT ►
+                  </button>
                 </div>
               )}
+            </>
+          ) : (
+            !messagesLoading &&
+            !messagesError && (
+              <div className="text-center py-8">
+                <p className="text-sm text-muted-foreground italic">
+                  More messages will appear as they're received...
+                </p>
+              </div>
+            )
+          )}
         </div>
       </div>
       <div className="block mx-auto mt-12">
         <div className="flex flex-col items-center justify-center gap-3 mb-2">
-          <p className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+          <p className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all">
             CALL SCRAPPY NOW!!!
           </p>
 
           <a
             href={`tel:${CONTACT.PHONE}`}
-            className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] animate-pulse"
+            className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all animate-pulse"
           >
             {CONTACT.DISPLAY}
           </a>

@@ -17,18 +17,18 @@ export const HeroSection = () => {
   return (
     <section className="py-20 px-6 relative">
       <div className="container mx-auto text-center relative z-10">
-        <h2 className="text-5xl md:text-7xl font-bold mb-2 bg-foreground from-foreground via-foreground to-primary bg-clip-text text-transparent drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]">
+        <h2 className="text-5xl md:text-7xl font-bold mb-2 bg-foreground from-foreground via-foreground to-primary bg-clip-text text-transparent">
           {APP_NAME}
         </h2>
-        <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+        <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
           Extract. Loot. Intel. Scrappy!
         </p>
         <div className="inline-block px-8 py-6 bg-gradient-to-b from-card to-secondary rounded-2xl border-2 border-border/50">
           <div className="flex items-center justify-center gap-3 mb-2">
-            <Phone className="w-8 h-8 text-primary animate-pulse drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]" />
+            <Phone className="w-8 h-8 text-primary animate-pulse" />
             <a
               href={`tel:${CONTACT.PHONE}`}
-              className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] animate-pulse"
+              className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all animate-pulse"
             >
               {CONTACT.DISPLAY}
             </a>
