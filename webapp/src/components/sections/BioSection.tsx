@@ -33,7 +33,7 @@ export const BioSection = () => {
               Built by Jason Rundell
             </h3>
             <p>
-              Embark ID <pre>CodeBlink#6122</pre>
+              Embark ID <code>CodeBlink#6122</code>
             </p>
           </div>
 
