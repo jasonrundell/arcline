@@ -66,7 +66,7 @@ export const Section = ({
       id={id}
       className={cn(
         paddingClasses[paddingY],
-        "px-6 relative",
+        "relative",
         overflowHidden && "overflow-hidden",
         className
       )}
@@ -74,10 +74,7 @@ export const Section = ({
     >
       {hasGradient && (
         <div
-          className={cn(
-            "absolute inset-0",
-            gradientClasses[gradientIntensity]
-          )}
+          className={cn("absolute inset-0", gradientClasses[gradientIntensity])}
         />
       )}
       {backgroundOverlay && (
@@ -89,4 +86,3 @@ export const Section = ({
     </section>
   );
 };
-
