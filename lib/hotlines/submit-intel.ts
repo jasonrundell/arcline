@@ -67,7 +67,10 @@ export async function handleSubmitIntelHotline(
 
       // Check if user is trying to cancel or go back
       const submitInput = (intelContent || "").toLowerCase().trim();
-      if (isMenuNavigationRequest(submitInput)) {
+      if (isEndCallRequest(submitInput)) {
+        // User wants to end the call
+        return createEndCallResponse(updatedMemory);
+      } else if (isMenuNavigationRequest(submitInput)) {
         // User wants to cancel submission - return to main menu
         return createExitResponse(updatedMemory);
       }
@@ -124,6 +127,14 @@ export async function handleSubmitIntelHotline(
       // After completing submission, allow user to do more or return to menu
       const completeInput = (request.CurrentInput || "").toLowerCase().trim();
 
+      // Check for end call request first
+      if (isEndCallRequest(completeInput)) {
+        return createEndCallResponse(updatedMemory);
+      } else if (isMenuNavigationRequest(completeInput)) {
+        // Return to main menu
+        return createExitResponse(updatedMemory);
+      }
+
       // Check if user wants to switch to another hotline
       const targetHotline = detectHotlineType(completeInput);
       if (
@@ -148,9 +159,6 @@ export async function handleSubmitIntelHotline(
           case "chicken":
             return await handleChickenHotline(hotlineRequest, updatedMemory);
         }
-      } else if (isMenuNavigationRequest(completeInput)) {
-        // Return to main menu
-        return createExitResponse(updatedMemory);
       } else if (
         completeInput.includes("submit") ||
         completeInput.includes("share") ||

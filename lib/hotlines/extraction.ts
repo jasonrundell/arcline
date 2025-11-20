@@ -78,6 +78,14 @@ export async function handleExtractionHotline(
       );
 
     case "complete":
+      // Check for end call request first
+      if (isEndCallRequest(input)) {
+        return createEndCallResponse(updatedMemory);
+      } else if (isMenuNavigationRequest(input)) {
+        // Return to main menu
+        return createExitResponse(updatedMemory);
+      }
+
       // Check if user wants to switch to another hotline
       const targetHotline = detectHotlineType(input);
       if (targetHotline && targetHotline !== "extraction") {
@@ -106,9 +114,6 @@ export async function handleExtractionHotline(
               updatedMemory
             );
         }
-      } else if (isMenuNavigationRequest(input)) {
-        // Return to main menu
-        return createExitResponse(updatedMemory);
       } else if (
         input.includes("extraction") ||
         input.includes("extract") ||

@@ -119,6 +119,14 @@ export async function handleLootHotline(
         };
       }
     case "complete":
+      // Check for end call request first
+      if (isEndCallRequest(input)) {
+        return createEndCallResponse(updatedMemory);
+      } else if (isMenuNavigationRequest(input)) {
+        // Return to main menu
+        return createExitResponse(updatedMemory);
+      }
+
       // Check if user wants to receive loot info via SMS/text
       const wantsSMS =
         input.includes("text") ||
@@ -233,9 +241,6 @@ export async function handleLootHotline(
               updatedMemory
             );
         }
-      } else if (isMenuNavigationRequest(input)) {
-        // Return to main menu
-        return createExitResponse(updatedMemory);
       } else if (
         input.includes("search") ||
         input.includes("look") ||

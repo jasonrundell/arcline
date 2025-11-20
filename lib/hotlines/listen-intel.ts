@@ -9,6 +9,7 @@ import {
   createContinueOrExitResponse,
   isEndCallRequest,
   createEndCallResponse,
+  isMenuNavigationRequest,
 } from "../utils/exit";
 import { handleExtractionHotline } from "./extraction";
 import { handleLootHotline } from "./loot";
@@ -134,6 +135,14 @@ export async function handleListenIntelHotline(
     case "complete":
       // After completing an intel action, allow user to do more or return to menu
       const completeInput = (request.CurrentInput || "").toLowerCase().trim();
+
+      // Check for end call request first
+      if (isEndCallRequest(completeInput)) {
+        return createEndCallResponse(updatedMemory);
+      } else if (isMenuNavigationRequest(completeInput)) {
+        // Return to main menu
+        return createExitResponse(updatedMemory);
+      }
 
       // Check if user wants to switch to another hotline
       const targetHotline = detectHotlineType(completeInput);

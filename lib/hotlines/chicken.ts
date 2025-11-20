@@ -114,7 +114,7 @@ export async function handleChickenHotline(
         // Message saved successfully - confirm and transition to message_saved step
         updatedMemory.step = "message_saved";
         const confirmationResponse =
-          "I'll make sure Scrappy gets that message. Is there anything else you need?";
+          "I'll make sure Scrappy gets that message. Would you like to send another message, or is there anything else you need?";
         updatedMemory.lastResponse = confirmationResponse;
 
         return {
@@ -180,13 +180,22 @@ export async function handleChickenHotline(
         return createExitResponse(updatedMemory);
       } else {
         // User wants to send another message or continue conversation
-        // Check if they want to send another message
-        if (
+        // Check if they want to send another message - be more permissive
+        const wantsAnotherMessage =
           input.includes("message") ||
           input.includes("scrappy") ||
           input.includes("tell") ||
-          input.includes("relay")
-        ) {
+          input.includes("relay") ||
+          input.includes("another") ||
+          input.includes("one more") ||
+          input.includes("yes") ||
+          input.includes("yeah") ||
+          input.includes("sure") ||
+          input.includes("send") ||
+          input === "y" ||
+          input.trim().length === 0; // Empty input or just acknowledgment
+
+        if (wantsAnotherMessage) {
           updatedMemory.step = "listening";
           const anotherMessageResponse =
             "What message would you like me to relay to Scrappy?";
@@ -201,8 +210,9 @@ export async function handleChickenHotline(
             ],
           };
         } else {
-          // Default: ask what they need
-          const defaultResponse = "What else do you need, Raider?";
+          // Default: ask what they need, but also offer to send another message
+          const defaultResponse =
+            "What else do you need, Raider? You can send another message to Scrappy, or say 'menu' to go back.";
           updatedMemory.lastResponse = defaultResponse;
           return {
             actions: [

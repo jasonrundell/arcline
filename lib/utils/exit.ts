@@ -113,11 +113,12 @@ export function isEndCallRequest(input: string): boolean {
     normalized.includes("finished") ||
     normalized.includes(" see ya") ||
     normalized.includes(" see you") ||
-    normalized.includes("That's all.") ||
-    normalized.includes("That's it.") ||
-    normalized.includes("That's good.") ||
-    normalized.includes("That's enough.") ||
-    normalized.includes("No more.") ||
+    normalized.includes("that's all") ||
+    normalized.includes("that's it") ||
+    normalized.includes("that's good") ||
+    normalized.includes("that's enough") ||
+    normalized.includes("no more") ||
+    normalized.includes("nothing else") ||
     (normalized.includes("later") && !normalized.includes("get"))
   );
 }
