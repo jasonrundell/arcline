@@ -1,10 +1,5 @@
 import { useMemo } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import scrappyBg from "@/assets/scrappy-messages-bg.webp";
 import scrappyImage from "@/assets/scrappy.webp";
 import { useMessages } from "@/hooks/use-messages";
@@ -122,4 +117,3 @@ export const MessagesSection = () => {
     </section>
   );
 };
-
