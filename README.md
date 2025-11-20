@@ -22,7 +22,6 @@ A voice-based multi-hotline system for the ARC Raiders universe, built with Twil
   - Fastify web server
   - WebSocket support for Twilio ConversationRelay
   - Supabase for database
-  - DTMF (Dual-Tone Multi-Frequency) detection for menu selection
 
 ## 🚀 Getting Started
 
@@ -137,7 +136,7 @@ npm start
 
 2. **WebSocket Connection**: Twilio connects to the `/ws` WebSocket endpoint, establishing a persistent connection for the call.
 
-3. **Menu Selection**: The system presents a voice menu asking users to press 1-5. The system detects DTMF tones or voice input containing numbers.
+3. **Menu Selection**: The system presents a voice menu and routes based on voice input.
 
 4. **Hotline Routing**: Based on the selection, the system routes to the appropriate hotline handler:
 

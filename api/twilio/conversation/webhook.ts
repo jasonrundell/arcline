@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { routeToHotline, handleDTMFSelection } from '../../../lib/utils/router';
+import { routeToHotline } from '../../../lib/utils/router';
 import { ConversationRelayRequest, ConversationRelayResponse } from '../../../types/twilio';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -35,22 +35,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       CurrentTask: currentTask || undefined,
     };
 
-    // Check for DTMF input first
-    const step = memoryObj.step as string | undefined;
-    const dtmfResponse = handleDTMFSelection(currentInput, step, memoryObj);
-    
-    let response: ConversationRelayResponse;
-    if (dtmfResponse) {
-      // DTMF was processed - route to selected hotline with empty input
-      const hotlineRequest: ConversationRelayRequest = {
-        ...relayRequest,
-        CurrentInput: "",
-      };
-      response = await routeToHotline(hotlineRequest, dtmfResponse.actions[0]?.remember || memoryObj);
-    } else {
-      // Use centralized router for all routing decisions
-      response = await routeToHotline(relayRequest, memoryObj);
-    }
+    // Use centralized router for all routing decisions
+    const response = await routeToHotline(relayRequest, memoryObj);
 
     res.status(200).json(response);
   } catch (error) {

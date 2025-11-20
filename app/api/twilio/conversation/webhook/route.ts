@@ -3,7 +3,7 @@ import {
   ConversationRelayRequest,
   ConversationRelayResponse,
 } from "@/types/twilio";
-import { routeToHotline, handleDTMFSelection } from "@/lib/utils/router";
+import { routeToHotline } from "@/lib/utils/router";
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,25 +30,8 @@ export async function POST(request: NextRequest) {
       CurrentTask: currentTask || undefined,
     };
 
-    // Check for DTMF input first
-    const step = memoryObj.step as string | undefined;
-    const dtmfResponse = handleDTMFSelection(currentInput, step, memoryObj);
-
-    let response: ConversationRelayResponse;
-    if (dtmfResponse) {
-      // DTMF was processed - route to selected hotline with empty input
-      const hotlineRequest: ConversationRelayRequest = {
-        ...relayRequest,
-        CurrentInput: "",
-      };
-      response = await routeToHotline(
-        hotlineRequest,
-        dtmfResponse.actions[0]?.remember || memoryObj
-      );
-    } else {
-      // Use centralized router for all routing decisions
-      response = await routeToHotline(relayRequest, memoryObj);
-    }
+    // Use centralized router for all routing decisions
+    const response = await routeToHotline(relayRequest, memoryObj);
 
     return NextResponse.json(response);
   } catch (error) {

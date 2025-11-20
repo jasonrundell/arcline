@@ -10,7 +10,7 @@ import Fastify from "fastify";
 import { WebSocketServer } from "ws";
 import formbody from "@fastify/formbody";
 import twilio from "twilio";
-import { routeToHotline, handleDTMFSelection } from "./lib/utils/router";
+import { routeToHotline } from "./lib/utils/router";
 import {
   ConversationRelayRequest,
   ConversationRelayResponse,
@@ -244,26 +244,6 @@ wss.on("connection", (ws, request) => {
             input: currentInput,
           });
 
-          // Check for DTMF input first
-          const dtmfResponse = handleDTMFSelection(currentInput, step, memory);
-          if (dtmfResponse) {
-            // DTMF was processed - update session and send confirmation
-            if (dtmfResponse.actions[0]?.remember) {
-              sessions.set(callSid, dtmfResponse.actions[0].remember);
-            } else {
-              sessions.set(callSid, memory);
-            }
-
-            // Send DTMF confirmation
-            const shouldListen = dtmfResponse.actions[0]?.listen ?? true;
-            sendTextAndEndIfNeeded(
-              ws,
-              dtmfResponse.actions[0]?.say || "Processing your request.",
-              shouldListen
-            );
-            return;
-          }
-
           // Use centralized router for all routing decisions
           const request = {
             ConversationSid: conversationSid || "",
@@ -382,57 +362,6 @@ wss.on("connection", (ws, request) => {
           // Continue listening - don't disrupt the conversation flow
           break;
 
-        case "dtmf":
-          console.log("Received DTMF:", message.dtmf);
-
-          if (!callSid) {
-            console.error("No call SID available");
-            return;
-          }
-
-          const dtmfDigit = message.dtmf;
-          if (dtmfDigit >= "1" && dtmfDigit <= "5") {
-            const memory = sessions.get(callSid) || {};
-            const hotlineMap: Record<string, string> = {
-              "1": "extraction",
-              "2": "loot",
-              "3": "chicken",
-              "4": "submit-intel",
-              "5": "listen-intel",
-            };
-
-            memory.hotlineType = hotlineMap[dtmfDigit];
-            memory.step = undefined;
-            sessions.set(callSid, memory);
-
-            const confirmations: Record<string, string> = {
-              "1": "You selected Extraction Request. Please provide your location for extraction.",
-              "2": "You selected Loot Locator. What are you looking for?",
-              "3": "You selected Scrappy's Chicken Line. Welcome!",
-              "4": "You selected Submit Intel. What intel have you got?",
-              "5": "You selected Listen to Intel. Fetching the latest intel now.",
-            };
-
-            // Send confirmation and continue listening (last: false automatically listens)
-            ws.send(
-              JSON.stringify({
-                type: "text",
-                token: confirmations[dtmfDigit],
-                last: false,
-              })
-            );
-          } else {
-            // Send error message and continue listening (last: false automatically listens)
-            ws.send(
-              JSON.stringify({
-                type: "text",
-                token: "Invalid selection. Please press 1, 2, 3, 4, or 5.",
-                last: false,
-              })
-            );
-          }
-          break;
-
         default:
           console.warn("Unknown message type:", message.type);
           break;
@@ -486,26 +415,8 @@ fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
       CurrentTask: currentTask || undefined,
     };
 
-    let response: ConversationRelayResponse;
-
-    // Check for DTMF input first
-    const step = memoryObj.step as string | undefined;
-    const dtmfResponse = handleDTMFSelection(currentInput, step, memoryObj);
-
-    if (dtmfResponse) {
-      // DTMF was processed - route to selected hotline with empty input
-      const hotlineRequest: ConversationRelayRequest = {
-        ...relayRequest,
-        CurrentInput: "",
-      };
-      response = await routeToHotline(
-        hotlineRequest,
-        dtmfResponse.actions[0]?.remember || memoryObj
-      );
-    } else {
-      // Use centralized router for all routing decisions
-      response = await routeToHotline(relayRequest, memoryObj);
-    }
+    // Use centralized router for all routing decisions
+    const response = await routeToHotline(relayRequest, memoryObj);
 
     reply.type("application/json").send(response);
   } catch (error) {
