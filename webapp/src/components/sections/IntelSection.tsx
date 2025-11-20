@@ -9,6 +9,19 @@ import { useIntel } from "@/hooks/use-intel";
 import { formatDistanceToNow } from "date-fns";
 import { sanitizeText } from "@/lib/sanitize";
 
+/**
+ * IntelSection Component
+ *
+ * Displays verified Intel reports from the "Raider Report" faction. Fetches
+ * intel from Supabase, formats relative dates, and displays them in cards
+ * with sanitized content. Shows priority badges and verification status.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <IntelSection />
+ * ```
+ */
 export const IntelSection = () => {
   const {
     data: intel,

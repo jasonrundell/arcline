@@ -43,7 +43,14 @@ let activeConnections = 0;
 // Store phone numbers by call SID (from TwiML request)
 const phoneNumbersByCallSid = new Map<string, string>();
 
-// Initialize Twilio client for SMS and call info
+/**
+ * Initializes and returns a Twilio client instance.
+ *
+ * Creates a Twilio client using credentials from environment variables.
+ * Returns null if credentials are missing, allowing graceful degradation.
+ *
+ * @returns {twilio.Twilio | null} Twilio client instance, or null if credentials are missing
+ */
 function getTwilioClient() {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -54,10 +61,16 @@ function getTwilioClient() {
 }
 
 /**
- * Sends a text message via WebSocket and ends the call if listen is false
- * @param ws - WebSocket connection
- * @param text - Text to send
- * @param shouldListen - Whether to continue listening (if false, call will end)
+ * Sends a text message via WebSocket and optionally ends the call.
+ *
+ * Sends a JSON message to the WebSocket connection with the text content.
+ * If shouldListen is false, schedules an end message after a delay to allow
+ * the text to be spoken before terminating the call.
+ *
+ * @param {any} ws - WebSocket connection to send the message to
+ * @param {string} text - Text content to send (will be spoken by TTS)
+ * @param {boolean} shouldListen - Whether to continue listening after sending (if false, call will end)
+ * @returns {void}
  */
 function sendTextAndEndIfNeeded(
   ws: any,
@@ -93,7 +106,19 @@ const VOICE_CONFIG = {
   language: "en-GB",
 };
 
-// TwiML endpoint - returns instructions for ConversationRelay webhook
+/**
+ * TwiML Endpoint
+ *
+ * GET /twiml
+ *
+ * Returns TwiML instructions for Twilio to connect the call to the ConversationRelay
+ * WebSocket server. Auto-detects the domain from request headers (works with ngrok)
+ * and enforces WSS protocol in production.
+ *
+ * @route GET /twiml
+ * @param {Object} request.query - Query parameters containing CallSid and From (caller's phone number)
+ * @returns {string} TwiML XML response with ConversationRelay configuration
+ */
 fastify.get("/twiml", async (request, reply) => {
   // Get caller's phone number from query params
   const callSid = (request.query as { CallSid?: string })?.CallSid;
@@ -117,7 +142,20 @@ fastify.get("/twiml", async (request, reply) => {
 
   // Use wss:// for WebSocket connection (ngrok provides HTTPS/WSS)
   // According to official docs: url attribute on <ConversationRelay> is for WebSocket connections
-  const protocol = domain.includes("localhost") ? "ws" : "wss";
+  const isProduction = process.env.NODE_ENV === "production";
+  const protocol = isProduction
+    ? "wss"
+    : domain.includes("localhost")
+    ? "ws"
+    : "wss";
+
+  // Enforce WSS in production
+  if (isProduction && protocol !== "wss") {
+    throw new Error(
+      "Production must use WSS protocol for WebSocket connections"
+    );
+  }
+
   const websocketUrl = `${protocol}://${domain}/ws`;
 
   // Use WebSocket mode as documented in official Twilio ConversationRelay docs
@@ -140,6 +178,16 @@ fastify.get("/twiml", async (request, reply) => {
 // WebSocket server for ConversationRelay
 const wss = new WebSocketServer({ noServer: true });
 
+/**
+ * HTTP Upgrade Handler for WebSocket Connections
+ *
+ * Handles HTTP upgrade requests to establish WebSocket connections.
+ * Only allows connections to the /ws path; all other upgrade requests are rejected.
+ *
+ * @param {http.IncomingMessage} request - HTTP upgrade request
+ * @param {net.Socket} socket - Network socket
+ * @param {Buffer} head - First packet of the upgraded stream
+ */
 fastify.server.on("upgrade", (request, socket, head) => {
   if (request.url === "/ws") {
     wss.handleUpgrade(request, socket, head, (ws) => {
@@ -150,6 +198,16 @@ fastify.server.on("upgrade", (request, socket, head) => {
   }
 });
 
+/**
+ * WebSocket Connection Handler
+ *
+ * Handles new WebSocket connections from Twilio ConversationRelay.
+ * Manages connection limits, session tracking, message routing, and cleanup.
+ * Routes incoming messages to the appropriate hotline handler based on conversation state.
+ *
+ * @param {WebSocket} ws - WebSocket connection instance
+ * @param {http.IncomingMessage} request - HTTP request that initiated the upgrade
+ */
 wss.on("connection", (ws, request) => {
   // Check connection limit
   if (activeConnections >= WEBSOCKET.MAX_CONNECTIONS) {
@@ -522,7 +580,33 @@ setInterval(() => {
   }
 }, TIMEOUTS.SESSION_CLEANUP_INTERVAL);
 
-// ConversationRelay webhook endpoint with stricter rate limiting
+/**
+ * Twilio ConversationRelay Webhook Endpoint
+ *
+ * POST /api/twilio/conversation/webhook
+ *
+ * Receives webhook requests from Twilio ConversationRelay and routes them to the
+ * appropriate hotline handler. Validates Twilio signatures for security and enforces
+ * HTTPS in production. Processes form-urlencoded data containing conversation state.
+ *
+ * @route POST /api/twilio/conversation/webhook
+ * @param {FormData} request.body - Twilio webhook payload (form-urlencoded)
+ *   - ConversationSid: Unique identifier for the conversation
+ *   - CurrentInput: The user's current voice or text input
+ *   - CurrentInputType: Type of input ("voice", "text", or "setup")
+ *   - Memory: JSON string containing conversation state/memory
+ * @param {string} request.headers["x-twilio-signature"] - Twilio request signature for validation
+ * @returns {ConversationRelayResponse} Response with actions for Twilio (say, listen, etc.)
+ *
+ * @example
+ * Request body:
+ * ```
+ * ConversationSid=CHxxx
+ * CurrentInput=hello
+ * CurrentInputType=voice
+ * Memory={"step":"greeting"}
+ * ```
+ */
 fastify.post(
   "/api/twilio/conversation/webhook",
   {
@@ -541,12 +625,35 @@ fastify.post(
 
       if (authToken && twilioSignature) {
         // Construct the full URL for signature validation
+        const isProduction = process.env.NODE_ENV === "production";
         let protocol = request.headers["x-forwarded-proto"] as
           | string
           | undefined;
         if (!protocol) {
-          protocol = DOMAIN.includes("localhost") ? "http" : "https";
+          protocol = isProduction
+            ? "https"
+            : DOMAIN.includes("localhost")
+            ? "http"
+            : "https";
         }
+
+        // Enforce HTTPS in production
+        if (isProduction && protocol !== "https") {
+          console.warn(
+            "Production request not using HTTPS - rejecting for security"
+          );
+          reply.status(403).send({
+            error: "HTTPS required in production",
+            actions: [
+              {
+                say: "Authentication failed.",
+                listen: false,
+              },
+            ],
+          });
+          return;
+        }
+
         const host = request.headers.host || DOMAIN;
         const url = `${protocol}://${host}${request.url}`;
 
@@ -635,11 +742,29 @@ fastify.post(
 );
 
 // Health check endpoint
+/**
+ * Health Check Endpoint
+ *
+ * GET /health
+ *
+ * Simple health check endpoint that returns server status and current timestamp.
+ * Useful for monitoring and load balancer health checks.
+ *
+ * @route GET /health
+ * @returns {Object} Health status object with status and timestamp
+ */
 fastify.get("/health", async (request, reply) => {
   return { status: "ok", timestamp: new Date().toISOString() };
 });
 
-// Start server
+/**
+ * Starts the Fastify server and begins listening for requests.
+ *
+ * Binds the server to all network interfaces (0.0.0.0) on the configured port.
+ * Logs server endpoints on successful startup. Exits the process on error.
+ *
+ * @returns {Promise<void>}
+ */
 const start = async () => {
   try {
     await fastify.listen({ port: Number(PORT), host: "0.0.0.0" });

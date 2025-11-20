@@ -1,6 +1,18 @@
 import { Phone } from "lucide-react";
 import { CONTACT } from "@/constants";
 
+/**
+ * HeroSection Component
+ *
+ * Displays the main hero section with the ARCline phone number and tagline.
+ * Features an animated phone icon and call-to-action with the contact number.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <HeroSection />
+ * ```
+ */
 export const HeroSection = () => {
   return (
     <section className="py-20 px-6 relative overflow-hidden">

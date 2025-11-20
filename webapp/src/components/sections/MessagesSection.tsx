@@ -6,6 +6,19 @@ import { useMessages } from "@/hooks/use-messages";
 import { format } from "date-fns";
 import { sanitizeText } from "@/lib/sanitize";
 
+/**
+ * MessagesSection Component
+ *
+ * Displays verified messages from Scrappy's message board. Fetches messages from
+ * Supabase, formats dates, and displays them in cards with sanitized content.
+ * Includes loading and error states.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <MessagesSection />
+ * ```
+ */
 export const MessagesSection = () => {
   const {
     data: messages,

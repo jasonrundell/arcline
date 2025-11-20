@@ -9,6 +9,23 @@ interface State {
   error?: Error;
 }
 
+/**
+ * Error Boundary Component
+ *
+ * Catches JavaScript errors anywhere in the child component tree, logs those errors,
+ * and displays a fallback UI instead of crashing the entire application.
+ *
+ * This component implements React's error boundary pattern using componentDidCatch
+ * and getDerivedStateFromError lifecycle methods.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <ErrorBoundary>
+ *   <App />
+ * </ErrorBoundary>
+ * ```
+ */
 export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);

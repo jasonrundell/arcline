@@ -12,6 +12,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+/**
+ * FeaturesSection Component
+ *
+ * Displays a grid of available hotline services with icons and descriptions.
+ * Shows four main services: Extraction Request, Loot Locator, Scrappy's Chicken Line,
+ * and Intel Hub.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <FeaturesSection />
+ * ```
+ */
 export const FeaturesSection = () => {
   return (
     <section id="features" className="py-20 px-6 relative">

@@ -1,6 +1,19 @@
 import { useState, useCallback } from "react";
 import { Menu, X } from "lucide-react";
 
+/**
+ * Header Component
+ *
+ * Displays the main site header with navigation links. Includes a responsive
+ * mobile menu that toggles on smaller screens. The header is sticky and remains
+ * visible when scrolling.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <Header />
+ * ```
+ */
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 

@@ -1,4 +1,5 @@
 # Comprehensive Code Review Report
+
 ## ARCline React/TypeScript Codebase
 
 **Date:** 2025-11-20  
@@ -31,11 +32,13 @@ This codebase is a well-structured React/TypeScript application with a Next.js b
 ```
 
 **Problem:**
+
 - `strictNullChecks: false` allows null/undefined to be assigned to any type
 - `noImplicitAny: false` allows untyped variables
 - This can lead to runtime errors that TypeScript should catch
 
 **Fix:**
+
 ```typescript
 // webapp/tsconfig.json
 {
@@ -64,8 +67,11 @@ This codebase is a well-structured React/TypeScript application with a Next.js b
 **Problem:** If `created_at` is invalid, `new Date()` returns an Invalid Date, and `format()` may throw or produce unexpected output.
 
 **Fix:**
+
 ```typescript
-const messageDate = message.created_at ? new Date(message.created_at) : new Date();
+const messageDate = message.created_at
+  ? new Date(message.created_at)
+  : new Date();
 if (isNaN(messageDate.getTime())) {
   console.error("Invalid date for message:", message.id);
   return null; // or handle gracefully
@@ -94,20 +100,21 @@ const formattedDate = format(messageDate, "MM/dd/yyyy HH:mm");
 **Problem:** If the component unmounts while the event listener is processing, `setIsMobile` will be called on an unmounted component, causing a memory leak warning.
 
 **Fix:**
+
 ```typescript
 React.useEffect(() => {
   const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
   let isMounted = true;
-  
+
   const onChange = () => {
     if (isMounted) {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     }
   };
-  
+
   mql.addEventListener("change", onChange);
   setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-  
+
   return () => {
     isMounted = false;
     mql.removeEventListener("change", onChange);
@@ -137,6 +144,7 @@ export interface ScrappyMessage {
 **Problem:** The database likely returns `content`, but the interface uses `message`, causing a type mismatch.
 
 **Fix:**
+
 ```typescript
 export interface ScrappyMessage {
   id: string;
@@ -155,6 +163,7 @@ export interface ScrappyMessage {
 **Problem:** If any component throws an error, the entire app will crash with a white screen.
 
 **Fix:** Add an error boundary component:
+
 ```typescript
 // webapp/src/components/ErrorBoundary.tsx
 import React from "react";
@@ -208,6 +217,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 ```
 
 Then wrap the app:
+
 ```typescript
 // webapp/src/App.tsx
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -231,12 +241,14 @@ const App = () => (
                   console.log("MESSAGE:", message);
 ```
 
-**Problem:** 
+**Problem:**
+
 - Exposes internal data structure to browser console
 - Performance impact in production
 - Security risk if sensitive data is logged
 
 **Fix:** Remove or use a proper logging utility:
+
 ```typescript
 // Only log in development
 if (import.meta.env.DEV) {
@@ -259,6 +271,7 @@ logger.debug("MESSAGE:", message);
 **Issue:** The Index component is too large and handles too many responsibilities.
 
 **Problems:**
+
 - Hard to test individual sections
 - Difficult to maintain
 - Poor reusability
@@ -307,11 +320,13 @@ export const Footer = () => {
 **Issue:** Type definitions are duplicated across files.
 
 **Problem:**
+
 - Changes need to be made in multiple places
 - Risk of inconsistencies
 - Maintenance burden
 
 **Fix:** Create a shared types file:
+
 ```typescript
 // webapp/src/types/database.ts
 export interface ScrappyMessage {
@@ -339,11 +354,13 @@ export interface Intel {
 **Issue:** Hard-coded values scattered throughout code.
 
 **Examples:**
+
 - `webapp/src/hooks/use-mobile.tsx:3` - `MOBILE_BREAKPOINT = 768`
 - `webapp/src/pages/index.tsx:136` - Phone number hardcoded
 - `server.ts:73` - `setTimeout(() => {...}, 2000)`
 
 **Fix:** Extract to constants:
+
 ```typescript
 // webapp/src/constants/index.ts
 export const BREAKPOINTS = {
@@ -370,11 +387,13 @@ export const TIMEOUTS = {
 **Issue:** Error handling patterns vary across the codebase.
 
 **Examples:**
+
 - `webapp/src/hooks/use-messages.ts:22` - Throws error
 - `webapp/src/pages/index.tsx:263` - Shows error message
 - `server.ts:434` - Catches and sends error message
 
 **Fix:** Create a consistent error handling utility:
+
 ```typescript
 // webapp/src/lib/errors.ts
 export class AppError extends Error {
@@ -415,6 +434,7 @@ export function handleError(error: unknown): AppError {
 ```
 
 **Fix:** Add validation:
+
 ```typescript
 import { z } from "zod";
 
@@ -451,10 +471,13 @@ createRoot(document.getElementById("root")!).render(<App />);
 **Problem:** If `root` element doesn't exist, the app will crash.
 
 **Fix:**
+
 ```typescript
 const rootElement = document.getElementById("root");
 if (!rootElement) {
-  throw new Error("Root element not found. Make sure index.html has a #root element.");
+  throw new Error(
+    "Root element not found. Make sure index.html has a #root element."
+  );
 }
 createRoot(rootElement).render(<App />);
 ```
@@ -474,11 +497,13 @@ const queryClient = new QueryClient();
 ```
 
 **Problem:**
+
 - No caching strategy
 - No stale time configuration
 - Potential unnecessary refetches
 
 **Fix:**
+
 ```typescript
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -499,11 +524,13 @@ const queryClient = new QueryClient({
 **Issue:** Expensive computations and callbacks recreated on every render.
 
 **Problems:**
+
 - Date formatting happens on every render
 - Event handlers recreated unnecessarily
 - No memoization of filtered/sorted data
 
 **Fix:**
+
 ```typescript
 import { useMemo, useCallback } from "react";
 
@@ -513,8 +540,8 @@ const Index = () => {
   const formattedMessages = useMemo(() => {
     if (!messages) return [];
     return messages.map((message, index) => {
-      const messageDate = message.created_at 
-        ? new Date(message.created_at) 
+      const messageDate = message.created_at
+        ? new Date(message.created_at)
         : new Date();
       return {
         ...message,
@@ -542,11 +569,13 @@ import scrappyImage from "@/assets/scrappy.webp";
 ```
 
 **Problem:**
+
 - No lazy loading
 - No responsive images
 - Large images loaded immediately
 
 **Fix:**
+
 ```typescript
 <img
   src={scrappyImage}
@@ -565,6 +594,7 @@ import scrappyImage from "@/assets/scrappy.webp";
 **Problem:** Filtering, mapping, and formatting happen on every render.
 
 **Fix:** Already addressed in 3.2, but also consider pagination:
+
 ```typescript
 const [page, setPage] = useState(1);
 const ITEMS_PER_PAGE = 10;
@@ -581,11 +611,13 @@ const paginatedMessages = useMemo(() => {
 **Issue:** No connection pooling or rate limiting.
 
 **Problems:**
+
 - Memory leaks if connections aren't properly cleaned up
 - No limit on concurrent connections
 - Sessions map grows unbounded
 
 **Fix:**
+
 ```typescript
 // Add connection limits
 const MAX_CONNECTIONS = 100;
@@ -608,7 +640,7 @@ wss.on("connection", (ws, request) => {
 setInterval(() => {
   const now = Date.now();
   const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-  
+
   for (const [callSid, session] of sessions.entries()) {
     const lastActivity = (session.lastActivity as number) || 0;
     if (now - lastActivity > SESSION_TIMEOUT) {
@@ -627,6 +659,7 @@ setInterval(() => {
 **Problem:** Large initial bundle size, slower first load.
 
 **Fix:**
+
 ```typescript
 import { lazy, Suspense } from "react";
 
@@ -669,11 +702,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
 ```
 
 **Problem:**
+
 - Error only thrown when module is imported
 - No validation at build time
 - Client-side exposure of keys (acceptable for anon key, but should be documented)
 
 **Fix:** Add build-time validation:
+
 ```typescript
 // vite.config.ts
 export default defineConfig({
@@ -705,6 +740,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 **Problem:** If database is compromised or content contains XSS, it could execute.
 
 **Fix:** While React escapes by default, add explicit sanitization for extra safety:
+
 ```typescript
 import DOMPurify from "dompurify";
 
@@ -714,7 +750,7 @@ import DOMPurify from "dompurify";
   dangerouslySetInnerHTML={{
     __html: DOMPurify.sanitize(message.content || ""),
   }}
-/>
+/>;
 ```
 
 **Note:** Actually, React's default escaping is sufficient for text content. Only use `dangerouslySetInnerHTML` if you need HTML rendering, which you don't in this case. The current approach is safe.
@@ -728,6 +764,7 @@ import DOMPurify from "dompurify";
 **Problem:** Vulnerable to DoS attacks.
 
 **Fix:** Add rate limiting middleware:
+
 ```typescript
 import rateLimit from "@fastify/rate-limit";
 
@@ -762,18 +799,26 @@ fastify.post(
 **Problem:** Anyone can send requests to the webhook endpoint.
 
 **Fix:** Add Twilio signature verification:
+
 ```typescript
 import { validateRequest } from "twilio";
 
 fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
   const twilioSignature = request.headers["x-twilio-signature"] as string;
   const url = `${request.protocol}://${request.hostname}${request.url}`;
-  
-  if (!validateRequest(process.env.TWILIO_AUTH_TOKEN!, url, request.body, twilioSignature)) {
+
+  if (
+    !validateRequest(
+      process.env.TWILIO_AUTH_TOKEN!,
+      url,
+      request.body,
+      twilioSignature
+    )
+  ) {
     reply.status(403).send({ error: "Invalid signature" });
     return;
   }
-  
+
   // ... existing code
 });
 ```
@@ -799,31 +844,18 @@ fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
 **Problem:** In production, should always use WSS.
 
 **Fix:**
+
 ```typescript
 const isProduction = process.env.NODE_ENV === "production";
-const protocol = isProduction ? "wss" : domain.includes("localhost") ? "ws" : "wss";
+const protocol = isProduction
+  ? "wss"
+  : domain.includes("localhost")
+  ? "ws"
+  : "wss";
 
 if (isProduction && protocol !== "wss") {
   throw new Error("Production must use WSS protocol");
 }
-```
-
-### 4.7 Sensitive Data in Logs
-
-**Location:** `server.ts:26-28, 95, 201-203`
-
-**Issue:** Phone numbers and session data logged.
-
-**Problem:** PII exposure in logs.
-
-**Fix:** Sanitize logs:
-```typescript
-function sanitizePhoneNumber(phone: string): string {
-  if (!phone) return "***";
-  return phone.slice(0, -4) + "****";
-}
-
-console.log("Stored phone number:", sanitizePhoneNumber(phoneNumber));
 ```
 
 ---
@@ -837,6 +869,7 @@ console.log("Stored phone number:", sanitizePhoneNumber(phoneNumber));
 **Issue:** Functions lack documentation.
 
 **Example:**
+
 ```11:33:webapp/src/hooks/use-messages.ts
 export const useMessages = () => {
   return useQuery({
@@ -849,16 +882,17 @@ export const useMessages = () => {
 ```
 
 **Fix:**
-```typescript
+
+````typescript
 /**
  * Custom hook to fetch verified Scrappy messages from Supabase.
- * 
+ *
  * @returns {Object} React Query result object containing:
  *   - data: Array of ScrappyMessage objects, sorted by created_at descending
  *   - isLoading: Boolean indicating if the query is in progress
  *   - error: Error object if the query failed
  *   - refetch: Function to manually refetch messages
- * 
+ *
  * @example
  * ```tsx
  * const { data: messages, isLoading } = useMessages();
@@ -869,7 +903,7 @@ export const useMessages = () => {
 export const useMessages = () => {
   // ... implementation
 };
-```
+````
 
 ### 5.2 Missing Type Documentation
 
@@ -878,10 +912,11 @@ export const useMessages = () => {
 **Issue:** Types lack descriptions.
 
 **Fix:**
+
 ```typescript
 /**
  * Request payload from Twilio ConversationRelay webhook.
- * 
+ *
  * @property {string} ConversationSid - Unique identifier for the conversation
  * @property {string} CurrentInput - The user's current voice or text input
  * @property {string} CurrentInputType - Type of input: "voice", "text", or "setup"
@@ -905,12 +940,13 @@ export interface ConversationRelayRequest {
 **Issue:** No usage examples or prop documentation.
 
 **Fix:** Add component-level documentation:
-```typescript
+
+````typescript
 /**
  * HeroSection Component
- * 
+ *
  * Displays the main hero section with the ARCline phone number and tagline.
- * 
+ *
  * @component
  * @example
  * ```tsx
@@ -920,7 +956,7 @@ export interface ConversationRelayRequest {
 export const HeroSection = () => {
   // ... implementation
 };
-```
+````
 
 ### 5.4 Missing API Documentation
 
@@ -929,19 +965,20 @@ export const HeroSection = () => {
 **Issue:** API endpoints lack documentation.
 
 **Fix:** Add OpenAPI/Swagger documentation or at least JSDoc:
-```typescript
+
+````typescript
 /**
  * Twilio ConversationRelay Webhook Endpoint
- * 
+ *
  * POST /api/twilio/conversation/webhook
- * 
+ *
  * Receives webhook requests from Twilio ConversationRelay and routes them
  * to the appropriate hotline handler.
- * 
+ *
  * @route POST /api/twilio/conversation/webhook
  * @param {FormData} request.body - Twilio webhook payload
  * @returns {ConversationRelayResponse} Response with actions for Twilio
- * 
+ *
  * @example
  * Request:
  * ```
@@ -954,7 +991,7 @@ export const HeroSection = () => {
 export async function POST(request: NextRequest) {
   // ... implementation
 }
-```
+````
 
 ### 5.5 Missing Error Code Documentation
 
@@ -963,10 +1000,11 @@ export async function POST(request: NextRequest) {
 **Issue:** Error messages don't reference error codes or documentation.
 
 **Fix:** Create error code reference:
+
 ```typescript
 /**
  * Error Codes Reference
- * 
+ *
  * @enum {string}
  * @readonly
  */
@@ -992,20 +1030,21 @@ throw new AppError(
 **Issue:** While `docs/ARCHITECTURE.md` exists, code-level architecture isn't documented.
 
 **Recommendation:** Add inline architecture comments:
+
 ```typescript
 /**
  * Centralized Routing System
- * 
+ *
  * This module provides a single entry point for routing conversation requests
  * to the appropriate hotline handler. It implements a state machine pattern
  * where the current hotline type and step are stored in conversation memory.
- * 
+ *
  * Flow:
  * 1. Request arrives with memory containing hotlineType and step
  * 2. If hotlineType is set, route to that hotline's handler
  * 3. If no hotlineType, route to main menu handler
  * 4. Handler processes input and returns response with updated memory
- * 
+ *
  * @module lib/utils/router
  */
 ```
@@ -1015,6 +1054,7 @@ throw new AppError(
 ## Summary of Priority Actions
 
 ### Critical (Fix Immediately)
+
 1. ✅ Fix TypeScript strict mode configuration
 2. ✅ Add error boundary to prevent app crashes
 3. ✅ Fix type mismatch in ScrappyMessage interface
@@ -1022,6 +1062,7 @@ throw new AppError(
 5. ✅ Fix memory leak in useIsMobile hook
 
 ### High Priority (Fix Soon)
+
 1. ✅ Break down large Index component
 2. ✅ Add rate limiting to webhook endpoint
 3. ✅ Add input validation to webhook
@@ -1029,6 +1070,7 @@ throw new AppError(
 5. ✅ Add memoization to expensive operations
 
 ### Medium Priority (Plan for Next Sprint)
+
 1. ✅ Extract shared types to common file
 2. ✅ Add code splitting
 3. ✅ Improve error handling consistency
@@ -1036,6 +1078,7 @@ throw new AppError(
 5. ✅ Extract magic numbers to constants
 
 ### Low Priority (Technical Debt)
+
 1. ✅ Remove console.log statements
 2. ✅ Add image optimization
 3. ✅ Improve WebSocket connection management
@@ -1055,4 +1098,3 @@ The codebase demonstrates solid React and TypeScript practices with good separat
 5. **Documentation**: Add comprehensive JSDoc comments and usage examples
 
 Addressing these issues will significantly improve code quality, maintainability, and reliability.
-

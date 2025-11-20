@@ -1,3 +1,14 @@
+/**
+ * Footer Component
+ *
+ * Displays the site footer with copyright information and security notice.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <Footer />
+ * ```
+ */
 export const Footer = () => {
   return (
     <footer className="py-12 px-6 border-t-4 border-border/50 bg-gradient-to-b from-background to-card shadow-[inset_0_4px_8px_rgba(0,0,0,0.3)]">
