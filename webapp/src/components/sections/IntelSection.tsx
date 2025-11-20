@@ -4,6 +4,7 @@ import { useIntel } from "@/hooks/use-intel";
 import { formatDistanceToNow } from "date-fns";
 import { sanitizeText } from "@/lib/sanitize";
 import { CONTACT } from "@/constants";
+import { Section } from "@/components/layout/Section";
 
 /**
  * IntelSection Component
@@ -65,100 +66,97 @@ export const IntelSection = () => {
   };
 
   return (
-    <section id="intel" className="py-20 px-6 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-card/20 to-transparent"></div>
-      <div className="container mx-auto relative">
-        <div className="text-center mb-12">
-          <h3 className="text-3xl font-bold mb-4 tracking-widest">
-            Intel Submissions
-          </h3>
-          <p className="text-muted-foreground">
-            Anonymous intelligence reports from real raiders that have called
-            the hotline{" "}
-            <a href={`tel:${CONTACT.PHONE}`} className="underline">
-              {CONTACT.PHONE}
-            </a>
-          </p>
-        </div>
-        <div className="max-w-4xl mx-auto space-y-6">
-          {intelLoading && (
+    <Section id="intel" paddingY="lg" hasGradient gradientIntensity="light">
+      <div className="text-center mb-12">
+        <h3 className="text-3xl font-bold mb-4 tracking-widest">
+          Intel Submissions
+        </h3>
+        <p className="text-muted-foreground">
+          Anonymous intelligence reports from real raiders that have called the
+          hotline{" "}
+          <a href={`tel:${CONTACT.PHONE}`} className="underline">
+            {CONTACT.PHONE}
+          </a>
+        </p>
+      </div>
+      <div className="max-w-4xl mx-auto space-y-6">
+        {intelLoading && (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Loading intel reports...</p>
+          </div>
+        )}
+        {intelError && (
+          <div className="text-center py-8">
+            <p className="text-destructive">
+              Error loading intel reports. Please try again later.
+            </p>
+          </div>
+        )}
+        {formattedIntel.length > 0 ? (
+          <>
+            {paginatedIntel.map((report) => {
+              return (
+                <Card
+                  key={report.id}
+                  className="bg-foreground from-card to-secondary border-2 border-border"
+                >
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg font-mono text-secondary">
+                        Report #{report.reportId}
+                      </CardTitle>
+                      <span className="text-xs font-mono text-secondary">
+                        {report.formattedDate}
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="font-mono text-secondary">
+                      {sanitizeText(report.content)}
+                    </p>
+                    <div className="flex gap-2">
+                      {report.priority && (
+                        <span className="px-3 py-1 bg-gradient-to-b from-primary/20 to-primary/10 text-primary text-xs rounded-full border border-primary/40 shadow-[0_2px_6px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]">
+                          {report.priority}
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 pt-6">
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 font-mono text-sm bg-secondary border-2 border-primary/30 rounded hover:bg-secondary/80 hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  ◄ PREV
+                </button>
+                <span className="text-sm font-mono text-muted-foreground bg-background/40 px-3 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                  PAGE {currentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 font-mono text-sm bg-secondary border-2 border-primary/30 rounded hover:bg-secondary/80 hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  NEXT ►
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          !intelLoading &&
+          !intelError && (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">Loading intel reports...</p>
-            </div>
-          )}
-          {intelError && (
-            <div className="text-center py-8">
-              <p className="text-destructive">
-                Error loading intel reports. Please try again later.
+              <p className="text-sm text-muted-foreground italic">
+                Submit intel by calling the hotline...
               </p>
             </div>
-          )}
-          {formattedIntel.length > 0 ? (
-            <>
-              {paginatedIntel.map((report) => {
-                return (
-                  <Card
-                    key={report.id}
-                    className="bg-foreground from-card to-secondary border-2 border-border"
-                  >
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg font-mono text-secondary">
-                          Report #{report.reportId}
-                        </CardTitle>
-                        <span className="text-xs font-mono text-secondary">
-                          {report.formattedDate}
-                        </span>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="font-mono text-secondary">
-                        {sanitizeText(report.content)}
-                      </p>
-                      <div className="flex gap-2">
-                        {report.priority && (
-                          <span className="px-3 py-1 bg-gradient-to-b from-primary/20 to-primary/10 text-primary text-xs rounded-full border border-primary/40 shadow-[0_2px_6px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]">
-                            {report.priority}
-                          </span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-4 pt-6">
-                  <button
-                    onClick={handlePreviousPage}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 font-mono text-sm bg-secondary border-2 border-primary/30 rounded hover:bg-secondary/80 hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    ◄ PREV
-                  </button>
-                  <span className="text-sm font-mono text-muted-foreground bg-background/40 px-3 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
-                    PAGE {currentPage} / {totalPages}
-                  </span>
-                  <button
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 font-mono text-sm bg-secondary border-2 border-primary/30 rounded hover:bg-secondary/80 hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    NEXT ►
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            !intelLoading &&
-            !intelError && (
-              <div className="text-center py-8">
-                <p className="text-sm text-muted-foreground italic">
-                  Submit intel by calling the hotline...
-                </p>
-              </div>
-            )
-          )}
-        </div>
+          )
+        )}
       </div>
       <div className="mx-auto mt-12">
         <div className="flex flex-col text-center items-center justify-center gap-3 mb-2">
@@ -174,6 +172,6 @@ export const IntelSection = () => {
           </a>
         </div>
       </div>
-    </section>
+    </Section>
   );
 };

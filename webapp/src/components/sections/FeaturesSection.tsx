@@ -1,4 +1,5 @@
 import { ArrowLeftRight, Package, Egg, Radio as RadioIcon } from "lucide-react";
+import { Section } from "@/components/layout/Section";
 
 /**
  * FeaturesSection Component
@@ -22,9 +23,7 @@ export const FeaturesSection = () => {
   const descriptionClasses = "text-muted-foreground";
 
   return (
-    <section id="features" className="py-16 px-6 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-card/30 to-transparent"></div>
-      <div className="container mx-auto relative">
+    <Section id="features" paddingY="md" hasGradient>
         <h3 className="text-3xl font-bold text-center mb-12 tracking-widest">
           Available Services
         </h3>
@@ -114,7 +113,6 @@ export const FeaturesSection = () => {
             </div>
           </div>
         </div>
-      </div>
-    </section>
+    </Section>
   );
 };
