@@ -16,6 +16,8 @@ import {
   ConversationRelayResponse,
 } from "./types/twilio";
 import { isEndCallRequest, createEndCallResponse } from "./lib/utils/exit";
+import { createSessionAwareLogger } from "./lib/utils/session-logger";
+import { saveSessionLogsToDatabase } from "./lib/utils/save-logs";
 
 const fastify = Fastify({ logger: true });
 const PORT = process.env.PORT || 8080;
@@ -89,6 +91,7 @@ fastify.get("/twiml", async (request, reply) => {
   // Store phone number if we have both callSid and fromNumber
   if (callSid && fromNumber) {
     phoneNumbersByCallSid.set(callSid, fromNumber);
+    // Note: This happens before WebSocket connection, so we can't use session logger here
     console.log("Stored phone number for call:", { callSid, fromNumber });
   }
 
@@ -139,6 +142,7 @@ fastify.server.on("upgrade", (request, socket, head) => {
 wss.on("connection", (ws, request) => {
   let callSid: string | undefined;
   let conversationSid: string | undefined;
+  let sessionLogger: ReturnType<typeof createSessionAwareLogger> | null = null;
 
   ws.on("message", async (data: Buffer) => {
     try {
@@ -146,7 +150,6 @@ wss.on("connection", (ws, request) => {
 
       switch (message.type) {
         case "setup":
-          console.log("Setting up ConversationRelay connection");
           callSid = message.callSid;
           conversationSid = message.conversationSid;
 
@@ -154,6 +157,10 @@ wss.on("connection", (ws, request) => {
             console.error("No call SID in setup message");
             return;
           }
+
+          // Create session-aware logger for this call
+          sessionLogger = createSessionAwareLogger(callSid);
+          sessionLogger.log("Setting up ConversationRelay connection");
 
           // Store call SID on WebSocket for later use
           (ws as any).callSid = callSid;
@@ -172,7 +179,14 @@ wss.on("connection", (ws, request) => {
                   phoneNumbersByCallSid.set(callSid, phoneNumber);
                 }
               } catch (error) {
-                console.error("Error fetching call info from Twilio:", error);
+                if (sessionLogger) {
+                  sessionLogger.error(
+                    "Error fetching call info from Twilio:",
+                    error
+                  );
+                } else {
+                  console.error("Error fetching call info from Twilio:", error);
+                }
               }
             }
           }
@@ -183,7 +197,11 @@ wss.on("connection", (ws, request) => {
           };
           if (phoneNumber) {
             initialMemory.phoneNumber = phoneNumber;
-            console.log("Stored phone number in session:", phoneNumber);
+            if (sessionLogger) {
+              sessionLogger.log("Stored phone number in session:", phoneNumber);
+            } else {
+              console.log("Stored phone number in session:", phoneNumber);
+            }
           }
           sessions.set(callSid, initialMemory);
 
@@ -213,10 +231,18 @@ wss.on("connection", (ws, request) => {
           break;
 
         case "prompt":
-          console.log("Received prompt:", message.voicePrompt);
+          if (sessionLogger) {
+            sessionLogger.log("Received prompt:", message.voicePrompt);
+          } else {
+            console.log("Received prompt:", message.voicePrompt);
+          }
 
           if (!callSid) {
-            console.error("No call SID available");
+            if (sessionLogger) {
+              sessionLogger.error("No call SID available");
+            } else {
+              console.error("No call SID available");
+            }
             return;
           }
 
@@ -238,11 +264,19 @@ wss.on("connection", (ws, request) => {
           const hotlineType = memory.hotlineType as string | undefined;
           const step = memory.step as string | undefined;
 
-          console.log("Prompt routing - current state:", {
-            hotlineType: hotlineType || "(none)",
-            step: step || "(none)",
-            input: currentInput,
-          });
+          if (sessionLogger) {
+            sessionLogger.log("Prompt routing - current state:", {
+              hotlineType: hotlineType || "(none)",
+              step: step || "(none)",
+              input: currentInput,
+            });
+          } else {
+            console.log("Prompt routing - current state:", {
+              hotlineType: hotlineType || "(none)",
+              step: step || "(none)",
+              input: currentInput,
+            });
+          }
 
           // Use centralized router for all routing decisions
           const request = {
@@ -253,12 +287,21 @@ wss.on("connection", (ws, request) => {
           };
 
           const response = await routeToHotline(request, memory);
-          console.log("Server - received response from router:", {
-            hasActions: !!response.actions,
-            actionCount: response.actions?.length,
-            firstActionSay: response.actions?.[0]?.say,
-            firstActionListen: response.actions?.[0]?.listen,
-          });
+          if (sessionLogger) {
+            sessionLogger.log("Server - received response from router:", {
+              hasActions: !!response.actions,
+              actionCount: response.actions?.length,
+              firstActionSay: response.actions?.[0]?.say,
+              firstActionListen: response.actions?.[0]?.listen,
+            });
+          } else {
+            console.log("Server - received response from router:", {
+              hasActions: !!response.actions,
+              actionCount: response.actions?.length,
+              firstActionSay: response.actions?.[0]?.say,
+              firstActionListen: response.actions?.[0]?.listen,
+            });
+          }
 
           // Update memory from response
           if (response.actions[0]?.remember) {
@@ -273,10 +316,17 @@ wss.on("connection", (ws, request) => {
               | string
               | undefined;
             if (selectedHotline && !hotlineType) {
-              console.log("Menu selection detected:", {
-                selectedHotline,
-                input: currentInput,
-              });
+              if (sessionLogger) {
+                sessionLogger.log("Menu selection detected:", {
+                  selectedHotline,
+                  input: currentInput,
+                });
+              } else {
+                console.log("Menu selection detected:", {
+                  selectedHotline,
+                  input: currentInput,
+                });
+              }
             }
           }
 
@@ -348,26 +398,45 @@ wss.on("connection", (ws, request) => {
           break;
 
         case "interrupt":
-          console.log("Handling interruption");
+          if (sessionLogger) {
+            sessionLogger.log("Handling interruption");
+          } else {
+            console.log("Handling interruption");
+          }
           // Could implement interruption handling here
           break;
 
         case "error":
           // Twilio sends error messages for transcription issues, audio quality, etc.
           // These are typically non-fatal informational messages
-          console.log("Twilio error message:", {
-            error: message.error || message.message || "Unknown error",
-            details: message.details || message,
-          });
+          if (sessionLogger) {
+            sessionLogger.log("Twilio error message:", {
+              error: message.error || message.message || "Unknown error",
+              details: message.details || message,
+            });
+          } else {
+            console.log("Twilio error message:", {
+              error: message.error || message.message || "Unknown error",
+              details: message.details || message,
+            });
+          }
           // Continue listening - don't disrupt the conversation flow
           break;
 
         default:
-          console.warn("Unknown message type:", message.type);
+          if (sessionLogger) {
+            sessionLogger.warn("Unknown message type:", message.type);
+          } else {
+            console.warn("Unknown message type:", message.type);
+          }
           break;
       }
     } catch (error) {
-      console.error("Error processing WebSocket message:", error);
+      if (sessionLogger) {
+        sessionLogger.error("Error processing WebSocket message:", error);
+      } else {
+        console.error("Error processing WebSocket message:", error);
+      }
       sendTextAndEndIfNeeded(
         ws,
         "I'm experiencing technical difficulties. Please try again later.",
@@ -376,15 +445,30 @@ wss.on("connection", (ws, request) => {
     }
   });
 
-  ws.on("close", () => {
-    console.log("WebSocket connection closed");
+  ws.on("close", async () => {
+    if (sessionLogger) {
+      sessionLogger.log("WebSocket connection closed");
+    } else {
+      console.log("WebSocket connection closed");
+    }
+
     if (callSid) {
+      // Save logs to database before clearing session
+      try {
+        await saveSessionLogsToDatabase(callSid);
+      } catch (error) {
+        console.error(`Failed to save logs for session ${callSid}:`, error);
+      }
       sessions.delete(callSid);
     }
   });
 
   ws.on("error", (error) => {
-    console.error("WebSocket error:", error);
+    if (sessionLogger) {
+      sessionLogger.error("WebSocket error:", error);
+    } else {
+      console.error("WebSocket error:", error);
+    }
   });
 });
 
@@ -420,6 +504,7 @@ fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
 
     reply.type("application/json").send(response);
   } catch (error) {
+    // Note: Webhook endpoint doesn't have a session context, so use regular console
     console.error("Twilio webhook error:", error);
     reply.status(500).send({
       actions: [

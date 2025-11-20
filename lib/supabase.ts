@@ -70,3 +70,12 @@ export interface ScrappyMessage {
   verified: boolean;
   created_at: string;
 }
+
+export interface Log {
+  id: string;
+  session_id: string;
+  message: string;
+  level: "log" | "error" | "warn" | "debug" | "info";
+  metadata?: Record<string, unknown>;
+  created_at: string;
+}
