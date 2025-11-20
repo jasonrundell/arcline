@@ -18,6 +18,7 @@ import {
 import { isEndCallRequest, createEndCallResponse } from "./lib/utils/exit";
 import { createSessionAwareLogger } from "./lib/utils/session-logger";
 import { saveSessionLogsToDatabase } from "./lib/utils/save-logs";
+import { TIMEOUTS } from "./constants";
 
 const fastify = Fastify({ logger: true });
 const PORT = process.env.PORT || 8080;
@@ -70,7 +71,7 @@ function sendTextAndEndIfNeeded(
           type: "end",
         })
       );
-    }, 2000); // Wait 2 seconds for the message to be spoken
+    }, TIMEOUTS.CALL_END_DELAY); // Wait for the message to be spoken
   }
 }
 
@@ -385,7 +386,7 @@ wss.on("connection", (ws, request) => {
                     shouldListenAfter
                   );
                 }
-              }, 1000); // Wait 1 second for "One sec" to be spoken
+              }, TIMEOUTS.LOOT_LOOKUP_DELAY); // Wait for "One sec" to be spoken
             }
           } else if (response.actions[0]?.listen) {
             // Edge case: no text to say but want to start listening

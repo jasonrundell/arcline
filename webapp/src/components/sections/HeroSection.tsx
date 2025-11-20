@@ -1,4 +1,5 @@
 import { Phone } from "lucide-react";
+import { CONTACT } from "@/constants";
 
 export const HeroSection = () => {
   return (
@@ -24,10 +25,10 @@ export const HeroSection = () => {
           <div className="flex items-center justify-center gap-3 mb-2">
             <Phone className="w-8 h-8 text-primary animate-pulse drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]" />
             <a
-              href="tel:+18722825463"
+              href={`tel:${CONTACT.PHONE}`}
               className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] animate-pulse"
             >
-              +1 (872) 282-LINE
+              {CONTACT.DISPLAY}
             </a>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -38,4 +39,3 @@ export const HeroSection = () => {
     </section>
   );
 };
-
