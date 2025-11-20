@@ -124,7 +124,7 @@ export const ScrappySection = () => {
                     className="absolute top-8 -right-8 w-1/2 h-1/2 object-contain opacity-0 group-hover:opacity-100 group-hover:animate-vibrate transition-opacity duration-300 pointer-events-none z-10"
                   />
                   <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row items-center justify-between">
                       <CardTitle className="text-lg font-mono text-primary">
                         MESSAGE #{message.messageNumber}
                       </CardTitle>
