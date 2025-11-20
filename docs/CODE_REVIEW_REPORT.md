@@ -958,42 +958,7 @@ export const HeroSection = () => {
 };
 ````
 
-### 5.4 Missing API Documentation
-
-**Location:** `server.ts`, `app/api/twilio/conversation/webhook/route.ts`
-
-**Issue:** API endpoints lack documentation.
-
-**Fix:** Add OpenAPI/Swagger documentation or at least JSDoc:
-
-````typescript
-/**
- * Twilio ConversationRelay Webhook Endpoint
- *
- * POST /api/twilio/conversation/webhook
- *
- * Receives webhook requests from Twilio ConversationRelay and routes them
- * to the appropriate hotline handler.
- *
- * @route POST /api/twilio/conversation/webhook
- * @param {FormData} request.body - Twilio webhook payload
- * @returns {ConversationRelayResponse} Response with actions for Twilio
- *
- * @example
- * Request:
- * ```
- * ConversationSid=CHxxx
- * CurrentInput=hello
- * CurrentInputType=voice
- * Memory={"step":"greeting"}
- * ```
- */
-export async function POST(request: NextRequest) {
-  // ... implementation
-}
-````
-
-### 5.5 Missing Error Code Documentation
+### 5.4 Missing Error Code Documentation
 
 **Location:** Error handling throughout
 
@@ -1023,7 +988,7 @@ throw new AppError(
 );
 ```
 
-### 5.6 Missing Architecture Documentation
+### 5.5 Missing Architecture Documentation
 
 **Location:** Project root
 
