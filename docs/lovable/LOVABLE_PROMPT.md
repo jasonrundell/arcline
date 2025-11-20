@@ -1,6 +1,6 @@
-# AI Prompt for Lovable - ARCline Frontend Website
+# AI Prompt for Lovable - ARC Line Frontend Website
 
-Build a mobile-responsive frontend website for the ARCline project - a multi-hotline voice system for the ARC Raiders universe. The website should be built using modern web technologies (React/Next.js recommended) and styled to match the aesthetic of arcraiders.com.
+Build a mobile-responsive frontend website for the ARC Line project - a multi-hotline voice system for the ARC Raiders universe. The website should be built using modern web technologies (React/Next.js recommended) and styled to match the aesthetic of arcraiders.com.
 
 ## Core Requirements
 

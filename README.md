@@ -1,4 +1,4 @@
-# ARCline - ARC Raiders Multi-Hotline Voice System
+# ARC Line - ARC Raiders Multi-Hotline Voice System
 
 A voice-based multi-hotline system for the ARC Raiders universe, built with Twilio ConversationRelay. Users call a single phone number and select from 5 different hotlines by pressing 1-5.
 

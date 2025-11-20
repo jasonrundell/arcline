@@ -1,4 +1,4 @@
-# ARCline - ARC Raiders Multi-Hotline Web App
+# ARC Line - ARC Raiders Multi-Hotline Web App
 
 **Project Type:** Web Application  
 **Tech Stack:** Next.js 14+, Tailwind CSS, Supabase, Vercel, Twilio Programmable Voice & ConversationRelay, GitHub  

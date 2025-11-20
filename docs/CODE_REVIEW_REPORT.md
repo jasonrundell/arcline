@@ -1,10 +1,10 @@
 # Comprehensive Code Review Report
 
-## ARCline React/TypeScript Codebase
+## ARC Line React/TypeScript Codebase
 
 **Date:** 2025-11-20  
 **Reviewer:** AI Code Review Assistant  
-**Project:** ARCline - ARC Raiders Multi-Hotline Voice System
+**Project:** ARC Line - ARC Raiders Multi-Hotline Voice System
 
 ---
 
@@ -945,7 +945,7 @@ export interface ConversationRelayRequest {
 /**
  * HeroSection Component
  *
- * Displays the main hero section with the ARCline phone number and tagline.
+ * Displays the main hero section with the ARC Line phone number and tagline.
  *
  * @component
  * @example

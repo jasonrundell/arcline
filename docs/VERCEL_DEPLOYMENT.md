@@ -1,6 +1,6 @@
 # Vercel Deployment Guide (Webhook-Based)
 
-This guide covers deploying ARCline entirely on Vercel using ConversationRelay's webhook mode (no separate WebSocket server needed).
+This guide covers deploying ARC Line entirely on Vercel using ConversationRelay's webhook mode (no separate WebSocket server needed).
 
 ## Architecture Overview
 
@@ -73,13 +73,17 @@ This deployment uses ConversationRelay's **webhook mode** instead of WebSocket m
 1. **Get Your TwiML Endpoint URL**
 
    Your TwiML endpoint will be:
+
    ```
    https://your-app.vercel.app/twiml
    ```
+
    or
+
    ```
    https://your-app.vercel.app/api/twiml
    ```
+
    (Both work due to the rewrite rule)
 
 2. **Configure Phone Number**
@@ -100,6 +104,7 @@ This deployment uses ConversationRelay's **webhook mode** instead of WebSocket m
 2. **Test Webhook Endpoint**
 
    The webhook endpoint should be accessible at:
+
    ```
    https://your-app.vercel.app/api/twilio/conversation/webhook
    ```
@@ -115,16 +120,16 @@ This deployment uses ConversationRelay's **webhook mode** instead of WebSocket m
 
 ### Required
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `SUPABASE_URL` | Supabase project URL | `https://xxx.supabase.co` |
-| `SUPABASE_ANON_KEY` | Supabase anonymous key | `eyJ...` |
+| Variable            | Description            | Example                   |
+| ------------------- | ---------------------- | ------------------------- |
+| `SUPABASE_URL`      | Supabase project URL   | `https://xxx.supabase.co` |
+| `SUPABASE_ANON_KEY` | Supabase anonymous key | `eyJ...`                  |
 
 ### Automatic (Provided by Vercel)
 
-| Variable | Description |
-|----------|-------------|
-| `VERCEL_URL` | Current deployment URL (without protocol) |
+| Variable     | Description                                    |
+| ------------ | ---------------------------------------------- |
+| `VERCEL_URL` | Current deployment URL (without protocol)      |
 | `VERCEL_ENV` | Environment (production, preview, development) |
 
 ## How It Works
@@ -168,7 +173,7 @@ This deployment uses ConversationRelay's **webhook mode** instead of WebSocket m
 
 ### Vercel
 
-- **Free Tier**: 
+- **Free Tier**:
   - 100GB bandwidth
   - 100 serverless function invocations per day
   - 10 second function timeout
@@ -189,13 +194,13 @@ This deployment uses ConversationRelay's **webhook mode** instead of WebSocket m
 ✅ **Automatic scaling** - Vercel handles traffic spikes  
 ✅ **Easy deployment** - Single platform to manage  
 ✅ **Cost effective** - Pay only for what you use  
-✅ **Simple setup** - No WebSocket server configuration  
+✅ **Simple setup** - No WebSocket server configuration
 
 ## Limitations
 
 ⚠️ **Function timeout**: 10s (free) or 60s (pro) - ensure handlers respond quickly  
 ⚠️ **Cold starts**: First request after inactivity may be slower  
-⚠️ **No persistent connections**: Each request is independent (memory stored in ConversationRelay)  
+⚠️ **No persistent connections**: Each request is independent (memory stored in ConversationRelay)
 
 ## Continuous Deployment
 
@@ -213,18 +218,19 @@ This deployment uses ConversationRelay's **webhook mode** instead of WebSocket m
 
 ## Comparison: Webhook vs WebSocket Mode
 
-| Feature | Webhook Mode (This Guide) | WebSocket Mode |
-|---------|---------------------------|----------------|
-| Platform | Vercel only | Vercel + Separate server |
-| Setup Complexity | Simple | More complex |
-| Cost | Lower (pay per request) | Higher (always-on server) |
-| Latency | Slightly higher (HTTP overhead) | Lower (persistent connection) |
-| Scalability | Automatic | Manual scaling |
-| Best For | Most use cases | Real-time streaming needs |
+| Feature          | Webhook Mode (This Guide)       | WebSocket Mode                |
+| ---------------- | ------------------------------- | ----------------------------- |
+| Platform         | Vercel only                     | Vercel + Separate server      |
+| Setup Complexity | Simple                          | More complex                  |
+| Cost             | Lower (pay per request)         | Higher (always-on server)     |
+| Latency          | Slightly higher (HTTP overhead) | Lower (persistent connection) |
+| Scalability      | Automatic                       | Manual scaling                |
+| Best For         | Most use cases                  | Real-time streaming needs     |
 
 ## Support
 
 For issues specific to:
+
 - **Vercel**: Check [Vercel Documentation](https://vercel.com/docs)
 - **Twilio**: See [TWILIO_SETUP.md](TWILIO_SETUP.md)
 - **ConversationRelay**: See [Twilio ConversationRelay Docs](https://www.twilio.com/docs/conversations/conversation-relay)

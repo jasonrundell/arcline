@@ -1,10 +1,10 @@
-# ARCline Project Index
+# ARC Line Project Index
 
 Comprehensive index of the ARC Raiders Multi-Hotline Voice System codebase.
 
 ## Project Overview
 
-**Name:** ARCline  
+**Name:** ARC Line  
 **Version:** 2.0.0  
 **Type:** Multi-Hotline Voice System for ARC Raiders  
 **Tech Stack:** Node.js, TypeScript, Fastify, Vite, React, Twilio ConversationRelay, Supabase  
@@ -60,11 +60,13 @@ arcline/
 ### Configuration Files
 
 - **`package.json`**
+
   - Dependencies: Fastify, Twilio, Supabase, WebSocket
   - Scripts: dev, start, build, test, lint
   - Keywords: arc-raiders, twilio, hotline, voice, conversationrelay
 
 - **`tsconfig.json`**
+
   - TypeScript compiler configuration
   - Target: ES2020
   - Module: commonjs
@@ -72,29 +74,36 @@ arcline/
   - Excludes tests from build
 
 - **`next.config.ts`**
+
   - Next.js configuration (legacy)
   - React strict mode enabled
   - PWA-ready
 
 - **`vercel.json`**
+
   - Vercel deployment configuration
   - Function timeouts and rewrites
   - Maps `/twiml` to `/api/twiml`
 
 - **`tailwind.config.ts`**
+
   - Tailwind CSS configuration
   - ARC Raiders theme colors
 
 - **`postcss.config.mjs`**
+
   - PostCSS configuration for Tailwind
 
 - **`jest.config.js`**
+
   - Jest test configuration
 
 - **`jest.setup.js`**
+
   - Jest test setup
 
 - **`playwright.config.ts`**
+
   - Playwright E2E test configuration
 
 - **`Procfile`**
@@ -103,21 +112,25 @@ arcline/
 ### Webapp Configuration (`webapp/`)
 
 - **`webapp/package.json`**
+
   - Vite + React application
   - Dependencies: React, React Router, TanStack Query, Supabase, shadcn/ui, Sonner
   - Scripts: dev, build, build:dev, lint, preview
 
 - **`webapp/vite.config.ts`**
+
   - Vite configuration
   - React SWC plugin
   - Path aliases configured
 
 - **`webapp/tsconfig.json`**
+
   - TypeScript configuration for webapp
   - React-specific settings
   - Path aliases: `@/*` maps to `src/*`
 
 - **`webapp/tailwind.config.ts`**
+
   - Tailwind CSS configuration for webapp
   - ARC Raiders theme integration
 
@@ -140,6 +153,7 @@ arcline/
 ### AI Modules (`lib/ai/`)
 
 - **`lib/ai/lootlookup.ts`**
+
   - AI-powered loot lookup functionality
   - Processes loot search queries
 
@@ -150,34 +164,40 @@ arcline/
 ### Hotline Handlers (`lib/hotlines/`)
 
 Each hotline handler implements the same interface:
+
 - Accepts `ConversationRelayRequest` and memory object
 - Returns `ConversationRelayResponse` with actions (say, listen, remember)
 - Uses state machine pattern with `memory.step`
 
 - **`lib/hotlines/menu.ts`**
+
   - Main menu handler
   - Presents 5 hotline options (1-5)
   - Routes to specific hotlines based on selection
 
 - **`lib/hotlines/extraction.ts`**
+
   - Extraction Request hotline (#1)
   - Collects user location
   - Creates extraction requests in database
   - Provides confirmation
 
 - **`lib/hotlines/loot.ts`**
+
   - Loot Locator hotline (#2)
   - Searches for items in database
   - Returns location and rarity information
   - Uses AI for enhanced lookup
 
 - **`lib/hotlines/chicken.ts`**
+
   - Scrappy's Chicken Line (#3)
   - Fun sound clips and randomizers
   - Entertainment-focused interactions
   - Manages scrappy_messages table
 
 - **`lib/hotlines/listen-intel.ts`**
+
   - Listen to Intel hotline (Faction News)
   - Retrieves verified intel entries
   - Reads intel content to caller
@@ -192,29 +212,35 @@ Each hotline handler implements the same interface:
 ### Utility Functions (`lib/utils/`)
 
 - **`lib/utils/router.ts`**
+
   - Centralized routing logic
   - Routes requests to appropriate hotline handlers
   - Handles menu navigation
 
 - **`lib/utils/hotline-detection.ts`**
+
   - Detects hotline type from user input
   - Number-based and voice-based detection
 
 - **`lib/utils/exit.ts`**
+
   - End call detection
   - Exit response generation
   - Menu navigation helpers
 
 - **`lib/utils/repeat.ts`**
+
   - Repeat request detection
   - Repeats last message functionality
 
 - **`lib/utils/session-logger.ts`**
+
   - Session-aware logging system
   - Associates logs with call sessions (callSid)
   - In-memory log storage
 
 - **`lib/utils/save-logs.ts`**
+
   - Saves session logs to database
   - Persists logs to `logs` table on session end
 
@@ -229,6 +255,7 @@ Each hotline handler implements the same interface:
 ### Entry Point
 
 - **`webapp/src/main.tsx`**
+
   - Vite entry point
   - React root rendering
   - Global styles import
@@ -242,6 +269,7 @@ Each hotline handler implements the same interface:
 ### Pages (`webapp/src/pages/`)
 
 - **`webapp/src/pages/index.tsx`**
+
   - Homepage/main page
   - Displays hotline information
   - Shows intel entries (Raider Report)
@@ -255,6 +283,7 @@ Each hotline handler implements the same interface:
 ### Components (`webapp/src/components/`)
 
 - **`webapp/src/components/NavLink.tsx`**
+
   - Navigation link component
   - React Router integration
 
@@ -266,11 +295,13 @@ Each hotline handler implements the same interface:
 ### Hooks (`webapp/src/hooks/`)
 
 - **`webapp/src/hooks/use-intel.ts`**
+
   - React Query hook for fetching intel
   - Fetches from `intel` table filtered by faction
   - Returns: data, isLoading, error
 
 - **`webapp/src/hooks/use-messages.ts`**
+
   - React Query hook for fetching Scrappy messages
   - Fetches from `scrappy_messages` table
   - Returns: data, isLoading, error
@@ -282,6 +313,7 @@ Each hotline handler implements the same interface:
 ### Library (`webapp/src/lib/`)
 
 - **`webapp/src/lib/supabase.ts`**
+
   - Supabase client for webapp
   - Browser-optimized configuration
 
@@ -292,6 +324,7 @@ Each hotline handler implements the same interface:
 ### Assets (`webapp/src/assets/`)
 
 - **`webapp/src/assets/scrappy-messages-bg.png`**
+
   - Background image for Scrappy messages section
 
 - **`webapp/src/assets/scrappy-messages-bg.webp`**
@@ -304,6 +337,7 @@ Each hotline handler implements the same interface:
 Legacy Next.js App Router structure (may be deprecated):
 
 - **`app/api/twilio/conversation/webhook/route.ts`**
+
   - Next.js API route for Twilio webhook
   - Alternative to Fastify server endpoint
   - Handles ConversationRelay requests
@@ -319,16 +353,20 @@ Legacy Next.js App Router structure (may be deprecated):
 Legacy React components (may be deprecated in favor of webapp):
 
 - **`components/Header.tsx`**
+
   - Site header component
 
 - **`components/Footer.tsx`**
+
   - Site footer component
 
 - **`components/HotlineCard.tsx`**
+
   - Card component for displaying hotline information
   - Used in hotline grid
 
 - **`components/HotlineDetail.tsx`**
+
   - Detailed view of a single hotline
   - Shows hotline description and features
 
@@ -358,6 +396,7 @@ Legacy React components (may be deprecated in favor of webapp):
 Legacy or alternative API implementations:
 
 - **`api/twiml.ts`**
+
   - Alternative TwiML endpoint (for Vercel deployment)
 
 - **`api/twilio/conversation/webhook.ts`**
@@ -392,6 +431,7 @@ Legacy or alternative API implementations:
 ### Unit Tests (`__tests__/`)
 
 - **`__tests__/components/HotlineCard.test.tsx`**
+
   - Tests for HotlineCard component
 
 - **`__tests__/lib/hotlines/chicken.test.ts`**
@@ -443,6 +483,7 @@ ARC Raiders character documentation:
 ## Static Assets (`public/`)
 
 - **`public/manifest.json`**
+
   - PWA manifest file
 
 - **`public/sw.js`**
@@ -493,7 +534,7 @@ TWILIO_AUTH_TOKEN=your_auth_token
 ### Technologies
 
 - **Backend:** Fastify server with WebSocket support
-- **Frontend:** 
+- **Frontend:**
   - Primary: Vite + React (in `webapp/`)
   - Legacy: Next.js 14+ with App Router (in `app/`)
 - **Database:** Supabase (PostgreSQL)
@@ -511,6 +552,7 @@ TWILIO_AUTH_TOKEN=your_auth_token
 ### Development Commands
 
 #### Main Server
+
 ```bash
 npm run dev          # Start development server (tsx watch)
 npm run build        # Build for production (TypeScript compile)
@@ -520,6 +562,7 @@ npm run lint         # Lint code
 ```
 
 #### Webapp
+
 ```bash
 cd webapp
 npm run dev          # Start Vite dev server
@@ -576,5 +619,5 @@ All tables have RLS enabled with anonymous read/write policies for application f
 
 ---
 
-*Last indexed: 2024-12-19*  
-*For questions or updates, see `docs/` directory or project README*
+_Last indexed: 2024-12-19_  
+_For questions or updates, see `docs/` directory or project README_

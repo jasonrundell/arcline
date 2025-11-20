@@ -1,6 +1,6 @@
 {
-  "name": "arcline-webapp",
-  "version": "1.0.0",
+  "name": "arc-line-webapp",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

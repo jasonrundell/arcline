@@ -1,7 +1,7 @@
 -- ============================================================================
--- ARCline Database Schema
+-- ARC Line Database Schema
 -- ============================================================================
--- This SQL file recreates the complete database schema for ARCline.
+-- This SQL file recreates the complete database schema for ARC Line.
 -- Run this in your Supabase SQL Editor to set up the database from scratch.
 --
 -- Tables:

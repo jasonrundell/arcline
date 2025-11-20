@@ -2,14 +2,14 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { FeaturesSection } from "@/components/sections/FeaturesSection";
-import { MessagesSection } from "@/components/sections/MessagesSection";
+import { ScrappySection } from "@/components/sections/ScrappySection";
 import { IntelSection } from "@/components/sections/IntelSection";
 // import ErrorButton from "@/components/ui/error-button";
 
 /**
  * Index Page Component
  *
- * Main landing page of the ARCline application. Composes all major sections
+ * Main landing page of the ARC Line application. Composes all major sections
  * including the header, hero section, features, messages, and intel sections.
  * Uses a gradient background for visual consistency.
  *
@@ -24,9 +24,21 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-background/95">
       <Header />
-      <HeroSection />
-      <FeaturesSection />
-      <MessagesSection />
+      {/* Wrapper for HeroSection and FeaturesSection with rainbow background */}
+      <div className="relative overflow-hidden">
+        {/* Rainbow Lines Background - spans both sections */}
+        <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-96 h-[200%] opacity-40 pointer-events-none">
+          <div className="absolute inset-0 flex gap-3 rotate-12">
+            <div className="w-12 h-full bg-gradient-to-b from-[hsl(190,70%,65%)] to-[hsl(190,70%,55%)] rounded-full shadow-[0_0_20px_rgba(0,200,255,0.5)]"></div>
+            <div className="w-12 h-full bg-gradient-to-b from-[hsl(140,70%,55%)] to-[hsl(140,70%,45%)] rounded-full shadow-[0_0_20px_rgba(0,255,100,0.5)]"></div>
+            <div className="w-12 h-full bg-gradient-to-b from-[hsl(50,90%,55%)] to-[hsl(50,90%,45%)] rounded-full shadow-[0_0_20px_rgba(255,220,0,0.5)]"></div>
+            <div className="w-12 h-full bg-gradient-to-b from-[hsl(10,85%,60%)] to-[hsl(10,85%,50%)] rounded-full shadow-[0_0_20px_rgba(255,80,80,0.5)]"></div>
+          </div>
+        </div>
+        <HeroSection />
+        <FeaturesSection />
+      </div>
+      <ScrappySection />
       <IntelSection />
       <Footer />
       {/* <ErrorButton /> */}

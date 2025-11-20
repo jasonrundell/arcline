@@ -1,6 +1,6 @@
 # Setup Checklist
 
-Use this checklist to ensure your ARCline project is fully configured.
+Use this checklist to ensure your ARC Line project is fully configured.
 
 ## Pre-Development Setup
 
@@ -115,4 +115,3 @@ If something doesn't work:
 - Check Twilio documentation
 - Review Supabase documentation
 - Check Next.js documentation
-

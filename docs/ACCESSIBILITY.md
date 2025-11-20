@@ -1,10 +1,11 @@
 # Accessibility Guide
 
-ARCline is designed to meet WCAG 2.1 AA standards.
+ARC Line is designed to meet WCAG 2.1 AA standards.
 
 ## Color Contrast
 
 All text meets minimum contrast ratios:
+
 - Normal text: 4.5:1 contrast ratio
 - Large text: 3:1 contrast ratio
 - Interactive elements: Clear focus indicators
@@ -34,6 +35,7 @@ All text meets minimum contrast ratios:
 ### Automated Testing
 
 Use axe DevTools or Lighthouse:
+
 ```bash
 npm run build
 npm start
@@ -43,11 +45,13 @@ npm start
 ### Manual Testing
 
 1. **Keyboard Navigation**
+
    - Tab through all interactive elements
    - Verify focus indicators are visible
    - Test Enter/Space activation
 
 2. **Screen Reader**
+
    - Test with NVDA (Windows) or VoiceOver (Mac)
    - Verify all content is announced
    - Check form labels and error messages
@@ -62,6 +66,7 @@ npm start
 ### Components
 
 All components include:
+
 - Proper semantic HTML
 - ARIA attributes where needed
 - Keyboard event handlers
@@ -86,4 +91,3 @@ All components include:
 - Implement focus trap for modals
 - Add live regions for dynamic content
 - Enhance error announcements
-
