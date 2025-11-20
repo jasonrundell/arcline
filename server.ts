@@ -535,6 +535,62 @@ fastify.post(
   },
   async (request, reply) => {
     try {
+      // Verify Twilio signature to ensure request is from Twilio
+      const twilioSignature = request.headers["x-twilio-signature"] as string;
+      const authToken = process.env.TWILIO_AUTH_TOKEN;
+
+      if (authToken && twilioSignature) {
+        // Construct the full URL for signature validation
+        let protocol = request.headers["x-forwarded-proto"] as
+          | string
+          | undefined;
+        if (!protocol) {
+          protocol = DOMAIN.includes("localhost") ? "http" : "https";
+        }
+        const host = request.headers.host || DOMAIN;
+        const url = `${protocol}://${host}${request.url}`;
+
+        // Validate the request signature
+        const isValid = twilio.validateRequest(
+          authToken,
+          twilioSignature,
+          url,
+          request.body as Record<string, string>
+        );
+
+        if (!isValid) {
+          console.warn("Invalid Twilio signature - rejecting request");
+          reply.status(403).send({
+            error: "Invalid signature",
+            actions: [
+              {
+                say: "Authentication failed.",
+                listen: false,
+              },
+            ],
+          });
+          return;
+        }
+      } else if (authToken && !twilioSignature) {
+        // In production, require signature; in development, allow without for testing
+        const isProduction = process.env.NODE_ENV === "production";
+        if (isProduction) {
+          console.warn(
+            "Missing Twilio signature in production - rejecting request"
+          );
+          reply.status(403).send({
+            error: "Missing signature",
+            actions: [
+              {
+                say: "Authentication failed.",
+                listen: false,
+              },
+            ],
+          });
+          return;
+        }
+      }
+
       // Twilio sends form-urlencoded data
       const body = request.body as Record<string, string> | undefined;
       const conversationSid = body?.ConversationSid || "";
