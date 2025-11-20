@@ -55,7 +55,7 @@ export interface ConversationRelayResponse {
 /**
  * Available hotline service types.
  *
- * Represents the different hotline services available in the ARCline system.
+ * Represents the different hotline services available in the ARC Line system.
  * Used for routing conversations to the appropriate handler.
  *
  * @typedef {("extraction" | "loot" | "chicken" | "intel")} HotlineType

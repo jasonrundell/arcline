@@ -1,10 +1,10 @@
 import { Phone } from "lucide-react";
-import { CONTACT } from "@/constants";
+import { APP_NAME, CONTACT } from "@/constants";
 
 /**
  * HeroSection Component
  *
- * Displays the main hero section with the ARCline phone number and tagline.
+ * Displays the main hero section with the ARC Line phone number and tagline.
  * Features an animated phone icon and call-to-action with the contact number.
  *
  * @component
@@ -28,7 +28,7 @@ export const HeroSection = () => {
 
       <div className="container mx-auto text-center relative z-10">
         <h2 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-b from-foreground via-foreground to-primary bg-clip-text text-transparent drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]">
-          ARCline
+          {APP_NAME}
         </h2>
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
           Extract. Loot. Intel. Scrappy!

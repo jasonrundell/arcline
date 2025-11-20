@@ -1,6 +1,6 @@
 # Database Schema
 
-This document describes the Supabase database schema for ARCline.
+This document describes the Supabase database schema for ARC Line.
 
 ## Tables
 

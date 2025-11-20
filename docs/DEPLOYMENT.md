@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide covers deploying ARCline as a standalone Node.js voice system.
+This guide covers deploying ARC Line as a standalone Node.js voice system.
 
 ## Deployment Options
 

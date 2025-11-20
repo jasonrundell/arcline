@@ -1,3 +1,4 @@
+export const APP_NAME = "ARC Line";
 export const BREAKPOINTS = {
   MOBILE: 768,
   TABLET: 1024,

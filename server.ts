@@ -333,7 +333,7 @@ wss.on("connection", (ws, request) => {
           // When last: false, ConversationRelay automatically listens, so no separate listen command needed
           sendTextAndEndIfNeeded(
             ws,
-            greetingResponse.actions[0]?.say || "Welcome to ARCline.",
+            greetingResponse.actions[0]?.say || "Welcome to ARC Line.",
             greetingResponse.actions[0]?.listen ?? true
           );
           break;

@@ -1,10 +1,10 @@
-# ARCline Webapp
+# ARC Line Webapp
 
-A modern React frontend for the ARCline voice hotline system. This webapp displays real-time intel submissions and Scrappy messages from the ARC Raiders community.
+A modern React frontend for the ARC Line voice hotline system. This webapp displays real-time intel submissions and Scrappy messages from the ARC Raiders community.
 
 ## Overview
 
-The ARCline webapp provides a web interface for viewing:
+The ARC Line webapp provides a web interface for viewing:
 
 - **Scrappy Messages**: Community messages left for Scrappy via the hotline
 - **Intel Submissions**: Anonymous intelligence reports submitted through the voice system

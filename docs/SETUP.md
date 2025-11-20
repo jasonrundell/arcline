@@ -1,6 +1,6 @@
 # Setup Guide
 
-This guide covers setting up ARCline as a standalone voice system.
+This guide covers setting up ARC Line as a standalone voice system.
 
 ## Prerequisites
 
@@ -123,7 +123,7 @@ The server will start on `http://localhost:8080` and watch for file changes.
 3. **Test the Connection**
 
    - Call your Twilio phone number
-   - You should hear: "Welcome to ARCline, the ARC Raiders Multi-Hotline system..."
+   - You should hear: "Welcome to ARC Line, the ARC Raiders Multi-Hotline system..."
    - Press 1-5 to select a hotline
 
 ## Step 6: Verify Everything Works
@@ -197,7 +197,7 @@ The webapp is a React frontend that displays intel submissions and Scrappy messa
 
    - Wait for deployment to complete
    - Visit your Vercel deployment URL (e.g., `https://your-app.vercel.app`)
-   - You should see the ARCline webapp interface
+   - You should see the ARC Line webapp interface
    - Test the intel submission and messages features
 
 ### Deploy via CLI (Alternative)

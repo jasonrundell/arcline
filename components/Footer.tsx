@@ -3,7 +3,7 @@ export default function Footer() {
     <footer className="w-full border-t border-arc-gray/30 bg-arc-black/90 backdrop-blur-sm mt-auto">
       <div className="container mx-auto px-4 py-6">
         <div className="text-center text-sm text-arc-gray">
-          <p className="mb-2">ARCline - ARC Raiders Multi-Hotline System</p>
+          <p className="mb-2">ARC Line - ARC Raiders Multi-Hotline System</p>
           <p className="text-xs">
             Built for the{" "}
             <a
@@ -20,4 +20,3 @@ export default function Footer() {
     </footer>
   );
 }
-

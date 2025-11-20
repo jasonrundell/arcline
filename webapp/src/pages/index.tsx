@@ -9,7 +9,7 @@ import { IntelSection } from "@/components/sections/IntelSection";
 /**
  * Index Page Component
  *
- * Main landing page of the ARCline application. Composes all major sections
+ * Main landing page of the ARC Line application. Composes all major sections
  * including the header, hero section, features, messages, and intel sections.
  * Uses a gradient background for visual consistency.
  *

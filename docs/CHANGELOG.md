@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to ARCline will be documented in this file.
+All notable changes to ARC Line will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Initial project setup with Next.js 14+
 - Five hotline handlers (extraction, loot, chicken, gossip, alarm)
 - Twilio ConversationRelay integration
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive documentation
 
 ### Features
+
 - Extraction Request Hotline
 - Loot Locator Hotline
 - Scrappy's Chicken Line
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Wake-Up Call / Raid Alarm
 
 ### Documentation
+
 - README.md - Project overview and setup
 - API.md - API documentation
 - DATABASE_SCHEMA.md - Database structure
@@ -40,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-01-XX
 
 ### Added
+
 - Initial release
 - All core features implemented
 - Documentation complete
-

@@ -1,4 +1,4 @@
-// Service Worker for ARCline PWA
+// Service Worker for ARC Line PWA
 const CACHE_NAME = "arcline-v1";
 const urlsToCache = [
   "/",

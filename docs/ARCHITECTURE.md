@@ -2,7 +2,7 @@
 
 ## System Architecture
 
-ARCline is built as a Next.js application with the following architecture:
+ARC Line is built as a Next.js application with the following architecture:
 
 ```
 ┌─────────────────┐
@@ -45,6 +45,7 @@ ARCline is built as a Next.js application with the following architecture:
 ### Hotline Handlers
 
 Each hotline handler (`lib/hotlines/*.ts`) implements:
+
 - State machine pattern using `memory.step`
 - Conversation flow logic
 - Database interactions (via Supabase)
@@ -81,6 +82,7 @@ Each hotline handler (`lib/hotlines/*.ts`) implements:
 ### Conversation State
 
 Stored in Twilio ConversationRelay memory:
+
 - `hotlineType`: Which hotline is active
 - `step`: Current step in conversation flow
 - `phoneNumber`: User's phone number
@@ -155,4 +157,3 @@ Stored in Twilio ConversationRelay memory:
 - Real-time updates (Supabase Realtime)
 - Admin dashboard
 - User authentication
-

@@ -1,6 +1,6 @@
 # Twilio Setup Guide
 
-This guide covers setting up Twilio ConversationRelay for ARCline hotlines.
+This guide covers setting up Twilio ConversationRelay for ARC Line hotlines.
 
 ## Prerequisites
 
@@ -31,7 +31,7 @@ This guide covers setting up Twilio ConversationRelay for ARCline hotlines.
 # Create Conversation Service
 curl -X POST https://conversations.twilio.com/v1/Services \
   -u YOUR_ACCOUNT_SID:YOUR_AUTH_TOKEN \
-  -d "FriendlyName=ARCline Hotlines"
+  -d "FriendlyName=ARC Line Hotlines"
 
 # Configure webhook (replace SERVICE_SID and WEBHOOK_URL)
 curl -X POST https://conversations.twilio.com/v1/Services/SERVICE_SID/Configuration \
