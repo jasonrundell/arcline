@@ -19,7 +19,7 @@ export const Footer = () => {
           ARCline © 2024 - Secure Communications System
         </p>
         <p className="text-xs text-muted-foreground mt-2 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-          V {packageJson.version}
+          v{packageJson.version}
         </p>
       </div>
     </footer>

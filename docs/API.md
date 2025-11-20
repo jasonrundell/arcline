@@ -67,11 +67,10 @@ Returns a JSON object with the following structure:
 
 The webhook routes requests based on the `hotlineType` stored in memory after menu selection:
 
-1. **extraction** - Extraction Request Hotline (Menu option 1)
-2. **loot** - Loot Locator Hotline (Menu option 2)
-3. **chicken** - Scrappy's Chicken Line (Menu option 3)
-4. **gossip** - Faction News Line (Menu option 4)
-5. **alarm** - Event Alarm (Menu option 5)
+1. **extraction** - Extraction Request Hotline
+2. **loot** - Loot Locator Hotline
+3. **chicken** - Scrappy's Chicken Line
+4. **intel** - Faction News/Intel Line
 
 ### Example Request
 
@@ -126,4 +125,3 @@ Each hotline has its own handler function in `lib/hotlines/`:
 - `alarm.ts` - Handles alarm setup
 
 Each handler follows a state machine pattern using the `step` field in memory to track conversation flow.
-

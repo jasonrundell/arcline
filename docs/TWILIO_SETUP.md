@@ -12,12 +12,7 @@ This guide covers setting up Twilio ConversationRelay for ARCline hotlines.
 
 1. Go to [Twilio Console > Phone Numbers](https://console.twilio.com/us1/develop/phone-numbers/manage/search)
 2. Purchase **one phone number** for all hotlines
-3. The system uses an interactive voice menu - users press 1-5 to select their option:
-   - Press 1: Extraction Request
-   - Press 2: Loot Locator
-   - Press 3: Scrappy's Chicken Line
-   - Press 4: Faction News
-   - Press 5: Event Alarm
+3. The system uses an interactive voice menu - users need to speak what they want to do after listening to the options
 
 ## Step 2: Configure ConversationRelay
 

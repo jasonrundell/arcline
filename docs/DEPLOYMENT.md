@@ -205,7 +205,7 @@ After deployment, configure Twilio webhooks:
 
    - Call your Twilio phone number
    - Listen to the menu
-   - Press 1-5 to test each hotline
+   - Speak what you want to do
    - Verify responses work correctly
 
 5. **Monitor**

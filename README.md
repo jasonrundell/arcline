@@ -8,13 +8,12 @@ A voice-based multi-hotline system for the ARC Raiders universe, built with Twil
 
 ## ✨ Features
 
-- **5 Automated Hotlines:**
+- **4 Automated Hotlines:**
 
-  - 🚁 Press **1** for Extraction Request - Request extractions from your location
-  - 📦 Press **2** for Loot Locator - Search for valuable items
-  - 🐔 Press **3** for Scrappy's Chicken Line - Fun sound clips and randomizers
-  - 📢 Press **4** for Faction News - Community rumors and news
-  - ⏰ Press **5** for Event Alarm - Automated reminders
+  - 🚁 Extraction Request - Request extractions from your location
+  - 📦 Loot Locator - Search for valuable items
+  - 🐔 Scrappy's Chicken Line - Fun sound clips and randomizers
+  - 📢 Faction Intel - Community rumors and news
 
 - **Tech Stack:**
 
