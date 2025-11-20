@@ -201,9 +201,32 @@ fastify.server.on("upgrade", (request, socket, head) => {
 /**
  * WebSocket Connection Handler
  *
- * Handles new WebSocket connections from Twilio ConversationRelay.
- * Manages connection limits, session tracking, message routing, and cleanup.
- * Routes incoming messages to the appropriate hotline handler based on conversation state.
+ * Architecture: Real-time Voice Conversation System
+ *
+ * This handler manages the full lifecycle of WebSocket connections for Twilio
+ * ConversationRelay, implementing a real-time voice conversation system.
+ *
+ * System Architecture:
+ * 1. Connection Establishment: Twilio connects via WebSocket after TwiML response
+ * 2. Session Management: Each call has a unique session stored in memory
+ * 3. Message Processing: Handles setup, prompt, and end message types
+ * 4. State Machine: Routes to hotline handlers based on conversation state
+ * 5. Cleanup: Removes sessions on disconnect and periodic cleanup of stale sessions
+ *
+ * Message Flow:
+ * - setup: Initial connection, establishes call SID and conversation SID
+ * - prompt: User voice input, routes to hotline handler, returns TTS response
+ * - end: Call termination, saves logs to database
+ *
+ * Session State:
+ * - Stored in `sessions` Map keyed by callSid
+ * - Contains: hotlineType, step, phoneNumber, lastActivity timestamp
+ * - Persisted across WebSocket messages for conversation continuity
+ *
+ * Connection Management:
+ * - Tracks active connections with `activeConnections` counter
+ * - Enforces MAX_CONNECTIONS limit to prevent resource exhaustion
+ * - Periodic cleanup removes stale sessions (inactive > SESSION_TIMEOUT)
  *
  * @param {WebSocket} ws - WebSocket connection instance
  * @param {http.IncomingMessage} request - HTTP request that initiated the upgrade

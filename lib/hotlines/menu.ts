@@ -1,3 +1,31 @@
+/**
+ * Main Menu Hotline Handler
+ *
+ * Architecture: Entry Point and Hotline Router
+ *
+ * This module serves as the entry point for all conversations and implements
+ * hotline detection and routing. It acts as a state machine that transitions
+ * users between the main menu and specific hotline handlers.
+ *
+ * State Machine Flow:
+ * 1. greeting: Initial greeting, presents menu options
+ * 2. listening: Waits for user to select a hotline
+ * 3. routing: Detects hotline type from voice input and routes to handler
+ * 4. menu: Returns to menu after hotline completion
+ *
+ * Hotline Detection:
+ * - Uses `detectHotlineType()` to parse voice input
+ * - Supports natural language (e.g., "I need an extract", "extraction request")
+ * - Sets memory.hotlineType to route to specific handler
+ * - Falls back to menu if detection fails
+ *
+ * Special Commands:
+ * - "repeat": Replays the last message
+ * - End call phrases: Terminates the conversation
+ *
+ * @module lib/hotlines/menu
+ */
+
 import {
   ConversationRelayRequest,
   ConversationRelayResponse,
@@ -11,6 +39,16 @@ import { isRepeatRequest } from "../utils/repeat";
 import { isEndCallRequest, createEndCallResponse } from "../utils/exit";
 import { detectHotlineType } from "../utils/hotline-detection";
 
+/**
+ * Main menu handler - entry point for all conversations.
+ *
+ * Handles the main menu state machine and routes users to specific hotlines
+ * based on voice input. Manages conversation flow and state transitions.
+ *
+ * @param {ConversationRelayRequest} request - The conversation relay request
+ * @param {Record<string, unknown>} memory - Current conversation state
+ * @returns {Promise<ConversationRelayResponse>} Response with menu or routing actions
+ */
 export async function handleMainMenu(
   request: ConversationRelayRequest,
   memory: Record<string, unknown>

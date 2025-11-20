@@ -1,6 +1,28 @@
 /**
- * Centralized routing logic for hotline handlers
- * This eliminates duplication across server.ts, route.ts, and webhook.ts
+ * Centralized Routing System
+ *
+ * This module provides a single entry point for routing conversation requests
+ * to the appropriate hotline handler. It implements a state machine pattern
+ * where the current hotline type and step are stored in conversation memory.
+ *
+ * Architecture:
+ * - State Machine Pattern: Conversation state is maintained in memory (hotlineType, step)
+ * - Centralized Routing: All routing decisions go through this module
+ * - Handler Delegation: Each hotline handler manages its own internal state machine
+ *
+ * Flow:
+ * 1. Request arrives with memory containing hotlineType and step
+ * 2. If hotlineType is set (and not "menu"), route to that hotline's handler
+ * 3. If no hotlineType or explicitly at menu, route to main menu handler
+ * 4. Handler processes input and returns response with updated memory
+ * 5. Memory is persisted and sent back to Twilio for next request
+ *
+ * Memory Structure:
+ * - hotlineType: Current active hotline ("extraction", "loot", "chicken", "submit-intel", "listen-intel", or "menu")
+ * - step: Current step within the hotline (e.g., "greeting", "collecting-location", "confirming")
+ * - Additional hotline-specific state (e.g., location, item name, etc.)
+ *
+ * @module lib/utils/router
  */
 
 import {
@@ -15,10 +37,32 @@ import { handleSubmitIntelHotline } from "../hotlines/submit-intel";
 import { handleListenIntelHotline } from "../hotlines/listen-intel";
 
 /**
- * Routes a request to the appropriate hotline handler based on hotlineType and step
- * @param request - The conversation relay request
- * @param memory - The current memory state
- * @returns The response from the appropriate handler
+ * Routes a conversation request to the appropriate hotline handler.
+ *
+ * Implements the routing logic for the conversation state machine. Determines
+ * which hotline handler to invoke based on the current conversation state stored
+ * in memory.
+ *
+ * Routing Logic:
+ * 1. If hotlineType is set and not "menu" → Route to specific hotline handler
+ * 2. If no hotlineType, hotlineType is "menu", or step is "greeting" → Route to main menu
+ * 3. Unknown hotlineType → Fallback to main menu
+ *
+ * Each hotline handler manages its own internal state machine and can transition
+ * between steps, update memory, and return responses with actions (say, listen, remember).
+ *
+ * @param {ConversationRelayRequest} request - The conversation relay request from Twilio
+ * @param {Record<string, unknown>} memory - The current conversation state/memory
+ * @returns {Promise<ConversationRelayResponse>} Response with actions for Twilio
+ *
+ * @example
+ * ```ts
+ * // Route to extraction hotline (memory.hotlineType = "extraction")
+ * const response = await routeToHotline(request, { hotlineType: "extraction", step: "collecting-location" });
+ *
+ * // Route to main menu (no hotlineType or hotlineType = "menu")
+ * const response = await routeToHotline(request, { step: "greeting" });
+ * ```
  */
 export async function routeToHotline(
   request: ConversationRelayRequest,

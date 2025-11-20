@@ -1,3 +1,32 @@
+/**
+ * Extraction Request Hotline Handler
+ *
+ * Architecture: State Machine for Extraction Requests
+ *
+ * This module implements a state machine for handling extraction requests.
+ * Users provide a location, and the system processes and stores the request.
+ *
+ * State Machine Flow:
+ * 1. greeting: Welcomes user and explains the service
+ * 2. collecting-location: Prompts for location input
+ * 3. confirming: Confirms the location and asks for confirmation
+ * 4. processing: Saves extraction request to database
+ * 5. completed: Provides confirmation and offers to return to menu
+ *
+ * State Transitions:
+ * - User provides location → Move to confirming step
+ * - User confirms → Move to processing → Move to completed
+ * - User says "no" → Return to collecting-location
+ * - User requests menu → Return to main menu
+ *
+ * Memory Structure:
+ * - step: Current step in the state machine
+ * - location: User-provided location (stored during collection)
+ * - extractionRequestId: ID of saved request (after processing)
+ *
+ * @module lib/hotlines/extraction
+ */
+
 import {
   ConversationRelayRequest,
   ConversationRelayResponse,
@@ -16,6 +45,16 @@ import { handleSubmitIntelHotline } from "./submit-intel";
 import { handleListenIntelHotline } from "./listen-intel";
 import { detectHotlineType } from "../utils/hotline-detection";
 
+/**
+ * Handles extraction request hotline conversations.
+ *
+ * Implements a state machine to collect location information and process
+ * extraction requests. Manages conversation flow and state transitions.
+ *
+ * @param {ConversationRelayRequest} request - The conversation relay request
+ * @param {Record<string, unknown>} memory - Current conversation state
+ * @returns {Promise<ConversationRelayResponse>} Response with actions for Twilio
+ */
 export async function handleExtractionHotline(
   request: ConversationRelayRequest,
   memory: Record<string, unknown>
