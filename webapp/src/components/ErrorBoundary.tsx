@@ -1,4 +1,5 @@
 import React from "react";
+import { captureException } from "../lib/sentry";
 
 interface Props {
   children: React.ReactNode;
@@ -13,10 +14,11 @@ interface State {
  * Error Boundary Component
  *
  * Catches JavaScript errors anywhere in the child component tree, logs those errors,
- * and displays a fallback UI instead of crashing the entire application.
+ * reports them to Sentry, and displays a fallback UI instead of crashing the entire application.
  *
  * This component implements React's error boundary pattern using componentDidCatch
- * and getDerivedStateFromError lifecycle methods.
+ * and getDerivedStateFromError lifecycle methods. Errors are automatically reported
+ * to Sentry for monitoring and debugging.
  *
  * @component
  * @example
@@ -38,6 +40,17 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("ErrorBoundary caught an error:", error, errorInfo);
+    // Report to Sentry with additional context
+    captureException(error, {
+      tags: {
+        errorBoundary: "true",
+        componentStack: errorInfo.componentStack ? "available" : "unavailable",
+      },
+      extra: {
+        componentStack: errorInfo.componentStack,
+        errorInfo,
+      },
+    });
   }
 
   render() {
@@ -65,4 +78,3 @@ export class ErrorBoundary extends React.Component<Props, State> {
     return this.props.children;
   }
 }
-

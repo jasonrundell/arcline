@@ -29,6 +29,7 @@ The ARCline webapp provides a web interface for viewing:
 - **Supabase** - Backend database
 - **React Router** - Client-side routing
 - **date-fns** - Date formatting
+- **Sentry** - Error monitoring and performance tracking
 
 ## Prerequisites
 
@@ -58,15 +59,35 @@ Create a `.env` file in the `webapp` directory:
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_SENTRY_DSN=your-sentry-dsn
 ```
 
 **Important**: Vite requires the `VITE_` prefix for environment variables to be exposed to client-side code.
+
+### Required Variables
+
+- `VITE_SUPABASE_URL` - Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Your Supabase anon/public key
 
 You can get these values from your Supabase project settings:
 
 1. Go to your Supabase project dashboard
 2. Navigate to **Settings > API**
 3. Copy the **Project URL** and **anon/public** key
+
+### Optional Variables
+
+- `VITE_SENTRY_DSN` - Your Sentry DSN for error monitoring (optional but recommended for production)
+- `VITE_SENTRY_ENABLE_IN_DEV` - Set to `"true"` to enable Sentry in development mode (default: disabled)
+
+#### Setting up Sentry
+
+1. Create a Sentry account at [sentry.io](https://sentry.io)
+2. Create a new project and select **React** as the platform
+3. Copy your DSN from the project settings
+4. Add `VITE_SENTRY_DSN=your-dsn-here` to your `.env` file
+
+**Note**: Sentry is optional. If `VITE_SENTRY_DSN` is not set, the app will work normally without error monitoring.
 
 ## Development
 
@@ -214,6 +235,13 @@ See [DATABASE_SCHEMA.md](../docs/DATABASE_SCHEMA.md) for the complete schema.
 - Verify Supabase tables exist and have data
 - Ensure RLS policies allow SELECT operations
 - Check network tab for failed API requests
+
+### Sentry Not Reporting Errors
+
+- Verify `VITE_SENTRY_DSN` is set in your `.env` file
+- Check browser console for Sentry initialization warnings
+- In development, Sentry is disabled by default unless `VITE_SENTRY_ENABLE_IN_DEV=true`
+- Verify your Sentry project is active and receiving data
 
 ## Contributing
 
