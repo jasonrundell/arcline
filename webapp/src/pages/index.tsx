@@ -2,7 +2,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { FeaturesSection } from "@/components/sections/FeaturesSection";
-import { MessagesSection } from "@/components/sections/MessagesSection";
+import { ScrappySection } from "@/components/sections/ScrappySection";
 import { IntelSection } from "@/components/sections/IntelSection";
 // import ErrorButton from "@/components/ui/error-button";
 
@@ -38,7 +38,7 @@ const Index = () => {
         <HeroSection />
         <FeaturesSection />
       </div>
-      <MessagesSection />
+      <ScrappySection />
       <IntelSection />
       <Footer />
       {/* <ErrorButton /> */}

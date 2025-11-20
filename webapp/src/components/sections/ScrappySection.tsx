@@ -6,9 +6,10 @@ import { useMessages } from "@/hooks/use-messages";
 import { format } from "date-fns";
 import { sanitizeText } from "@/lib/sanitize";
 import { CONTACT } from "@/constants";
+import { Phone } from "lucide-react";
 
 /**
- * MessagesSection Component
+ * ScrappySection Component
  *
  * Displays verified messages from Scrappy's message board. Fetches messages from
  * Supabase, formats dates, and displays them in cards with sanitized content.
@@ -17,10 +18,10 @@ import { CONTACT } from "@/constants";
  * @component
  * @example
  * ```tsx
- * <MessagesSection />
+ * <ScrappySection />
  * ```
  */
-export const MessagesSection = () => {
+export const ScrappySection = () => {
   const {
     data: messages,
     isLoading: messagesLoading,
@@ -132,6 +133,20 @@ export const MessagesSection = () => {
                   </p>
                 </div>
               )}
+        </div>
+      </div>
+      <div className="block mx-auto mt-12">
+        <div className="flex flex-col items-center justify-center gap-3 mb-2">
+          <p className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+            CALL SCRAPPY NOW!!!
+          </p>
+
+          <a
+            href={`tel:${CONTACT.PHONE}`}
+            className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] animate-pulse"
+          >
+            {CONTACT.DISPLAY}
+          </a>
         </div>
       </div>
     </section>

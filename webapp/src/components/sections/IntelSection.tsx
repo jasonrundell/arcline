@@ -114,6 +114,20 @@ export const IntelSection = () => {
               )}
         </div>
       </div>
+      <div className="block mx-auto mt-12">
+        <div className="flex flex-col items-center justify-center gap-3 mb-2">
+          <p className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+            SPERANZA NEEDS YOUR INTEL
+          </p>
+
+          <a
+            href={`tel:${CONTACT.PHONE}`}
+            className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] animate-pulse"
+          >
+            {CONTACT.DISPLAY}
+          </a>
+        </div>
+      </div>
     </section>
   );
 };
