@@ -22,15 +22,27 @@ export const Header = () => {
     setIsMobileMenuOpen(false);
   }, []);
 
+  const handleScrollToTop = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    []
+  );
+
   const linkClasses =
-    "hover:text-primary transition-all px-4 py-2 rounded-full hover:bg-secondary hover:text-white font-medium";
-  const mobileLinkClasses =
-    "hover:text-primary transition-all px-4 py-2 font-medium text-center";
+    "px-4 py-2 rounded-full border-2 border-transparent hover:border-secondary font-medium";
+  const mobileLinkClasses = "px-4 py-2 font-medium text-center";
 
   return (
-    <header className="bg-gradient-to-b from-header to-header text-header-foreground py-4 px-6 border-b-4 border-header-foreground/20 sticky top-0 z-50 shadow-[0_8px_16px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.3)] relative before:absolute before:inset-0 before:opacity-30 before:pointer-events-none before:bg-[radial-gradient(circle_at_1px_1px,rgba(0,0,0,0.15)_1px,transparent_0)] before:bg-[length:20px_20px] after:absolute after:inset-0 after:opacity-20 after:pointer-events-none after:bg-[radial-gradient(circle_at_2px_2px,rgba(255,255,255,0.1)_1px,transparent_0)] after:bg-[length:15px_15px]">
+    <header
+      id="top"
+      className="bg-gradient-to-b from-header to-header text-header-foreground py-4 px-6 border-b-4 border-header-foreground/20 sticky top-0 z-50 shadow-[0_8px_16px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.3)] relative before:absolute before:inset-0 before:opacity-30 before:pointer-events-none before:bg-[radial-gradient(circle_at_1px_1px,rgba(0,0,0,0.15)_1px,transparent_0)] before:bg-[length:20px_20px] after:absolute after:inset-0 after:opacity-20 after:pointer-events-none after:bg-[radial-gradient(circle_at_2px_2px,rgba(255,255,255,0.1)_1px,transparent_0)] after:bg-[length:15px_15px]"
+    >
       <div className="container mx-auto flex items-center justify-between relative z-10">
-        <h1 className="text-2xl font-bold tracking-tight">{APP_NAME}</h1>
+        <a href="#top" onClick={handleScrollToTop}>
+          <h1 className="text-2xl font-bold tracking-tight">{APP_NAME}</h1>
+        </a>
         {/* Desktop Navigation */}
         <nav className="hidden md:flex gap-6">
           <a href="#features" className={linkClasses}>

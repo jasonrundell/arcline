@@ -180,15 +180,15 @@ export const ScrappySection = () => {
           )}
         </div>
       </div>
-      <div className="block mx-auto mt-12">
-        <div className="flex flex-col items-center justify-center gap-3 mb-2">
-          <p className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all">
+      <div className="mx-auto mt-12">
+        <div className="flex flex-col text-center items-center justify-center gap-3 mb-2">
+          <p className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 z-10">
             CALL SCRAPPY NOW!!!
           </p>
 
           <a
             href={`tel:${CONTACT.PHONE}`}
-            className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all animate-pulse"
+            className="text-3xl md:text-5xl font-bold text-primary hover:text-primary/80 transition-all animate-pulse z-10"
           >
             {CONTACT.DISPLAY}
           </a>
