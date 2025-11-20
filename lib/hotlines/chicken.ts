@@ -12,7 +12,8 @@ import {
 } from "../utils/exit";
 import { handleExtractionHotline } from "./extraction";
 import { handleLootHotline } from "./loot";
-import { handleIntelHotline } from "./intel";
+import { handleSubmitIntelHotline } from "./submit-intel";
+import { handleListenIntelHotline } from "./listen-intel";
 import { detectHotlineType } from "../utils/hotline-detection";
 import { supabase } from "../supabase";
 
@@ -160,8 +161,16 @@ export async function handleChickenHotline(
             return await handleExtractionHotline(hotlineRequest, updatedMemory);
           case "loot":
             return await handleLootHotline(hotlineRequest, updatedMemory);
-          case "intel":
-            return await handleIntelHotline(hotlineRequest, updatedMemory);
+          case "submit-intel":
+            return await handleSubmitIntelHotline(
+              hotlineRequest,
+              updatedMemory
+            );
+          case "listen-intel":
+            return await handleListenIntelHotline(
+              hotlineRequest,
+              updatedMemory
+            );
         }
       } else if (isEndCallRequest(input)) {
         // User wants to end the call

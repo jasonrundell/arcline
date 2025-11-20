@@ -43,21 +43,43 @@ export function detectHotlineType(input: string): string | undefined {
     return "chicken";
   }
 
-  // Check for intel hotline
+  // Check for submit intel hotline (check this first to avoid conflicts)
   if (
+    normalizedInput.includes("submit intel") ||
+    normalizedInput.includes("submitintel") ||
+    (normalizedInput.includes("submit") && normalizedInput.includes("intel")) ||
+    normalizedInput.includes("share intel") ||
+    normalizedInput.includes("report intel") ||
+    (normalizedInput.includes("share") && normalizedInput.includes("intel")) ||
+    (normalizedInput.includes("report") && normalizedInput.includes("intel"))
+  ) {
+    return "submit-intel";
+  }
+
+  // Check for listen intel hotline
+  if (
+    normalizedInput.includes("listen to intel") ||
+    normalizedInput.includes("listentointel") ||
+    (normalizedInput.includes("listen") && normalizedInput.includes("intel")) ||
+    normalizedInput.includes("latest intel") ||
+    normalizedInput.includes("latestintel") ||
+    (normalizedInput.includes("latest") && normalizedInput.includes("intel")) ||
+    normalizedInput.includes("get intel") ||
+    (normalizedInput.includes("get") && normalizedInput.includes("intel")) ||
     normalizedInput.includes("news") ||
     normalizedInput.includes("rumors") ||
     normalizedInput.includes("rumor") ||
     normalizedInput.includes("faction") ||
-    normalizedInput.includes("intel") ||
+    (normalizedInput.includes("intel") &&
+      !normalizedInput.includes("submit") &&
+      !normalizedInput.includes("share") &&
+      !normalizedInput.includes("report")) ||
     normalizedInput.includes("gossip") ||
-    // Check for phrases like "latest intel", "latest news", "what's the latest"
+    // Check for phrases like "what's the latest"
     (normalizedInput.includes("latest") &&
-      (normalizedInput.includes("intel") ||
-        normalizedInput.includes("news") ||
-        normalizedInput.includes("rumor")))
+      (normalizedInput.includes("news") || normalizedInput.includes("rumor")))
   ) {
-    return "intel";
+    return "listen-intel";
   }
 
   return undefined;

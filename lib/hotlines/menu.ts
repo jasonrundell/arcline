@@ -5,7 +5,8 @@ import {
 import { handleExtractionHotline } from "./extraction";
 import { handleLootHotline } from "./loot";
 import { handleChickenHotline } from "./chicken";
-import { handleIntelHotline } from "./intel";
+import { handleSubmitIntelHotline } from "./submit-intel";
+import { handleListenIntelHotline } from "./listen-intel";
 import { isRepeatRequest } from "../utils/repeat";
 import { isEndCallRequest, createEndCallResponse } from "../utils/exit";
 import { detectHotlineType } from "../utils/hotline-detection";
@@ -70,7 +71,7 @@ export async function handleMainMenu(
         // First time caller - present menu
         updatedMemory.step = "menu";
         const greetingResponse =
-          "Speranze Security: Shani here. What do you need, raider? I can help you with getting an extraction.. locating resources.. speaking with Scrappy.. or getting Speranza intel. Go ahead.";
+          "Speranza Security: Shani here. What do you need, raider? I can help you with getting an extraction.. locating resources.. speaking with Scrappy.. submitting intel.. or listening to intel. Go ahead.";
         updatedMemory.lastResponse = greetingResponse;
         return {
           actions: [
@@ -91,7 +92,7 @@ export async function handleMainMenu(
         if (!hotlineType) {
           // Invalid selection, repeat menu
           const errorResponse =
-            "Didn't catch that, Raider. Speak clearly. Say 'extraction' for an extraction point, 'loot' for resource locations, 'scrappy' for material updates, or 'news' for Speranza intel.";
+            "Didn't catch that, Raider. Speak clearly. Say 'extraction' for an extraction point, 'loot' for resource locations, 'scrappy' for material updates, 'submit intel' to share intel, or 'listen to intel' for the latest news.";
           updatedMemory.lastResponse = errorResponse;
           return {
             actions: [
@@ -122,17 +123,18 @@ export async function handleMainMenu(
             return await handleLootHotline(hotlineRequest, updatedMemory);
           case "chicken":
             return await handleChickenHotline(hotlineRequest, updatedMemory);
-          case "intel":
-            console.log("Menu handler - routing to intel handler");
-            const intelResponse = await handleIntelHotline(
+          case "submit-intel":
+            console.log("Menu handler - routing to submit intel handler");
+            return await handleSubmitIntelHotline(
               hotlineRequest,
               updatedMemory
             );
-            console.log(
-              "Menu handler - intel handler response:",
-              JSON.stringify(intelResponse, null, 2)
+          case "listen-intel":
+            console.log("Menu handler - routing to listen intel handler");
+            return await handleListenIntelHotline(
+              hotlineRequest,
+              updatedMemory
             );
-            return intelResponse;
           default:
             // Fallback - shouldn't happen
             updatedMemory.step = "greeting";

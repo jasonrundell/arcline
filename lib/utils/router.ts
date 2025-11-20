@@ -11,7 +11,8 @@ import { handleMainMenu } from "../hotlines/menu";
 import { handleExtractionHotline } from "../hotlines/extraction";
 import { handleLootHotline } from "../hotlines/loot";
 import { handleChickenHotline } from "../hotlines/chicken";
-import { handleIntelHotline } from "../hotlines/intel";
+import { handleSubmitIntelHotline } from "../hotlines/submit-intel";
+import { handleListenIntelHotline } from "../hotlines/listen-intel";
 
 /**
  * Routes a request to the appropriate hotline handler based on hotlineType and step
@@ -37,8 +38,10 @@ export async function routeToHotline(
         return await handleLootHotline(request, memory);
       case "chicken":
         return await handleChickenHotline(request, memory);
-      case "intel":
-        return await handleIntelHotline(request, memory);
+      case "submit-intel":
+        return await handleSubmitIntelHotline(request, memory);
+      case "listen-intel":
+        return await handleListenIntelHotline(request, memory);
       default:
         // Fallback to menu if unknown hotline type
         return await handleMainMenu(request, memory);
@@ -48,7 +51,12 @@ export async function routeToHotline(
   // If no hotline selected yet, or explicitly at menu, route to menu handler
   // The menu handler will detect hotline types from voice input and route internally
   if (!hotlineType || hotlineType === "menu" || step === "greeting") {
-    console.log("Router - routing to menu handler, input:", request.CurrentInput, "step:", step);
+    console.log(
+      "Router - routing to menu handler, input:",
+      request.CurrentInput,
+      "step:",
+      step
+    );
     return await handleMainMenu(request, memory);
   }
 
@@ -65,8 +73,8 @@ export function handleDTMFSelection(
   step: string | undefined,
   memory: Record<string, unknown>
 ): ConversationRelayResponse | null {
-  const dtmfMatch = input.match(/[1-4]/);
-  
+  const dtmfMatch = input.match(/[1-5]/);
+
   // Only process DTMF if we're at the menu step
   if (!dtmfMatch || step !== "menu") {
     return null;
@@ -77,7 +85,8 @@ export function handleDTMFSelection(
     "1": "extraction",
     "2": "loot",
     "3": "chicken",
-    "4": "intel",
+    "4": "submit-intel",
+    "5": "listen-intel",
   };
 
   const hotlineType = hotlineMap[selection];
@@ -93,7 +102,8 @@ export function handleDTMFSelection(
     "1": "You selected Extraction Request. Please provide your location for extraction.",
     "2": "You selected Loot Locator. What are you looking for?",
     "3": "You selected Scrappy's Chicken Line. Welcome!",
-    "4": "You selected Faction News. Say 'latest' for intel or 'submit' to share intel.",
+    "4": "You selected Submit Intel. What intel have you got?",
+    "5": "You selected Listen to Intel. Fetching the latest intel now.",
   };
 
   return {
@@ -106,4 +116,3 @@ export function handleDTMFSelection(
     ],
   };
 }
-

@@ -391,13 +391,14 @@ wss.on("connection", (ws, request) => {
           }
 
           const dtmfDigit = message.dtmf;
-          if (dtmfDigit >= "1" && dtmfDigit <= "4") {
+          if (dtmfDigit >= "1" && dtmfDigit <= "5") {
             const memory = sessions.get(callSid) || {};
             const hotlineMap: Record<string, string> = {
               "1": "extraction",
               "2": "loot",
               "3": "chicken",
-              "4": "intel",
+              "4": "submit-intel",
+              "5": "listen-intel",
             };
 
             memory.hotlineType = hotlineMap[dtmfDigit];
@@ -408,7 +409,8 @@ wss.on("connection", (ws, request) => {
               "1": "You selected Extraction Request. Please provide your location for extraction.",
               "2": "You selected Loot Locator. What are you looking for?",
               "3": "You selected Scrappy's Chicken Line. Welcome!",
-              "4": "You selected Faction News. Say 'latest' for intel or 'submit' to share intel.",
+              "4": "You selected Submit Intel. What intel have you got?",
+              "5": "You selected Listen to Intel. Fetching the latest intel now.",
             };
 
             // Send confirmation and continue listening (last: false automatically listens)
@@ -424,7 +426,7 @@ wss.on("connection", (ws, request) => {
             ws.send(
               JSON.stringify({
                 type: "text",
-                token: "Invalid selection. Please press 1, 2, 3, or 4.",
+                token: "Invalid selection. Please press 1, 2, 3, 4, or 5.",
                 last: false,
               })
             );

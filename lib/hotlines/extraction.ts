@@ -12,7 +12,8 @@ import {
 } from "../utils/exit";
 import { handleLootHotline } from "./loot";
 import { handleChickenHotline } from "./chicken";
-import { handleIntelHotline } from "./intel";
+import { handleSubmitIntelHotline } from "./submit-intel";
+import { handleListenIntelHotline } from "./listen-intel";
 import { detectHotlineType } from "../utils/hotline-detection";
 
 export async function handleExtractionHotline(
@@ -94,8 +95,16 @@ export async function handleExtractionHotline(
             return await handleLootHotline(hotlineRequest, updatedMemory);
           case "chicken":
             return await handleChickenHotline(hotlineRequest, updatedMemory);
-          case "intel":
-            return await handleIntelHotline(hotlineRequest, updatedMemory);
+          case "submit-intel":
+            return await handleSubmitIntelHotline(
+              hotlineRequest,
+              updatedMemory
+            );
+          case "listen-intel":
+            return await handleListenIntelHotline(
+              hotlineRequest,
+              updatedMemory
+            );
         }
       } else if (isMenuNavigationRequest(input)) {
         // Return to main menu
