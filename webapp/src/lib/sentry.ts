@@ -46,12 +46,10 @@ export function initSentry() {
   Sentry.init({
     dsn,
     environment,
+    sendDefaultPii: true,
     integrations: [
       Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration({
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
+      Sentry.replayIntegration(),
     ],
     // Performance Monitoring
     tracesSampleRate: isDevelopment ? 1.0 : 0.1, // 100% in dev, 10% in prod

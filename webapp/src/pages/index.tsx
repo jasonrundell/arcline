@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/sections/HeroSection";
 import { FeaturesSection } from "@/components/sections/FeaturesSection";
 import { MessagesSection } from "@/components/sections/MessagesSection";
 import { IntelSection } from "@/components/sections/IntelSection";
+import ErrorButton from "@/components/ui/error-button";
 
 /**
  * Index Page Component
@@ -28,6 +29,7 @@ const Index = () => {
       <MessagesSection />
       <IntelSection />
       <Footer />
+      <ErrorButton />
     </div>
   );
 };
