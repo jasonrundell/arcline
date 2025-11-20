@@ -149,6 +149,113 @@ The server will start on `http://localhost:8080` and watch for file changes.
    - Listen to the menu
    - Press 1-5 to test each hotline
 
+## Step 7: Deploy Webapp to Vercel
+
+The webapp is a React frontend that displays intel submissions and Scrappy messages. Deploy it to Vercel for production access.
+
+### Prerequisites
+
+- Vercel account (sign up at [vercel.com](https://vercel.com))
+- GitHub repository with your code (Vercel can deploy from other sources too)
+
+### Deploy the Webapp
+
+1. **Install Vercel CLI** (optional, for CLI deployment):
+
+   ```bash
+   npm i -g vercel
+   ```
+
+2. **Deploy via Vercel Dashboard** (Recommended):
+
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click "Add New Project"
+   - Import your GitHub repository
+   - Configure project settings:
+     - **Framework Preset**: Vite
+     - **Root Directory**: `webapp`
+     - **Build Command**: `npm run build` (auto-detected)
+     - **Output Directory**: `dist` (auto-detected)
+     - **Install Command**: `npm install` (auto-detected)
+   - Click "Deploy"
+
+3. **Set Environment Variables**
+
+   In the Vercel project settings, go to **Settings > Environment Variables** and add:
+
+   ```env
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key
+   ```
+
+   **Important**: Use the same Supabase credentials from your server `.env` file.
+
+   - Add these for **Production**, **Preview**, and **Development** environments
+   - After adding, redeploy the project for changes to take effect
+
+4. **Verify Deployment**
+
+   - Wait for deployment to complete
+   - Visit your Vercel deployment URL (e.g., `https://your-app.vercel.app`)
+   - You should see the ARCline webapp interface
+   - Test the intel submission and messages features
+
+### Deploy via CLI (Alternative)
+
+If you prefer using the CLI:
+
+```bash
+cd webapp
+vercel
+```
+
+Follow the prompts:
+
+- Link to existing project or create new one
+- Confirm settings (should auto-detect Vite)
+- Set environment variables when prompted, or add them later in dashboard
+
+### Environment Variables Reference
+
+| Variable                 | Description                 | Required |
+| ------------------------ | --------------------------- | -------- |
+| `VITE_SUPABASE_URL`      | Your Supabase project URL   | Yes      |
+| `VITE_SUPABASE_ANON_KEY` | Your Supabase anonymous key | Yes      |
+
+**Note**: Vite requires the `VITE_` prefix for environment variables to be exposed to the client-side code.
+
+### Continuous Deployment
+
+- Vercel automatically deploys on push to your main branch
+- Preview deployments are created for pull requests
+- Environment variables are managed in the Vercel dashboard
+
+### Troubleshooting Webapp Deployment
+
+**Build Fails**
+
+- Check that Root Directory is set to `webapp`
+- Verify all dependencies are in `webapp/package.json`
+- Check build logs in Vercel dashboard for specific errors
+
+**Environment Variables Not Working**
+
+- Ensure variables are prefixed with `VITE_`
+- Redeploy after adding/changing environment variables
+- Check that variables are set for the correct environment (Production/Preview/Development)
+
+**Supabase Connection Errors**
+
+- Verify `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are correct
+- Check Supabase project is active and accessible
+- Verify Row Level Security policies allow public read access if needed
+
+**App Not Loading**
+
+- Check browser console for errors
+- Verify the build completed successfully
+- Ensure all routes are properly configured
+
 ## Troubleshooting
 
 ### Server Won't Start
@@ -180,6 +287,8 @@ The server will start on `http://localhost:8080` and watch for file changes.
 
 ## Next Steps
 
-- See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment
+- Deploy the webapp to Vercel (see Step 7 above)
+- See [DEPLOYMENT.md](DEPLOYMENT.md) for production server deployment
+- See [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md) for deploying the backend API to Vercel
 - See [TWILIO_SETUP.md](TWILIO_SETUP.md) for advanced Twilio configuration
 - See [API.md](API.md) for API documentation
