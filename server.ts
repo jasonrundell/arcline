@@ -9,6 +9,7 @@ dotenv.config({ path: resolve(process.cwd(), ".env.local") });
 import Fastify from "fastify";
 import { WebSocketServer } from "ws";
 import formbody from "@fastify/formbody";
+import rateLimit from "@fastify/rate-limit";
 import twilio from "twilio";
 import { routeToHotline } from "./lib/utils/router";
 import {
@@ -26,6 +27,12 @@ const DOMAIN = process.env.DOMAIN || "localhost:8080";
 
 // Register form body parser for Twilio webhooks
 fastify.register(formbody);
+
+// Register rate limiting globally
+fastify.register(rateLimit, {
+  max: 100, // Maximum number of requests per time window
+  timeWindow: "1 minute", // Time window for rate limiting
+});
 
 // Store active call sessions
 const sessions = new Map<string, Record<string, unknown>>();
@@ -470,7 +477,7 @@ wss.on("connection", (ws, request) => {
 
   ws.on("close", async () => {
     activeConnections--;
-    
+
     if (sessionLogger) {
       sessionLogger.log("WebSocket connection closed");
     } else {
@@ -515,50 +522,61 @@ setInterval(() => {
   }
 }, TIMEOUTS.SESSION_CLEANUP_INTERVAL);
 
-// ConversationRelay webhook endpoint
-fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
-  try {
-    // Twilio sends form-urlencoded data
-    const body = request.body as Record<string, string> | undefined;
-    const conversationSid = body?.ConversationSid || "";
-    const currentInput = body?.CurrentInput || "";
-    const currentInputType = body?.CurrentInputType || "voice";
-    const memory = body?.Memory || "{}";
-    const currentTask = body?.CurrentTask || null;
-
-    // Parse memory JSON
-    let memoryObj: Record<string, unknown> = {};
+// ConversationRelay webhook endpoint with stricter rate limiting
+fastify.post(
+  "/api/twilio/conversation/webhook",
+  {
+    config: {
+      rateLimit: {
+        max: 50, // Stricter limit for webhook endpoint
+        timeWindow: "1 minute",
+      },
+    },
+  },
+  async (request, reply) => {
     try {
-      memoryObj = memory ? JSON.parse(memory) : {};
-    } catch {
-      // Memory might be empty or invalid, use empty object
+      // Twilio sends form-urlencoded data
+      const body = request.body as Record<string, string> | undefined;
+      const conversationSid = body?.ConversationSid || "";
+      const currentInput = body?.CurrentInput || "";
+      const currentInputType = body?.CurrentInputType || "voice";
+      const memory = body?.Memory || "{}";
+      const currentTask = body?.CurrentTask || null;
+
+      // Parse memory JSON
+      let memoryObj: Record<string, unknown> = {};
+      try {
+        memoryObj = memory ? JSON.parse(memory) : {};
+      } catch {
+        // Memory might be empty or invalid, use empty object
+      }
+
+      const relayRequest: ConversationRelayRequest = {
+        ConversationSid: conversationSid,
+        CurrentInput: currentInput,
+        CurrentInputType: currentInputType,
+        Memory: memory,
+        CurrentTask: currentTask || undefined,
+      };
+
+      // Use centralized router for all routing decisions
+      const response = await routeToHotline(relayRequest, memoryObj);
+
+      reply.type("application/json").send(response);
+    } catch (error) {
+      // Note: Webhook endpoint doesn't have a session context, so use regular console
+      console.error("Twilio webhook error:", error);
+      reply.status(500).send({
+        actions: [
+          {
+            say: "I'm experiencing technical difficulties. Please try again later.",
+            listen: false,
+          },
+        ],
+      });
     }
-
-    const relayRequest: ConversationRelayRequest = {
-      ConversationSid: conversationSid,
-      CurrentInput: currentInput,
-      CurrentInputType: currentInputType,
-      Memory: memory,
-      CurrentTask: currentTask || undefined,
-    };
-
-    // Use centralized router for all routing decisions
-    const response = await routeToHotline(relayRequest, memoryObj);
-
-    reply.type("application/json").send(response);
-  } catch (error) {
-    // Note: Webhook endpoint doesn't have a session context, so use regular console
-    console.error("Twilio webhook error:", error);
-    reply.status(500).send({
-      actions: [
-        {
-          say: "I'm experiencing technical difficulties. Please try again later.",
-          listen: false,
-        },
-      ],
-    });
   }
-});
+);
 
 // Health check endpoint
 fastify.get("/health", async (request, reply) => {
