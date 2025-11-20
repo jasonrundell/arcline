@@ -18,7 +18,7 @@ import {
 import { isEndCallRequest, createEndCallResponse } from "./lib/utils/exit";
 import { createSessionAwareLogger } from "./lib/utils/session-logger";
 import { saveSessionLogsToDatabase } from "./lib/utils/save-logs";
-import { TIMEOUTS } from "./constants";
+import { TIMEOUTS, WEBSOCKET } from "./constants";
 
 const fastify = Fastify({ logger: true });
 const PORT = process.env.PORT || 8080;
@@ -29,6 +29,9 @@ fastify.register(formbody);
 
 // Store active call sessions
 const sessions = new Map<string, Record<string, unknown>>();
+
+// Track active WebSocket connections
+let activeConnections = 0;
 
 // Store phone numbers by call SID (from TwiML request)
 const phoneNumbersByCallSid = new Map<string, string>();
@@ -141,6 +144,16 @@ fastify.server.on("upgrade", (request, socket, head) => {
 });
 
 wss.on("connection", (ws, request) => {
+  // Check connection limit
+  if (activeConnections >= WEBSOCKET.MAX_CONNECTIONS) {
+    console.warn(
+      `Connection limit reached (${WEBSOCKET.MAX_CONNECTIONS}). Rejecting new connection.`
+    );
+    ws.close(1008, "Server at capacity");
+    return;
+  }
+  activeConnections++;
+
   let callSid: string | undefined;
   let conversationSid: string | undefined;
   let sessionLogger: ReturnType<typeof createSessionAwareLogger> | null = null;
@@ -195,6 +208,7 @@ wss.on("connection", (ws, request) => {
           // Initialize session memory with phone number if available
           const initialMemory: Record<string, unknown> = {
             step: "greeting",
+            lastActivity: Date.now(),
           };
           if (phoneNumber) {
             initialMemory.phoneNumber = phoneNumber;
@@ -219,7 +233,12 @@ wss.on("connection", (ws, request) => {
 
           // Update session memory with the updated memory from greeting response
           if (greetingResponse.actions[0]?.remember) {
-            sessions.set(callSid, greetingResponse.actions[0].remember);
+            const memory = greetingResponse.actions[0].remember as Record<
+              string,
+              unknown
+            >;
+            memory.lastActivity = Date.now();
+            sessions.set(callSid, memory);
           }
 
           // Send greeting message
@@ -310,6 +329,7 @@ wss.on("connection", (ws, request) => {
               string,
               unknown
             >;
+            updatedMemory.lastActivity = Date.now();
             sessions.set(callSid, updatedMemory);
 
             // Log the selected hotline after processing
@@ -370,10 +390,12 @@ wss.on("connection", (ws, request) => {
 
                 // Update session memory
                 if (lookupResponse.actions[0]?.remember && currentCallSid) {
-                  sessions.set(
-                    currentCallSid,
-                    lookupResponse.actions[0].remember
-                  );
+                  const memory = lookupResponse.actions[0].remember as Record<
+                    string,
+                    unknown
+                  >;
+                  memory.lastActivity = Date.now();
+                  sessions.set(currentCallSid, memory);
                 }
 
                 // Send the lookup result
@@ -447,6 +469,8 @@ wss.on("connection", (ws, request) => {
   });
 
   ws.on("close", async () => {
+    activeConnections--;
+    
     if (sessionLogger) {
       sessionLogger.log("WebSocket connection closed");
     } else {
@@ -472,6 +496,24 @@ wss.on("connection", (ws, request) => {
     }
   });
 });
+
+// Session cleanup: Remove stale sessions periodically
+setInterval(() => {
+  const now = Date.now();
+  let cleanedCount = 0;
+
+  for (const [callSid, session] of sessions.entries()) {
+    const lastActivity = (session.lastActivity as number) || 0;
+    if (now - lastActivity > TIMEOUTS.SESSION_TIMEOUT) {
+      sessions.delete(callSid);
+      cleanedCount++;
+    }
+  }
+
+  if (cleanedCount > 0) {
+    console.log(`Cleaned up ${cleanedCount} stale session(s)`);
+  }
+}, TIMEOUTS.SESSION_CLEANUP_INTERVAL);
 
 // ConversationRelay webhook endpoint
 fastify.post("/api/twilio/conversation/webhook", async (request, reply) => {
