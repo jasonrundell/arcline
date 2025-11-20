@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/sections/HeroSection";
 import { FeaturesSection } from "@/components/sections/FeaturesSection";
 import { ScrappySection } from "@/components/sections/ScrappySection";
 import { IntelSection } from "@/components/sections/IntelSection";
+import { BioSection } from "@/components/sections/BioSection";
 // import ErrorButton from "@/components/ui/error-button";
 
 /**
@@ -40,6 +41,7 @@ const Index = () => {
       </div>
       <ScrappySection />
       <IntelSection />
+      <BioSection />
       <Footer />
       {/* <ErrorButton /> */}
     </div>
