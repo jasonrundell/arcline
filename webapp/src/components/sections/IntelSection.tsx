@@ -1,0 +1,98 @@
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useIntel } from "@/hooks/use-intel";
+import { formatDistanceToNow } from "date-fns";
+
+export const IntelSection = () => {
+  const {
+    data: intel,
+    isLoading: intelLoading,
+    error: intelError,
+  } = useIntel();
+
+  return (
+    <section id="intel" className="py-20 px-6 relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-card/20 to-transparent"></div>
+      <div className="container mx-auto relative">
+        <div className="text-center mb-12">
+          <h3 className="text-3xl font-bold mb-4 drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
+            Intel Submissions
+          </h3>
+          <p className="text-muted-foreground drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+            Anonymous intelligence reports from the field
+          </p>
+        </div>
+        <div className="max-w-4xl mx-auto space-y-6">
+          {intelLoading && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                Loading intel reports...
+              </p>
+            </div>
+          )}
+          {intelError && (
+            <div className="text-center py-8">
+              <p className="text-destructive drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                Error loading intel reports. Please try again later.
+              </p>
+            </div>
+          )}
+          {intel && intel.length > 0
+            ? intel.map((report) => {
+                const reportDate = new Date(report.created_at);
+                const formattedDate = formatDistanceToNow(reportDate, {
+                  addSuffix: true,
+                });
+                const reportId = report.id.slice(0, 8).toUpperCase();
+
+                return (
+                  <Card
+                    key={report.id}
+                    className="bg-gradient-to-br from-card to-secondary border-2 border-border shadow-[0_8px_20px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-2px_8px_rgba(0,0,0,0.3)]"
+                  >
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                          Report #{reportId}
+                        </CardTitle>
+                        <span className="text-xs text-muted-foreground bg-background/30 px-2 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                          {formattedDate}
+                        </span>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground mb-3 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                        {report.content}
+                      </p>
+                      <div className="flex gap-2">
+                        {report.priority && (
+                          <span className="px-3 py-1 bg-gradient-to-b from-primary/20 to-primary/10 text-primary text-xs rounded-full border border-primary/40 shadow-[0_2px_6px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]">
+                            {report.priority}
+                          </span>
+                        )}
+                        <span className="px-3 py-1 bg-gradient-to-b from-muted to-muted/80 text-muted-foreground text-xs rounded-full border border-border shadow-[0_2px_6px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]">
+                          Verified
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            : !intelLoading &&
+              !intelError && (
+                <div className="text-center py-8">
+                  <p className="text-sm text-muted-foreground italic drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                    Submit intel by calling the hotline...
+                  </p>
+                </div>
+              )}
+        </div>
+      </div>
+    </section>
+  );
+};
+
