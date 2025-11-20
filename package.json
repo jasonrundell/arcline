@@ -1,8 +1,7 @@
 {
   "name": "arcline",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "ARC Raiders Multi-Hotline Voice System",
-  "private": true,
   "scripts": {
     "dev": "tsx watch server.ts",
     "start": "node dist/server.js",

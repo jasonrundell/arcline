@@ -1,7 +1,9 @@
+import packageJson from "../../../package.json";
+
 /**
  * Footer Component
  *
- * Displays the site footer with copyright information and security notice.
+ * Displays the site footer with copyright information, version, and security notice.
  *
  * @component
  * @example
@@ -17,10 +19,9 @@ export const Footer = () => {
           ARCline © 2024 - Secure Communications System
         </p>
         <p className="text-xs text-muted-foreground mt-2 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-          All transmissions are monitored and encrypted
+          V {packageJson.version}
         </p>
       </div>
     </footer>
   );
 };
-
