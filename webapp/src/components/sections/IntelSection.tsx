@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -13,6 +14,22 @@ export const IntelSection = () => {
     isLoading: intelLoading,
     error: intelError,
   } = useIntel();
+
+  const formattedIntel = useMemo(() => {
+    if (!intel) return [];
+    return intel.map((report) => {
+      const reportDate = new Date(report.created_at);
+      const formattedDate = formatDistanceToNow(reportDate, {
+        addSuffix: true,
+      });
+      const reportId = report.id.slice(0, 8).toUpperCase();
+      return {
+        ...report,
+        formattedDate,
+        reportId,
+      };
+    });
+  }, [intel]);
 
   return (
     <section id="intel" className="py-20 px-6 relative">
@@ -41,14 +58,8 @@ export const IntelSection = () => {
               </p>
             </div>
           )}
-          {intel && intel.length > 0
-            ? intel.map((report) => {
-                const reportDate = new Date(report.created_at);
-                const formattedDate = formatDistanceToNow(reportDate, {
-                  addSuffix: true,
-                });
-                const reportId = report.id.slice(0, 8).toUpperCase();
-
+          {formattedIntel.length > 0
+            ? formattedIntel.map((report) => {
                 return (
                   <Card
                     key={report.id}
@@ -57,10 +68,10 @@ export const IntelSection = () => {
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-lg drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
-                          Report #{reportId}
+                          Report #{report.reportId}
                         </CardTitle>
                         <span className="text-xs text-muted-foreground bg-background/30 px-2 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
-                          {formattedDate}
+                          {report.formattedDate}
                         </span>
                       </div>
                     </CardHeader>

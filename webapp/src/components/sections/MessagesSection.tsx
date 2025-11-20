@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -15,6 +16,28 @@ export const MessagesSection = () => {
     isLoading: messagesLoading,
     error: messagesError,
   } = useMessages();
+
+  const formattedMessages = useMemo(() => {
+    if (!messages) return [];
+    return messages.map((message, index) => {
+      const messageDate = message.created_at
+        ? new Date(message.created_at)
+        : new Date();
+      let formattedDate: string;
+      if (isNaN(messageDate.getTime())) {
+        // Use current date as fallback
+        formattedDate = format(new Date(), "MM/dd/yyyy HH:mm");
+      } else {
+        formattedDate = format(messageDate, "MM/dd/yyyy HH:mm");
+      }
+      const messageNumber = String(index + 1).padStart(3, "0");
+      return {
+        ...message,
+        formattedDate,
+        messageNumber,
+      };
+    });
+  }, [messages]);
 
   return (
     <section
@@ -54,20 +77,8 @@ export const MessagesSection = () => {
               </p>
             </div>
           )}
-          {messages && messages.length > 0
-            ? messages.map((message, index) => {
-                const messageDate = message.created_at
-                  ? new Date(message.created_at)
-                  : new Date();
-                let formattedDate: string;
-                if (isNaN(messageDate.getTime())) {
-                  // Use current date as fallback
-                  formattedDate = format(new Date(), "MM/dd/yyyy HH:mm");
-                } else {
-                  formattedDate = format(messageDate, "MM/dd/yyyy HH:mm");
-                }
-                const messageNumber = String(index + 1).padStart(3, "0");
-
+          {formattedMessages.length > 0
+            ? formattedMessages.map((message) => {
                 return (
                   <Card
                     key={message.id}
@@ -81,10 +92,10 @@ export const MessagesSection = () => {
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-lg font-mono text-primary drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]">
-                          ► MESSAGE {messageNumber || ""}
+                          ► MESSAGE {message.messageNumber}
                         </CardTitle>
                         <span className="text-xs text-muted-foreground font-mono bg-background/40 px-2 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
-                          {formattedDate || ""}
+                          {message.formattedDate}
                         </span>
                       </div>
                     </CardHeader>
