@@ -269,11 +269,11 @@ const Index = () => {
             )}
             {messages && messages.length > 0
               ? messages.map((message, index) => {
-                  console.log("MESSAGE:", message);
-                  const messageDate = message.created_at ? new Date(message.created_at) : new Date();
+                  const messageDate = message.created_at
+                    ? new Date(message.created_at)
+                    : new Date();
                   let formattedDate: string;
                   if (isNaN(messageDate.getTime())) {
-                    console.error("Invalid date for message:", message.id);
                     // Use current date as fallback
                     formattedDate = format(new Date(), "MM/dd/yyyy HH:mm");
                   } else {
