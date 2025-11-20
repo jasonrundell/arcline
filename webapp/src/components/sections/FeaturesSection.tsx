@@ -18,14 +18,14 @@ export const FeaturesSection = () => {
   const serviceItemClasses =
     "flex flex-col items-start gap-4 p-6 rounded-lg transition-all bg-secondary/95";
   const iconClasses = "inline mr-2 w-7 h-7 text-primary";
-  const titleClasses = "text-primary mb-2 font-bold text-lg";
+  const titleClasses = "text-primary mb-2 font-bold text-lg tracking-wide";
   const descriptionClasses = "text-muted-foreground";
 
   return (
     <section id="features" className="py-20 px-6 relative">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-card/30 to-transparent"></div>
       <div className="container mx-auto relative">
-        <h3 className="text-3xl font-bold text-center mb-12">
+        <h3 className="text-3xl font-bold text-center mb-12 tracking-widest">
           Available Services
         </h3>
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6">
