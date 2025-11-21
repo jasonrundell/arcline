@@ -125,19 +125,34 @@ Before deploying, configure these environment variables in your hosting platform
    fly deploy
    ```
 
-### Option D: AWS/GCP/Azure
+### Option D: AWS
 
-Deploy as a standard Node.js application:
+Deploy to AWS using Elastic Beanstalk, EC2, or ECS. See [AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md) for detailed AWS deployment instructions.
 
-1. Build the application:
+**Quick Start (Elastic Beanstalk)**:
 
+1. Navigate to server directory:
    ```bash
-   npm run build
+   cd server
    ```
 
-2. Set environment variables in your platform's configuration
+2. Initialize Elastic Beanstalk:
+   ```bash
+   eb init
+   eb create arcline-production
+   ```
 
-3. Run `npm start` or `node dist/server.js`
+3. Set environment variables:
+   ```bash
+   eb setenv DOMAIN=your-domain.com SUPABASE_URL=... SUPABASE_ANON_KEY=...
+   ```
+
+4. Deploy:
+   ```bash
+   eb deploy
+   ```
+
+For detailed instructions on EC2, ECS, and advanced AWS configurations, see [AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md).
 
 ## Step 3: Configure Twilio Webhooks
 

@@ -41,15 +41,23 @@ A voice-based multi-hotline system for the ARC Raiders universe, built with Twil
    cd arcline
    ```
 
-2. **Install dependencies**
+2. **Install server dependencies**
 
    ```bash
+   cd server
    npm install
    ```
 
-3. **Set up environment variables**
+3. **Install client dependencies** (optional, for web app)
 
-   Create a `.env` file in the root directory:
+   ```bash
+   cd ../client
+   npm install
+   ```
+
+4. **Set up environment variables**
+
+   Create a `.env` file in the `server/` directory:
 
    ```env
    PORT=8080
@@ -82,6 +90,7 @@ A voice-based multi-hotline system for the ARC Raiders universe, built with Twil
 6. **Run development server**
 
    ```bash
+   cd server
    npm run dev
    ```
 
@@ -106,27 +115,45 @@ A voice-based multi-hotline system for the ARC Raiders universe, built with Twil
 
 ```
 arcline/
-├── server.ts              # Main server file with WebSocket support
-├── lib/                   # Utility libraries
-│   ├── supabase.ts       # Supabase client
-│   └── hotlines/         # Hotline handlers
-│       ├── menu.ts      # Main menu handler
-│       ├── extraction.ts
-│       ├── loot.ts
-│       ├── chicken.ts
-│       ├── gossip.ts
-│       └── alarm.ts
-├── types/                 # TypeScript types
-│   └── twilio.ts        # Twilio ConversationRelay types
-├── docs/                 # Documentation
-└── package.json
+├── server/                # Server application
+│   ├── server.ts         # Main server file with WebSocket support
+│   ├── api/              # API routes
+│   ├── lib/              # Utility libraries
+│   │   ├── supabase.ts  # Supabase client
+│   │   └── hotlines/    # Hotline handlers
+│   │       ├── menu.ts  # Main menu handler
+│   │       ├── extraction.ts
+│   │       ├── loot.ts
+│   │       ├── chicken.ts
+│   │       └── submit-intel.ts
+│   ├── types/            # TypeScript types
+│   │   └── twilio.ts    # Twilio ConversationRelay types
+│   ├── constants/        # Constants
+│   ├── scripts/          # Utility scripts
+│   ├── sql/              # Database schema
+│   └── package.json
+├── client/                # Client web application
+│   ├── src/              # React source code
+│   ├── public/           # Static assets
+│   └── package.json
+└── docs/                  # Documentation
 ```
 
 ## 🏗️ Building for Production
 
+### Server
+
 ```bash
+cd server
 npm run build
 npm start
+```
+
+### Client
+
+```bash
+cd client
+npm run build
 ```
 
 ## 🔧 How It Works
@@ -152,6 +179,7 @@ npm start
 - [API Documentation](docs/API.md) - API endpoints and webhook details
 - [Database Schema](docs/DATABASE_SCHEMA.md) - Database structure and setup
 - [Deployment Guide](docs/DEPLOYMENT.md) - Deployment instructions
+- [AWS Deployment](docs/AWS_DEPLOYMENT.md) - AWS-specific deployment guide
 - [Vercel Deployment](docs/VERCEL_DEPLOYMENT.md) - Vercel-specific deployment guide
 - [Twilio Setup](docs/TWILIO_SETUP.md) - Twilio ConversationRelay configuration
 - [Twilio ConversationRelay](https://www.twilio.com/docs/voice/conversationrelay) - Twilio ConversationRelay official documentation
@@ -162,10 +190,10 @@ The application can be deployed to any Node.js hosting platform:
 
 ### Single Platform Deployment
 
-- **Heroku**: Add a `Procfile` with `web: node dist/server.js`
-- **Railway**: Configure build command `npm run build` and start command `npm start`
-- **Fly.io**: Use the provided Dockerfile
-- **AWS/GCP/Azure**: Deploy as a Node.js application
+- **Heroku**: Deploy from `server/` directory with `Procfile`
+- **Railway**: Configure build command `npm run build` and start command `npm start` in `server/` directory
+- **Fly.io**: Use Dockerfile in `server/` directory
+- **AWS**: See [AWS_DEPLOYMENT.md](docs/AWS_DEPLOYMENT.md) for Elastic Beanstalk, EC2, or ECS deployment
 
 See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed instructions.
 
