@@ -6,7 +6,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const host =
     req.headers.host || process.env.VERCEL_URL || "arcline-relay.vercel.app";
   const protocol = req.headers["x-forwarded-proto"] || "https";
-  const webhookUrl = `wss://arcline-relay.vercel.app`;
+  const webhookUrl = `wss://arcline-relay.vercel.app/ws`;
   const webhookPath = `${webhookUrl}/ws`;
 
   // Voice configuration: Set ttsProvider, voice, and language attributes on ConversationRelay
