@@ -1,11 +1,12 @@
 import { useMemo, useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import scrappyBg from "@/assets/scrappy-messages-bg.webp";
-import scrappyImage from "@/assets/scrappy.webp";
-import { useMessages } from "@/hooks/use-messages";
 import { format } from "date-fns";
+import { useMessages } from "@/hooks/use-messages";
 import { sanitizeText } from "@/lib/sanitize";
 import { CONTACT } from "@/constants";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/Button";
+import scrappyBg from "@/assets/scrappy-messages-bg.webp";
+import scrappyImage from "@/assets/scrappy.webp";
 import { Section } from "@/components/layout/Section";
 
 /**
@@ -143,23 +144,21 @@ export const ScrappySection = () => {
             })}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-4 pt-6">
-                <button
+                <Button
                   onClick={handlePreviousPage}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 font-mono text-sm bg-secondary border-2 border-primary/30 rounded hover:bg-secondary/80 hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   ◄ PREV
-                </button>
+                </Button>
                 <span className="text-sm font-mono text-muted-foreground bg-background/40 px-3 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
                   PAGE {currentPage} / {totalPages}
                 </span>
-                <button
+                <Button
                   onClick={handleNextPage}
                   disabled={currentPage === totalPages}
-                  className="px-4 py-2 font-mono text-sm bg-secondary border-2 border-primary/30 rounded hover:bg-secondary/80 hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   NEXT ►
-                </button>
+                </Button>
               </div>
             )}
           </>

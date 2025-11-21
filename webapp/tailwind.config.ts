@@ -104,11 +104,16 @@ export default {
           "80%": { transform: "translate(1px, 2px) rotate(0.5deg)" },
           "90%": { transform: "translate(-2px, -1px) rotate(-0.5deg)" },
         },
+        scanlines: {
+          "0%": { backgroundPosition: "0 0" },
+          "100%": { backgroundPosition: "0 100%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         vibrate: "vibrate 0.5s infinite",
+        scanlines: "scanlines 8s linear infinite",
       },
     },
   },

@@ -16,7 +16,7 @@ import { Section } from "@/components/layout/Section";
  */
 export const HeroSection = () => {
   return (
-    <Section paddingY="md" containerClassName="text-center relative z-10">
+    <Section paddingY="md" containerClassName="text-center z-10">
       <h2 className="text-5xl md:text-7xl font-bold mb-2 bg-foreground from-foreground via-foreground to-primary bg-clip-text text-transparent">
         {APP_NAME}
       </h2>
