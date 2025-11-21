@@ -109,7 +109,7 @@ export async function handleMainMenu(
         // First time caller - present menu
         updatedMemory.step = "menu";
         const greetingResponse =
-          "Speranza Security: Shani here. What do you need, raider? I can help you with getting an extraction.. locating resources.. speaking with Scrappy.. submitting intel.. or listening to intel. Go ahead.";
+          "Speranza Security: Shani here. Speak 'extraction' for an extraction point, 'loot' for resource locations, 'scrappy' for material updates, 'submit intel' to share intel, or 'listen to intel' for the latest news. Go ahead.";
         updatedMemory.lastResponse = greetingResponse;
         return {
           actions: [

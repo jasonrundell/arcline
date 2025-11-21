@@ -140,8 +140,12 @@ fastify.get("/twiml", async (request, reply) => {
     domain = request.headers.host;
   }
 
-  // Use wss:// for WebSocket connection (ngrok provides HTTPS/WSS)
+  // Remove protocol prefix if present (we'll add it back based on HTTPS availability)
+  domain = domain.replace(/^https?:\/\//, "");
+
+  // Use wss:// for WebSocket connection (ngrok provides HTTPS/WSS automatically)
   // According to official docs: url attribute on <ConversationRelay> is for WebSocket connections
+  // For AWS, you need to configure HTTPS on the ALB to support wss://
   const isProduction = process.env.NODE_ENV === "production";
   const protocol = isProduction
     ? "wss"
@@ -149,10 +153,11 @@ fastify.get("/twiml", async (request, reply) => {
     ? "ws"
     : "wss";
 
-  // Enforce WSS in production
+  // Enforce WSS in production (same as ngrok setup)
   if (isProduction && protocol !== "wss") {
     throw new Error(
-      "Production must use WSS protocol for WebSocket connections"
+      "Production must use WSS protocol for WebSocket connections. " +
+        "Configure HTTPS on your load balancer to support wss:// connections."
     );
   }
 

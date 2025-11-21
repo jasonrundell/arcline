@@ -38,7 +38,9 @@ export function detectHotlineType(input: string): string | undefined {
   // Check for chicken/scrappy hotline
   if (
     normalizedInput.includes("scrappy") ||
-    normalizedInput.includes("chicken")
+    normalizedInput.includes("chicken") ||
+    input.includes("crappy") ||
+    input.includes("happy")
   ) {
     return "chicken";
   }

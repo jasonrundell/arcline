@@ -151,7 +151,7 @@ The server will start on `http://localhost:8080` and watch for file changes.
 
 ## Step 7: Deploy Webapp to Vercel
 
-The webapp is a React frontend that displays intel submissions and Scrappy messages. Deploy it to Vercel for production access.
+The client is a React frontend that displays intel submissions and Scrappy messages. Deploy it to Vercel for production access.
 
 ### Prerequisites
 
@@ -173,7 +173,7 @@ The webapp is a React frontend that displays intel submissions and Scrappy messa
    - Import your GitHub repository
    - Configure project settings:
      - **Framework Preset**: Vite
-     - **Root Directory**: `webapp`
+     - **Root Directory**: `client`
      - **Build Command**: `npm run build` (auto-detected)
      - **Output Directory**: `dist` (auto-detected)
      - **Install Command**: `npm install` (auto-detected)
@@ -197,7 +197,7 @@ The webapp is a React frontend that displays intel submissions and Scrappy messa
 
    - Wait for deployment to complete
    - Visit your Vercel deployment URL (e.g., `https://your-app.vercel.app`)
-   - You should see the ARC Line webapp interface
+   - You should see the ARC Line client interface
    - Test the intel submission and messages features
 
 ### Deploy via CLI (Alternative)
@@ -205,7 +205,7 @@ The webapp is a React frontend that displays intel submissions and Scrappy messa
 If you prefer using the CLI:
 
 ```bash
-cd webapp
+cd client
 vercel
 ```
 
@@ -234,8 +234,8 @@ Follow the prompts:
 
 **Build Fails**
 
-- Check that Root Directory is set to `webapp`
-- Verify all dependencies are in `webapp/package.json`
+- Check that Root Directory is set to `client`
+- Verify all dependencies are in `client/package.json`
 - Check build logs in Vercel dashboard for specific errors
 
 **Environment Variables Not Working**
@@ -287,7 +287,7 @@ Follow the prompts:
 
 ## Next Steps
 
-- Deploy the webapp to Vercel (see Step 7 above)
+- Deploy the client to Vercel (see Step 7 above)
 - See [DEPLOYMENT.md](DEPLOYMENT.md) for production server deployment
 - See [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md) for deploying the backend API to Vercel
 - See [TWILIO_SETUP.md](TWILIO_SETUP.md) for advanced Twilio configuration

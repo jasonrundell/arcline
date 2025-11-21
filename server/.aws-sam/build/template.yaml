@@ -1,0 +1,361 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: ARC Line ConversationRelay Server on Fargate
+Conditions:
+  CreateSSLCertificate:
+    Fn::And:
+    - Fn::Not:
+      - Fn::Equals:
+        - Ref: Domain
+        - ''
+    - Fn::Equals:
+      - Ref: SSLCertificateArn
+      - ''
+  HasSSLCertificate:
+    Fn::Or:
+    - Fn::Not:
+      - Fn::Equals:
+        - Ref: SSLCertificateArn
+        - ''
+    - Fn::Not:
+      - Fn::Equals:
+        - Ref: Domain
+        - ''
+Parameters:
+  ImageUri:
+    Type: String
+    Description: ECR image URI
+  Domain:
+    Type: String
+    Description: Production domain name (e.g., arcline.jasonrundell.com). Leave empty
+      to use ALB DNS.
+  SupabaseUrl:
+    Type: String
+    Description: Supabase project URL
+  SupabaseAnonKey:
+    Type: String
+    NoEcho: true
+    Description: Supabase anonymous key
+  TwilioAccountSid:
+    Type: String
+    NoEcho: true
+    Description: Twilio Account SID
+  TwilioAuthToken:
+    Type: String
+    NoEcho: true
+    Description: Twilio Auth Token
+  SSLCertificateArn:
+    Type: String
+    Description: ACM Certificate ARN for HTTPS (optional - will auto-create if Domain
+      is provided)
+Resources:
+  SSLCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Condition: CreateSSLCertificate
+    Properties:
+      DomainName:
+        Ref: Domain
+      ValidationMethod: DNS
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Sub: ${Domain}-certificate
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: arcline-cluster
+      CapacityProviders:
+      - FARGATE
+      - FARGATE_SPOT
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/arcline-server
+      RetentionInDays: 7
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+      - PolicyName: CloudWatchLogs
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: '*'
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: arcline-server
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+      - FARGATE
+      Cpu: '256'
+      Memory: '512'
+      ExecutionRoleArn:
+        Ref: TaskExecutionRole
+      ContainerDefinitions:
+      - Name: arcline-server
+        Image:
+          Ref: ImageUri
+        PortMappings:
+        - ContainerPort: 8080
+          Protocol: tcp
+        Environment:
+        - Name: PORT
+          Value: '8080'
+        - Name: NODE_ENV
+          Value: production
+        - Name: DOMAIN
+          Value:
+            Ref: Domain
+        - Name: SUPABASE_URL
+          Value:
+            Ref: SupabaseUrl
+        - Name: SUPABASE_ANON_KEY
+          Value:
+            Ref: SupabaseAnonKey
+        - Name: TWILIO_ACCOUNT_SID
+          Value:
+            Ref: TwilioAccountSid
+        - Name: TWILIO_AUTH_TOKEN
+          Value:
+            Ref: TwilioAuthToken
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group:
+              Ref: LogGroup
+            awslogs-region:
+              Ref: AWS::Region
+            awslogs-stream-prefix: ecs
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs: ''
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs: ''
+      CidrBlock: 10.0.2.0/24
+      MapPublicIpOnLaunch: true
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        Ref: InternetGateway
+      VpcId:
+        Ref: VPC
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId:
+        Ref: InternetGateway
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      SubnetId:
+        Ref: PublicSubnet1
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      SubnetId:
+        Ref: PublicSubnet2
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: arcline-server-sg
+      GroupDescription: Security group for ARC Line server
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 8080
+        ToPort: 8080
+        SourceSecurityGroupId:
+          Ref: ALBSecurityGroup
+        Description: Allow traffic from Application Load Balancer
+      SecurityGroupEgress:
+      - IpProtocol: -1
+        CidrIp: '0.0.0.0/0'
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: arcline-alb
+      Type: application
+      Scheme: internet-facing
+      Subnets:
+      - Ref: PublicSubnet1
+      - Ref: PublicSubnet2
+      SecurityGroups:
+      - Ref: ALBSecurityGroup
+      LoadBalancerAttributes:
+      - Key: idle_timeout.timeout_seconds
+        Value: 60
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: arcline-alb-sg
+      GroupDescription: Security group for Application Load Balancer
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: '0.0.0.0/0'
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: '0.0.0.0/0'
+      SecurityGroupEgress:
+      - IpProtocol: -1
+        CidrIp: '0.0.0.0/0'
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: arcline-tg
+      Port: 8080
+      Protocol: HTTP
+      VpcId:
+        Ref: VPC
+      TargetType: ip
+      HealthCheckPath: /health
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 3
+  HTTPListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Fn::If:
+        - HasSSLCertificate
+        - Type: redirect
+          RedirectConfig:
+            Protocol: HTTPS
+            Port: 443
+            StatusCode: HTTP_301
+        - Type: forward
+          TargetGroupArn:
+            Ref: TargetGroup
+      LoadBalancerArn:
+        Ref: LoadBalancer
+      Port: 80
+      Protocol: HTTP
+  HTTPSListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: HasSSLCertificate
+    DependsOn: SSLCertificate
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn:
+          Ref: TargetGroup
+      LoadBalancerArn:
+        Ref: LoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+      - CertificateArn:
+          Fn::If:
+          - CreateSSLCertificate
+          - Ref: SSLCertificate
+          - Ref: SSLCertificateArn
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn:
+    - HTTPListener
+    - TargetGroup
+    Properties:
+      ServiceName: arcline-server
+      Cluster:
+        Ref: ECSCluster
+      TaskDefinition:
+        Ref: TaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+          - Ref: PublicSubnet1
+          - Ref: PublicSubnet2
+          SecurityGroups:
+          - Ref: SecurityGroup
+      LoadBalancers:
+      - ContainerName: arcline-server
+        ContainerPort: 8080
+        TargetGroupArn:
+          Ref: TargetGroup
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+Outputs:
+  LoadBalancerDNS:
+    Description: DNS name of the load balancer
+    Value:
+      Fn::GetAtt:
+      - LoadBalancer
+      - DNSName
+  LoadBalancerURL:
+    Description: Full URL to access the application
+    Value:
+      Fn::Sub: http://${LoadBalancer.DNSName}
+  SSLCertificateArn:
+    Description: ACM Certificate ARN (if auto-created)
+    Condition: CreateSSLCertificate
+    Value:
+      Ref: SSLCertificate
+  SSLCertificateStatus:
+    Description: Check ACM console for DNS validation records. Add them to your DNS
+      provider to complete certificate validation.
+    Condition: CreateSSLCertificate
+    Value:
+      Fn::Sub: Certificate ${SSLCertificate} requires DNS validation. Check ACM console
+        for CNAME records.

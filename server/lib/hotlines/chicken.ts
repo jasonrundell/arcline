@@ -184,6 +184,8 @@ export async function handleChickenHotline(
         const wantsAnotherMessage =
           input.includes("message") ||
           input.includes("scrappy") ||
+          input.includes("crappy") ||
+          input.includes("happy") ||
           input.includes("tell") ||
           input.includes("relay") ||
           input.includes("another") ||

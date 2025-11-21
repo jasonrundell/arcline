@@ -55,7 +55,7 @@ export const supabase = new Proxy({} as SupabaseClient, {
 });
 
 // Database types
-// Note: Intel and ScrappyMessage types are defined in webapp/src/types/database.ts
+// Note: Intel and ScrappyMessage types are defined in ../client/src/types/database.ts
 // to avoid duplication. Import from there if needed in the frontend.
 
 export interface Log {

@@ -1,10 +1,10 @@
-# ARC Line Webapp
+# ARC Line Client
 
-A modern React frontend for the ARC Line voice hotline system. This webapp displays real-time intel submissions and Scrappy messages from the ARC Raiders community.
+A modern React frontend for the ARC Line voice hotline system. This client displays real-time intel submissions and Scrappy messages from the ARC Raiders community.
 
 ## Overview
 
-The ARC Line webapp provides a web interface for viewing:
+The ARC Line client provides a web interface for viewing:
 
 - **Scrappy Messages**: Community messages left for Scrappy via the hotline
 - **Intel Submissions**: Anonymous intelligence reports submitted through the voice system
@@ -40,10 +40,10 @@ The ARC Line webapp provides a web interface for viewing:
 
 ## Installation
 
-1. **Navigate to the webapp directory**:
+1. **Navigate to the client directory**:
 
    ```bash
-   cd webapp
+   cd client
    ```
 
 2. **Install dependencies**:
@@ -54,7 +54,7 @@ The ARC Line webapp provides a web interface for viewing:
 
 ## Environment Variables
 
-Create a `.env` file in the `webapp` directory:
+Create a `.env` file in the `client` directory:
 
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
@@ -130,13 +130,13 @@ See the main [SETUP.md](../docs/SETUP.md) guide for detailed Vercel deployment i
 Quick steps:
 
 1. Connect your repository to Vercel
-2. Set Root Directory to `webapp`
+2. Set Root Directory to `client`
 3. Add environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
 4. Deploy!
 
 ### Other Platforms
 
-The webapp can be deployed to any static hosting service:
+The client can be deployed to any static hosting service:
 
 - **Netlify**: Connect repository, set build command to `npm run build`, output directory to `dist`
 - **GitHub Pages**: Use GitHub Actions to build and deploy
@@ -146,7 +146,7 @@ The webapp can be deployed to any static hosting service:
 ## Project Structure
 
 ```
-webapp/
+client/
 ├── public/              # Static assets
 │   ├── favicon.ico
 │   └── robots.txt
@@ -214,7 +214,7 @@ See [DATABASE_SCHEMA.md](../docs/DATABASE_SCHEMA.md) for the complete schema.
 
 - Ensure variables are prefixed with `VITE_`
 - Restart the dev server after adding/changing variables
-- Check that `.env` file is in the `webapp` directory
+- Check that `.env` file is in the `client` directory
 
 ### Supabase Connection Errors
 
@@ -259,7 +259,7 @@ See the main repository [LICENSE](../LICENSE) file.
 
 ## Related Documentation
 
-- [SETUP.md](../docs/SETUP.md) - Full setup guide including webapp deployment
+- [SETUP.md](../docs/SETUP.md) - Full setup guide including client deployment
 - [DATABASE_SCHEMA.md](../docs/DATABASE_SCHEMA.md) - Database schema reference
 - [API.md](../docs/API.md) - Backend API documentation
 - [ARCHITECTURE.md](../docs/ARCHITECTURE.md) - System architecture overview
