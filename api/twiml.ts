@@ -19,12 +19,11 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 <Response>
   <Connect>
     <ConversationRelay
+      url="${webhookUrl}"
       ttsProvider="ElevenLabs"
       voice="1hlpeD1ydbI2ow0Tt3EW"
       language="en-GB"
-    >
-      <Webhook url="${webhookPath}" />
-    </ConversationRelay>
+    />
   </Connect>
 </Response>`;
 
