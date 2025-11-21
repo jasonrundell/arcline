@@ -6,8 +6,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const host =
     req.headers.host || process.env.VERCEL_URL || "arcline-relay.vercel.app";
   const protocol = req.headers["x-forwarded-proto"] || "https";
-  const webhookUrl = `${protocol}://${host}`;
-  const webhookPath = `${webhookUrl}/api/twilio/conversation/webhook`;
+  const webhookUrl = `wss://arcline-relay.vercel.app`;
+  const webhookPath = `${webhookUrl}/ws`;
 
   // Voice configuration: Set ttsProvider, voice, and language attributes on ConversationRelay
   // Uses Shani's voice (1hlpeD1ydbI2ow0Tt3EW) for all hotlines (matching server.ts)
