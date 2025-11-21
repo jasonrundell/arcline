@@ -1,6 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
+  // Support both GET (standard) and POST for TwiML endpoint
+  if (req.method && req.method !== "GET" && req.method !== "POST") {
+    res.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
   // Get the webhook URL for ConversationRelay (webhook mode, not WebSocket mode)
   // Use the request host header, or fall back to environment variables
   const host =
