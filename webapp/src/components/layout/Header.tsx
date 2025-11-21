@@ -73,8 +73,8 @@ export const Header = () => {
         <nav className="md:hidden mt-4 pb-4 border-t border-header-foreground/20 pt-4 relative z-10">
           <div className="container mx-auto flex flex-col gap-2">
             <a
-              href="#top"
-              onClick={handleNavClick}
+              href="#"
+              onClick={e => { handleScrollToTop(e); handleNavClick(); }}
               className={mobileLinkClasses}
             >
               Home
