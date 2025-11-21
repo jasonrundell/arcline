@@ -26,7 +26,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-background/95">
       <Header />
       {/* Wrapper for HeroSection and FeaturesSection with rainbow background */}
-      <div className="relative overflow-x-hidden overflow-y-hidden">
+      <div className="relative overflow-hidden">
         {/* Rainbow Lines Background - spans both sections */}
         <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-96 h-[200%] opacity-40 pointer-events-none z-0">
           <div className="absolute inset-0 flex gap-3 rotate-12">
