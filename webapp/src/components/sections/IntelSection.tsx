@@ -1,10 +1,11 @@
 import { useMemo, useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useIntel } from "@/hooks/use-intel";
 import { formatDistanceToNow } from "date-fns";
+import { useIntel } from "@/hooks/use-intel";
 import { sanitizeText } from "@/lib/sanitize";
 import { CONTACT } from "@/constants";
+import { Button } from "@/components/ui/Button";
 import { Section } from "@/components/layout/Section";
+import intelBg from "@/assets/intel-bg.webp";
 
 /**
  * IntelSection Component
@@ -28,6 +29,8 @@ export const IntelSection = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const reportsPerPage = 3;
+  const buttonClasses =
+    "w-full md:w-auto px-4 py-2 font-mono text-[#00ff00] bg-transparent border border-transparent hover:border-[#00ff00]/50 hover:bg-[#00ff00]/10 disabled:opacity-30 disabled:cursor-not-allowed";
 
   const formattedIntel = useMemo(() => {
     if (!intel) return [];
@@ -66,7 +69,15 @@ export const IntelSection = () => {
   };
 
   return (
-    <Section id="intel" paddingY="lg" hasGradient gradientIntensity="light">
+    <Section
+      id="intel"
+      paddingY="lg"
+      gradientIntensity="light"
+      backgroundImage={intelBg}
+      backgroundOverlay
+      overflowHidden
+      containerClassName="relative z-10"
+    >
       <div className="text-center mb-12">
         <h3 className="text-3xl font-bold mb-4 tracking-widest">
           Intel Submissions
@@ -79,84 +90,88 @@ export const IntelSection = () => {
           </a>
         </p>
       </div>
-      <div className="max-w-4xl mx-auto space-y-6">
-        {intelLoading && (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Loading intel reports...</p>
-          </div>
-        )}
-        {intelError && (
-          <div className="text-center py-8">
-            <p className="text-destructive">
-              Error loading intel reports. Please try again later.
-            </p>
-          </div>
-        )}
-        {formattedIntel.length > 0 ? (
-          <>
-            {paginatedIntel.map((report) => {
-              return (
-                <Card
-                  key={report.id}
-                  className="bg-foreground from-card to-secondary border-2 border-border"
-                >
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg font-mono text-secondary">
+      <div className="max-w-4xl mx-auto space-y-4 relative">
+        {/* CRT Monitor Container */}
+        <div className="bg-black/95 border-4 border-[#00ff00]/30 p-6 rounded-2xl shadow-[0_0_20px_rgba(0,255,0,0.3),inset_0_0_40px_rgba(0,255,0,0.1)] relative overflow-hidden">
+          {/* Scanline effect */}
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(transparent_50%,rgba(0,255,0,0.5)_50%)] bg-[length:100%_4px] animate-scanlines"></div>
+
+          {intelLoading && (
+            <div className="text-center py-8">
+              <p className="font-mono text-[#00ff00] text-sm">
+                Loading intel reports...
+              </p>
+            </div>
+          )}
+          {intelError && (
+            <div className="text-center py-8">
+              <p className="font-mono text-[#00ff00] text-sm">
+                Error loading intel reports. Please try again later.
+              </p>
+            </div>
+          )}
+          {formattedIntel.length > 0 ? (
+            <>
+              {paginatedIntel.map((report) => {
+                return (
+                  <div
+                    key={report.id}
+                    className="mb-6 pb-6 border-b border-[#00ff00]/20 last:border-b-0 last:mb-0 last:pb-0"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-lg font-mono text-[#00ff00] font-bold tracking-wider">
                         Report #{report.reportId}
-                      </CardTitle>
-                      <span className="text-xs font-mono text-secondary">
+                      </h4>
+                      <span className="text-xs font-mono text-[#00ff00]/70">
                         {report.formattedDate}
                       </span>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="font-mono text-secondary">
+                    <p className="font-mono text-[#00ff00] text-sm leading-relaxed mb-3">
                       {sanitizeText(report.content)}
                     </p>
                     <div className="flex gap-2">
                       {report.priority && (
-                        <span className="px-3 py-1 bg-gradient-to-b from-primary/20 to-primary/10 text-primary text-xs rounded-full border border-primary/40 shadow-[0_2px_6px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.15)]">
+                        <span className="px-3 py-1 font-mono text-[#00ff00] text-xs border border-[#00ff00]/50 bg-[#00ff00]/5">
                           {report.priority}
                         </span>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-4 pt-6">
-                <button
-                  onClick={handlePreviousPage}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 font-mono text-sm bg-secondary border-2 border-primary/30 rounded hover:bg-secondary/80 hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  ◄ PREV
-                </button>
-                <span className="text-sm font-mono text-muted-foreground bg-background/40 px-3 py-1 rounded shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
-                  PAGE {currentPage} / {totalPages}
-                </span>
-                <button
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 font-mono text-sm bg-secondary border-2 border-primary/30 rounded hover:bg-secondary/80 hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  NEXT ►
-                </button>
+                  </div>
+                );
+              })}
+              {totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6 mt-6 ">
+                  <Button
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                    className={buttonClasses}
+                  >
+                    ◄ PREV
+                  </Button>
+                  <span className="w-full md:w-auto text-center px-4 py-2 font-mono text-[#00ff00]/70">
+                    PAGE {currentPage} / {totalPages}
+                  </span>
+                  <Button
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                    className={buttonClasses}
+                  >
+                    NEXT ►
+                  </Button>
+                </div>
+              )}
+            </>
+          ) : (
+            !intelLoading &&
+            !intelError && (
+              <div className="text-center py-8">
+                <p className="text-sm font-mono text-[#00ff00]/70 italic">
+                  Submit intel by calling the hotline...
+                </p>
               </div>
-            )}
-          </>
-        ) : (
-          !intelLoading &&
-          !intelError && (
-            <div className="text-center py-8">
-              <p className="text-sm text-muted-foreground italic">
-                Submit intel by calling the hotline...
-              </p>
-            </div>
-          )
-        )}
+            )
+          )}
+        </div>
       </div>
       <div className="mx-auto mt-12">
         <div className="flex flex-col text-center items-center justify-center gap-3 mb-2">
