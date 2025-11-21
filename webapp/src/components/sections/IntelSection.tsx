@@ -30,7 +30,7 @@ export const IntelSection = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const reportsPerPage = 3;
   const buttonClasses =
-    "w-full md:w-auto px-4 py-2 font-mono text-[#00ff00] bg-transparent border border-[#00ff00]/50 hover:bg-[#00ff00]/10 disabled:opacity-30 disabled:cursor-not-allowed";
+    "w-full md:w-auto px-4 py-2 font-mono text-[#00ff00] bg-transparent border border-transparent hover:border-[#00ff00]/50 hover:bg-[#00ff00]/10 disabled:opacity-30 disabled:cursor-not-allowed";
 
   const formattedIntel = useMemo(() => {
     if (!intel) return [];
@@ -92,7 +92,7 @@ export const IntelSection = () => {
       </div>
       <div className="max-w-4xl mx-auto space-y-4 relative">
         {/* CRT Monitor Container */}
-        <div className="bg-black/95 border-4 border-[#00ff00]/30 p-6 rounded-sm shadow-[0_0_20px_rgba(0,255,0,0.3),inset_0_0_40px_rgba(0,255,0,0.1)] relative overflow-hidden">
+        <div className="bg-black/95 border-4 border-[#00ff00]/30 p-6 rounded-2xl shadow-[0_0_20px_rgba(0,255,0,0.3),inset_0_0_40px_rgba(0,255,0,0.1)] relative overflow-hidden">
           {/* Scanline effect */}
           <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(transparent_50%,rgba(0,255,0,0.5)_50%)] bg-[length:100%_4px] animate-scanlines"></div>
 
@@ -140,7 +140,7 @@ export const IntelSection = () => {
                 );
               })}
               {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6 mt-6">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6 mt-6 ">
                   <Button
                     onClick={handlePreviousPage}
                     disabled={currentPage === 1}
@@ -148,7 +148,7 @@ export const IntelSection = () => {
                   >
                     ◄ PREV
                   </Button>
-                  <span className="w-full md:w-auto text-center px-4 py-2 text-sm font-mono text-[#00ff00]/70 px-3 py-1 border border-[#00ff00]/30 bg-[#00ff00]/5">
+                  <span className="w-full md:w-auto text-center px-4 py-2 font-mono text-[#00ff00]/70">
                     PAGE {currentPage} / {totalPages}
                   </span>
                   <Button

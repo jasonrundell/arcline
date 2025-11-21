@@ -25,7 +25,7 @@ export const BioSection = () => {
   return (
     <Section id="project" paddingY="md" hasGradient>
       <div className="max-w-4xl mx-auto">
-        <div className="p-4 bg-gradient-to-b from-card to-secondary rounded-2xl border-2 border-border/50 sm:p-8 md:p-12">
+        <div className="p-4 sm:p-8 md:p-12">
           <div className="text-center mb-8">
             <img
               src={profilePhoto}
