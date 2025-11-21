@@ -179,7 +179,7 @@ export async function handleLootHotline(
         try {
           await sendSMS(phoneNumber, lootInfo);
           const smsSentResponse =
-            "Copy that. I've sent that information to your phone. Give the Sporanza network some time to get it to your communication device. Anything else you need help with?";
+            "Got it.Give the Sporanza network some time to get it to you. Anything else you need help with?";
           // Don't overwrite lootInfo, only update lastResponse for voice
           updatedMemory.lastResponse = smsSentResponse;
           // Keep lootInfo in memory for future SMS requests

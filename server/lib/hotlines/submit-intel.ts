@@ -49,7 +49,7 @@ export async function handleSubmitIntelHotline(
     case "greeting":
       updatedMemory.step = "submitting";
       const greetingResponse =
-        "Copy that. What intel have you got? Report what you've seen or heard. Speak clearly.";
+        "What intel have you got? Report what you've seen or heard. Speak clearly.";
       updatedMemory.lastResponse = greetingResponse;
       return {
         actions: [
@@ -78,7 +78,7 @@ export async function handleSubmitIntelHotline(
       // Validate that we have actual content to submit (not empty or just keywords)
       if (!intelContent || intelContent.trim().length === 0) {
         const emptyResponse =
-          "Didn't catch that. What intel have you got? Report what you've seen or heard. Speak clearly.";
+          "Didn't catch that. What intel have you got? Report what you've seen or heard.";
         updatedMemory.lastResponse = emptyResponse;
         return {
           actions: [
@@ -167,7 +167,7 @@ export async function handleSubmitIntelHotline(
         // Submit intel again
         updatedMemory.step = "submitting";
         const submittingPrompt =
-          "Copy that. What intel have you got? Report what you've seen or heard. Speak clearly.";
+          "What intel have you got? Report what you've seen or heard. Speak clearly.";
         updatedMemory.lastResponse = submittingPrompt;
         return {
           actions: [

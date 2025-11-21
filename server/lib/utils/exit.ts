@@ -20,7 +20,7 @@ export function createExitResponse(
 
   const exitMessage =
     customMessage ||
-    "Copy that. What else do you need, Raider? I can help with extraction, loot, Scrappy, or Speranza intel.";
+    "Copy that. What else do you need, Raider? Say 'extract', 'loot', 'scrappy', 'submit', or 'intel'";
 
   updatedMemory.lastResponse = exitMessage;
 

@@ -148,5 +148,5 @@ function getFallbackResponse(context: string, userInput: string): string {
   }
 
   // Generic fallback
-  return "Copy that. Understood. What else do you need, Raider?";
+  return "Understood. What else do you need, Raider?";
 }

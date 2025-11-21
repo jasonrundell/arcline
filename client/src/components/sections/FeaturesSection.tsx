@@ -19,8 +19,11 @@ export const FeaturesSection = () => {
   const serviceItemClasses =
     "flex flex-col items-start gap-4 p-6 rounded-lg transition-all bg-secondary/95";
   const iconClasses = "inline mr-2 w-7 h-7 text-primary";
-  const titleClasses = "text-primary mb-2 font-bold text-lg tracking-wide";
-  const descriptionClasses = "text-muted-foreground";
+  const titleClasses = "text-primary mb-2 font-bold text-xl tracking-wide";
+  const descriptionClasses = "text-lg";
+  const flavourClasses = "text-sm text-muted-foreground italic";
+  const linkClasses =
+    "text-primary hover:text-primary/80 font-medium text-lg mt-4";
 
   return (
     <Section paddingY="md" hasGradient>
@@ -35,10 +38,11 @@ export const FeaturesSection = () => {
               <ArrowLeftRight className={iconClasses} />
               Extraction Request
             </h4>
-            <p>Are you stuck topside? Sweat dripping in fear?</p>
             <p className={descriptionClasses}>
-              Shani's got you. Call and say{" "}
-              <strong>"I need an extract!"</strong>
+              Call and say <strong>"EXTRACT"</strong>
+            </p>
+            <p className={flavourClasses}>
+              Are you stuck topside? Sweat dripping in fear? Shani's got you.
             </p>
           </div>
         </div>
@@ -50,13 +54,12 @@ export const FeaturesSection = () => {
               <Package className={iconClasses} />
               Loot Locator
             </h4>
-            <p>
+            <p className={descriptionClasses}>
+              Call and say <strong>"LOOT"</strong>
+            </p>
+            <p className={flavourClasses}>
               Tough to access a database topside with that Snitch hovering over
               you.
-            </p>
-            <p className={descriptionClasses}>
-              Call Shani and she'll help you find what you need.{" "}
-              <strong>"Where can I find rusted gears?"</strong>
             </p>
           </div>
         </div>
@@ -69,16 +72,17 @@ export const FeaturesSection = () => {
               <Egg className={iconClasses} />
               Scrappy's Chicken Line
             </h4>
-            <p>Always collecting. He never gives up. Who's feeding this guy?</p>
             <p className={descriptionClasses}>
-              Call and say <strong>"I need to talk to Scrappy."</strong>
+              Call and say <strong>"SCRAPPY"</strong>
             </p>
             <p className={descriptionClasses}>
-              Once your message has been verified, it'll go up on this site for
-              Scrappy to check out.
+              Verified messages will appear on this site.
             </p>
-            <a href="#messages">
-              <p className="text-primary/90 mt-2 italic">→ View messages</p>
+            <p className={flavourClasses}>
+              Always collecting. He never gives up. Who's feeding this guy?
+            </p>
+            <a href="#messages" className={linkClasses}>
+              View messages →
             </a>
           </div>
         </div>
@@ -90,23 +94,16 @@ export const FeaturesSection = () => {
               <RadioIcon className={iconClasses} />
               Intel Hub
             </h4>
-            <p>Intel is the lifeblood of the Raider network.</p>
             <p className={descriptionClasses}>
-              Call and say <strong>"I have intel to share"</strong> if you want
-              to share intel with the Raider network.
+              Call and say <strong>"SUBMIT"</strong> to submit intel. Once
+              verified, your intel will go up on this site for everyone to see.
             </p>
             <p className={descriptionClasses}>
-              Once verified, your intel will go up on this site for everyone to
-              see.
+              Call and say <strong>"INTEL"</strong> to listen to the latest
+              intel.
             </p>
-            <p className={descriptionClasses}>
-              Or say <strong>"What's the latest intel?"</strong> to hear the
-              latest intel.
-            </p>
-            <a href="#intel">
-              <p className="text-primary/90 mt-2 italic">
-                → View intel reports
-              </p>
+            <a href="#intel" className={linkClasses}>
+              View intel →
             </a>
           </div>
         </div>
