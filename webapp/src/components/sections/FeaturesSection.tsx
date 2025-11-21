@@ -36,7 +36,7 @@ export const FeaturesSection = () => {
               Extraction Request
             </h4>
             <p>Are you stuck topside? Sweat dripping in fear?</p>
-            <p className={`${descriptionClasses} mt-4`}>
+            <p className={descriptionClasses}>
               Shani's got you. Call and say{" "}
               <strong>"I need an extract!"</strong>
             </p>
@@ -54,7 +54,7 @@ export const FeaturesSection = () => {
               Tough to access a database topside with that Snitch hovering over
               you.
             </p>
-            <p className={`${descriptionClasses} mt-4`}>
+            <p className={descriptionClasses}>
               Call Shani and she'll help you find what you need.{" "}
               <strong>"Where can I find rusted gears?"</strong>
             </p>
@@ -78,7 +78,7 @@ export const FeaturesSection = () => {
               Scrappy to check out.
             </p>
             <a href="#messages">
-              <p className="text-primary/70 mt-2 italic">→ View messages</p>
+              <p className="text-primary/90 mt-2 italic">→ View messages</p>
             </a>
           </div>
         </div>
@@ -104,7 +104,7 @@ export const FeaturesSection = () => {
               latest intel.
             </p>
             <a href="#intel">
-              <p className="text-primary/70 mt-2 italic">
+              <p className="text-primary/90 mt-2 italic">
                 → View intel reports
               </p>
             </a>
