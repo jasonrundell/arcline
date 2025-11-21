@@ -45,9 +45,6 @@ export const Header = () => {
           <a href="#" onClick={handleScrollToTop} className={linkClasses}>
             Home
           </a>
-          <a href="#features" className={linkClasses}>
-            Features
-          </a>
           <a href="#messages" className={linkClasses}>
             Messages
           </a>
@@ -81,13 +78,6 @@ export const Header = () => {
               className={mobileLinkClasses}
             >
               Home
-            </a>
-            <a
-              href="#features"
-              onClick={handleNavClick}
-              className={mobileLinkClasses}
-            >
-              Features
             </a>
             <a
               href="#messages"
