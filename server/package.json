@@ -1,6 +1,6 @@
 {
   "name": "arc-line-relay-server",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "ARC Raiders Multi-Hotline Voice System",
   "scripts": {
     "dev": "tsx watch server.ts",
@@ -34,7 +34,8 @@
     "dotenv": "^17.2.3",
     "fastify": "^5.0.0",
     "twilio": "^5.10.5",
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

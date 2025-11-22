@@ -332,22 +332,6 @@ Each hotline handler implements the same interface:
 
 ---
 
-## Next.js App (`app/`) - Legacy
-
-Legacy Next.js App Router structure (may be deprecated):
-
-- **`app/api/twilio/conversation/webhook/route.ts`**
-
-  - Next.js API route for Twilio webhook
-  - Alternative to Fastify server endpoint
-  - Handles ConversationRelay requests
-
-- **`app/sw.js/route.ts`**
-  - Service worker route
-  - PWA offline support
-
----
-
 ## Components (`components/`) - Legacy
 
 Legacy React components (may be deprecated in favor of webapp):
@@ -483,11 +467,6 @@ ARC Raiders character documentation:
 ## Static Assets (`public/`)
 
 - **`public/manifest.json`**
-
-  - PWA manifest file
-
-- **`public/sw.js`**
-  - Service worker script for offline support
 
 ### Webapp Static Assets (`webapp/public/`)
 

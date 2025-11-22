@@ -1,18 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  ConversationRelayRequest,
-  ConversationRelayResponse,
-} from "@/types/twilio";
+import { z } from "zod";
+import { ConversationRelayRequest } from "@/types/twilio";
 import { routeToHotline } from "@/lib/utils/router";
+
+const webhookSchema = z.object({
+  ConversationSid: z.string().min(1),
+  CurrentInput: z.string(),
+  CurrentInputType: z.string(),
+  Memory: z.string(),
+  CurrentTask: z.string().nullable().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const conversationSid = formData.get("ConversationSid") as string;
-    const currentInput = formData.get("CurrentInput") as string;
-    const currentInputType = formData.get("CurrentInputType") as string;
-    const memory = formData.get("Memory") as string;
-    const currentTask = formData.get("CurrentTask") as string | null;
+    const data = {
+      ConversationSid: formData.get("ConversationSid") as string,
+      CurrentInput: formData.get("CurrentInput") as string,
+      CurrentInputType: formData.get("CurrentInputType") as string,
+      Memory: formData.get("Memory") as string,
+      CurrentTask: formData.get("CurrentTask") as string | null,
+    };
+
+    const validated = webhookSchema.parse(data);
+    const conversationSid = validated.ConversationSid;
+    const currentInput = validated.CurrentInput;
+    const currentInputType = validated.CurrentInputType;
+    const memory = validated.Memory;
+    const currentTask = validated.CurrentTask ?? null;
 
     // Parse memory JSON
     let memoryObj: Record<string, unknown> = {};
