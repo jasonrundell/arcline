@@ -1,32 +1,6 @@
-import { defineConfig, loadEnv, Plugin } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import fs from "fs";
-
-// Plugin to inject version from package.json into service worker
-function injectServiceWorkerVersion(): Plugin {
-  return {
-    name: "inject-service-worker-version",
-    writeBundle() {
-      // Read version from package.json
-      const packageJsonPath = path.resolve(__dirname, "./package.json");
-      const packageJson = JSON.parse(
-        fs.readFileSync(packageJsonPath, "utf-8")
-      );
-      const version = packageJson.version;
-
-      // Read the built service worker
-      const swPath = path.resolve(__dirname, "./dist/sw.js");
-      if (fs.existsSync(swPath)) {
-        let swContent = fs.readFileSync(swPath, "utf-8");
-        // Replace the version placeholder
-        swContent = swContent.replace(/__VERSION__/g, version);
-        // Write back the updated service worker
-        fs.writeFileSync(swPath, swContent, "utf-8");
-      }
-    },
-  };
-}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -49,7 +23,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [react(), injectServiceWorkerVersion()],
+    plugins: [react()],
     server: {
       host: "::",
       port: 3000,
