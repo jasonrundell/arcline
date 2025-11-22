@@ -1,0 +1,27 @@
+{
+  "name": "arcline",
+  "version": "1.6.0",
+  "description": "ARC Line - ARC Raiders Multi-Hotline Voice System",
+  "private": true,
+  "scripts": {
+    "postinstall": "cd server && npm install && npm run build",
+    "start": "cd server && npm start"
+  },
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jasonrundell/arcline.git"
+  },
+  "keywords": [
+    "arc-raiders",
+    "twilio",
+    "hotline",
+    "voice",
+    "conversationrelay"
+  ],
+  "author": "",
+  "license": "MIT"
+}

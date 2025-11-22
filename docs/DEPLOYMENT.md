@@ -38,6 +38,8 @@ Before deploying, configure these environment variables in your hosting platform
 
 ### Option A: Heroku
 
+The repository is configured to deploy the `server/` folder as the root project. The root `package.json` and `Procfile` handle this automatically.
+
 1. **Install Heroku CLI** and login:
 
    ```bash
@@ -58,16 +60,13 @@ Before deploying, configure these environment variables in your hosting platform
    heroku config:set SUPABASE_ANON_KEY=your-supabase-key
    ```
 
-4. **Create Procfile**:
+4. **Deploy**:
 
-   ```
-   web: node dist/server.js
-   ```
-
-5. **Deploy**:
    ```bash
    git push heroku main
    ```
+
+   **Note**: The root `package.json` automatically installs server dependencies and builds the project during deployment. The root `Procfile` runs the server from the `server/` directory.
 
 ### Option B: Railway
 
@@ -132,17 +131,20 @@ Deploy to AWS using Elastic Beanstalk, EC2, or ECS. See [AWS_DEPLOYMENT.md](AWS_
 **Quick Start (Elastic Beanstalk)**:
 
 1. Navigate to server directory:
+
    ```bash
    cd server
    ```
 
 2. Initialize Elastic Beanstalk:
+
    ```bash
    eb init
    eb create arcline-production
    ```
 
 3. Set environment variables:
+
    ```bash
    eb setenv DOMAIN=your-domain.com SUPABASE_URL=... SUPABASE_ANON_KEY=...
    ```

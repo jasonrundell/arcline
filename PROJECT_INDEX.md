@@ -5,7 +5,7 @@ Comprehensive index of the ARC Raiders Multi-Hotline Voice System codebase.
 ## Project Overview
 
 **Name:** ARC Line  
-**Version:** 2.0.0  
+**Version:** 1.6.0  
 **Type:** Multi-Hotline Voice System for ARC Raiders  
 **Tech Stack:** Node.js, TypeScript, Fastify, Vite, React, Twilio ConversationRelay, Supabase  
 **License:** MIT
@@ -16,27 +16,51 @@ Comprehensive index of the ARC Raiders Multi-Hotline Voice System codebase.
 
 ```
 arcline/
-├── __tests__/              # Test files
-├── api/                    # API routes (legacy/alternative)
-├── app/                    # Next.js App Router (legacy)
-├── components/             # React components (legacy)
-├── docs/                   # Documentation
-├── e2e/                    # End-to-end tests
-├── lib/                    # Library/utility code
-│   ├── ai/                 # AI modules
-│   ├── hotlines/           # Hotline handlers
-│   └── utils/              # Utility functions
-├── public/                 # Static assets
-├── scripts/                # Utility scripts
-├── sql/                    # Database schema
-├── types/                  # TypeScript type definitions
-├── webapp/                 # Vite + React web application
-│   └── src/
-│       ├── components/     # React components
-│       ├── hooks/          # React hooks
-│       ├── lib/            # Utilities
-│       └── pages/          # Page components
-└── [config files]          # Configuration files
+├── client/                  # Vite + React web application
+│   ├── src/
+│   │   ├── components/      # React components
+│   │   │   ├── layout/      # Layout components (Header, Footer, Section)
+│   │   │   ├── sections/    # Page sections (Hero, Bio, Features, Intel, Scrappy)
+│   │   │   └── ui/          # UI components (Button, Card, ErrorButton)
+│   │   ├── pages/           # Page components
+│   │   ├── hooks/           # Custom React hooks
+│   │   ├── lib/             # Utilities (errors, sanitize, sentry, supabase, utils)
+│   │   ├── types/           # TypeScript type definitions
+│   │   ├── constants/       # Constants
+│   │   └── assets/          # Static assets (images)
+│   ├── public/              # Public static assets
+│   ├── components.json      # shadcn/ui configuration
+│   ├── tailwind.config.ts   # Tailwind CSS configuration
+│   ├── vite.config.ts       # Vite configuration
+│   ├── tsconfig.json        # TypeScript configuration
+│   ├── tsconfig.app.json    # TypeScript app config
+│   ├── tsconfig.node.json   # TypeScript node config
+│   ├── vercel.json          # Vercel deployment configuration
+│   └── package.json
+├── server/                  # Fastify server application
+│   ├── server.ts            # Main server file
+│   ├── lib/
+│   │   ├── ai/              # AI modules (lootlookup, shaniresponse)
+│   │   ├── hotlines/        # Hotline handlers
+│   │   ├── utils/           # Utility functions
+│   │   └── supabase.ts      # Supabase client
+│   ├── types/               # TypeScript type definitions
+│   ├── constants/           # Constants
+│   ├── scripts/             # Utility scripts
+│   ├── sql/                 # Database schema
+│   ├── Dockerfile           # Docker configuration
+│   ├── Procfile             # Heroku deployment configuration
+│   ├── template.yaml        # AWS SAM template
+│   ├── samconfig.toml       # AWS SAM configuration
+│   ├── tsconfig.json        # TypeScript configuration
+│   └── package.json
+├── docs/                    # Documentation
+│   ├── personas/            # Character personas
+│   └── lovable/             # Lovable-specific docs
+├── LICENSE                  # MIT License
+├── README.md                # Main project README
+├── PROJECT_INDEX.md         # This file
+└── .gitignore               # Git ignore rules
 ```
 
 ---
@@ -45,7 +69,7 @@ arcline/
 
 ### Entry Points & Server
 
-- **`server.ts`** (541 lines)
+- **`server/server.ts`** (~807 lines)
   - Main Fastify server with WebSocket support
   - Handles Twilio ConversationRelay WebSocket connections
   - Routes to hotline handlers based on user selection
@@ -57,15 +81,16 @@ arcline/
     - `POST /api/twilio/conversation/webhook` - Webhook endpoint (fallback)
     - `GET /health` - Health check endpoint
 
-### Configuration Files
+### Server Configuration Files
 
-- **`package.json`**
+- **`server/package.json`**
 
-  - Dependencies: Fastify, Twilio, Supabase, WebSocket
-  - Scripts: dev, start, build, test, lint
+  - Dependencies: Fastify, Twilio, Supabase, WebSocket, Zod
+  - Scripts: dev, start, build, lint
   - Keywords: arc-raiders, twilio, hotline, voice, conversationrelay
+  - Version: 1.6.0
 
-- **`tsconfig.json`**
+- **`server/tsconfig.json`**
 
   - TypeScript compiler configuration
   - Target: ES2020
@@ -73,86 +98,95 @@ arcline/
   - Output: `dist/`
   - Excludes tests from build
 
-- **`next.config.ts`**
+- **`server/Procfile`**
 
-  - Next.js configuration (legacy)
-  - React strict mode enabled
-  - PWA-ready
-
-- **`vercel.json`**
-
-  - Vercel deployment configuration
-  - Function timeouts and rewrites
-  - Maps `/twiml` to `/api/twiml`
-
-- **`jest.config.js`**
-
-  - Jest test configuration
-
-- **`jest.setup.js`**
-
-  - Jest test setup
-
-- **`playwright.config.ts`**
-
-  - Playwright E2E test configuration
-
-- **`Procfile`**
   - Heroku deployment configuration
 
-### Webapp Configuration (`webapp/`)
+- **`server/Dockerfile`**
 
-- **`webapp/package.json`**
+  - Docker configuration for containerized deployment
+
+- **`server/template.yaml`**
+
+  - AWS SAM template for serverless deployment
+
+- **`server/samconfig.toml`**
+  - AWS SAM configuration
+
+### Client Configuration (`client/`)
+
+- **`client/package.json`**
 
   - Vite + React application
-  - Dependencies: React, React Router, TanStack Query, Supabase, shadcn/ui, Sonner
+  - Dependencies: React, React Router, TanStack Query, Supabase, Sentry, Lucide React
   - Scripts: dev, build, build:dev, lint, preview
+  - Version: 1.6.0
 
-- **`webapp/vite.config.ts`**
+- **`client/vite.config.ts`**
 
   - Vite configuration
   - React SWC plugin
-  - Path aliases configured
+  - Path aliases configured (`@/*` maps to `src/*`)
+  - Environment variable validation
 
-- **`webapp/tsconfig.json`**
+- **`client/tsconfig.json`**
 
-  - TypeScript configuration for webapp
-  - React-specific settings
+  - TypeScript configuration for client
+  - References: tsconfig.app.json, tsconfig.node.json
   - Path aliases: `@/*` maps to `src/*`
 
-- **`webapp/tailwind.config.ts`**
+- **`client/tsconfig.app.json`**
 
-  - Tailwind CSS configuration for webapp
+  - TypeScript configuration for app code
+
+- **`client/tsconfig.node.json`**
+
+  - TypeScript configuration for Node.js tooling
+
+- **`client/tailwind.config.ts`**
+
+  - Tailwind CSS configuration
   - ARC Raiders theme integration
 
-- **`webapp/components.json`**
+- **`client/components.json`**
+
   - shadcn/ui component configuration
+
+- **`client/vercel.json`**
+  - Vercel deployment configuration
 
 ---
 
-## Library Code (`lib/`)
+## Server Library Code (`server/lib/`)
 
 ### Supabase Client
 
-- **`lib/supabase.ts`**
+- **`server/lib/supabase.ts`**
   - Supabase client singleton
   - Environment variable configuration
   - TypeScript interfaces:
     - `Intel`
     - `ScrappyMessage`
 
-### AI Modules (`lib/ai/`)
+### Constants
 
-- **`lib/ai/lootlookup.ts`**
+- **`server/constants/index.ts`**
+  - Application constants
+  - Timeouts: CALL_END_DELAY, LOOT_LOOKUP_DELAY, SESSION_TIMEOUT, SESSION_CLEANUP_INTERVAL
+  - WebSocket: MAX_CONNECTIONS
+
+### AI Modules (`server/lib/ai/`)
+
+- **`server/lib/ai/lootlookup.ts`**
 
   - AI-powered loot lookup functionality
   - Processes loot search queries
 
-- **`lib/ai/shaniresponse.ts`**
+- **`server/lib/ai/shaniresponse.ts`**
   - AI response generation for Shani character
   - Voice response formatting
 
-### Hotline Handlers (`lib/hotlines/`)
+### Hotline Handlers (`server/lib/hotlines/`)
 
 Each hotline handler implements the same interface:
 
@@ -160,106 +194,110 @@ Each hotline handler implements the same interface:
 - Returns `ConversationRelayResponse` with actions (say, listen, remember)
 - Uses state machine pattern with `memory.step`
 
-- **`lib/hotlines/menu.ts`**
+- **`server/lib/hotlines/menu.ts`**
 
   - Main menu handler
   - Presents 5 hotline options (1-5)
   - Routes to specific hotlines based on selection
 
-- **`lib/hotlines/extraction.ts`**
+- **`server/lib/hotlines/extraction.ts`**
 
   - Extraction Request hotline (#1)
   - Collects user location
   - Creates extraction requests in database
   - Provides confirmation
 
-- **`lib/hotlines/loot.ts`**
+- **`server/lib/hotlines/loot.ts`**
 
   - Loot Locator hotline (#2)
   - Searches for items in database
   - Returns location and rarity information
   - Uses AI for enhanced lookup
 
-- **`lib/hotlines/chicken.ts`**
+- **`server/lib/hotlines/chicken.ts`**
 
   - Scrappy's Chicken Line (#3)
   - Fun sound clips and randomizers
   - Entertainment-focused interactions
   - Manages scrappy_messages table
 
-- **`lib/hotlines/listen-intel.ts`**
+- **`server/lib/hotlines/listen-intel.ts`**
 
   - Listen to Intel hotline (Faction News)
   - Retrieves verified intel entries
   - Reads intel content to caller
   - Pagination support
 
-- **`lib/hotlines/submit-intel.ts`**
+- **`server/lib/hotlines/submit-intel.ts`**
   - Submit Intel hotline (Faction News)
   - Allows users to submit intel/rumors
   - Collects faction, content, and priority
   - Creates intel entries in database
 
-### Utility Functions (`lib/utils/`)
+### Utility Functions (`server/lib/utils/`)
 
-- **`lib/utils/router.ts`**
+- **`server/lib/utils/router.ts`**
 
   - Centralized routing logic
   - Routes requests to appropriate hotline handlers
   - Handles menu navigation
 
-- **`lib/utils/hotline-detection.ts`**
+- **`server/lib/utils/hotline-detection.ts`**
 
   - Detects hotline type from user input
   - Number-based and voice-based detection
 
-- **`lib/utils/exit.ts`**
+- **`server/lib/utils/exit.ts`**
 
   - End call detection
   - Exit response generation
   - Menu navigation helpers
 
-- **`lib/utils/repeat.ts`**
+- **`server/lib/utils/repeat.ts`**
 
   - Repeat request detection
   - Repeats last message functionality
 
-- **`lib/utils/session-logger.ts`**
+- **`server/lib/utils/session-logger.ts`**
 
   - Session-aware logging system
   - Associates logs with call sessions (callSid)
   - In-memory log storage
 
-- **`lib/utils/save-logs.ts`**
+- **`server/lib/utils/save-logs.ts`**
 
   - Saves session logs to database
   - Persists logs to `logs` table on session end
 
-- **`lib/utils/sms.ts`**
+- **`server/lib/utils/sms.ts`**
   - SMS sending utilities
   - Twilio SMS integration
 
 ---
 
-## Webapp Application (`webapp/`)
+## Client Application (`client/`)
 
 ### Entry Point
 
-- **`webapp/src/main.tsx`**
+- **`client/src/main.tsx`**
 
   - Vite entry point
   - React root rendering
   - Global styles import
+  - Sentry initialization
+  - Error handling for root element
 
-- **`webapp/src/App.tsx`**
+- **`client/src/App.tsx`**
   - Main application component
   - React Router setup
   - TanStack Query provider
+  - Error Boundary wrapper
+  - Lazy loading with Suspense
   - Route definitions
 
-### Pages (`webapp/src/pages/`)
+### Pages (`client/src/pages/`)
 
-- **`webapp/src/pages/index.tsx`**
+- **`client/src/pages/index.tsx`**
 
   - Homepage/main page
   - Displays hotline information
@@ -267,65 +305,172 @@ Each hotline handler implements the same interface:
   - Shows Scrappy messages
   - Real-time data fetching with React Query
 
-- **`webapp/src/pages/NotFound.tsx`**
+- **`client/src/pages/NotFound.tsx`**
   - 404 Not Found page
   - Error handling component
 
-### Components (`webapp/src/components/`)
+### Components (`client/src/components/`)
 
-- **`webapp/src/components/NavLink.tsx`**
+#### Layout Components (`client/src/components/layout/`)
 
-  - Navigation link component
-  - React Router integration
+- **`client/src/components/layout/Header.tsx`**
 
-- **`webapp/src/components/ui/card.tsx`**
+  - Site header component
+  - Navigation elements
+
+- **`client/src/components/layout/Footer.tsx`**
+
+  - Site footer component
+
+- **`client/src/components/layout/Section.tsx`**
+  - Reusable section wrapper component
+  - Consistent spacing and layout
+
+#### Section Components (`client/src/components/sections/`)
+
+- **`client/src/components/sections/HeroSection.tsx`**
+
+  - Hero section with phone number and tagline
+  - Animated phone icon
+
+- **`client/src/components/sections/BioSection.tsx`**
+
+  - Bio/about section
+
+- **`client/src/components/sections/FeaturesSection.tsx`**
+
+  - Features/hotlines section
+
+- **`client/src/components/sections/IntelSection.tsx`**
+
+  - Intel/Raider Report section
+
+- **`client/src/components/sections/ScrappySection.tsx`**
+  - Scrappy messages section
+
+#### UI Components (`client/src/components/ui/`)
+
+- **`client/src/components/ui/Button.tsx`**
+
+  - Button component
+
+- **`client/src/components/ui/card.tsx`**
+
   - shadcn/ui Card component
   - Reusable card UI component
   - Subcomponents: CardHeader, CardTitle, CardDescription, CardContent
 
-### Hooks (`webapp/src/hooks/`)
+- **`client/src/components/ui/error-button.jsx`**
+  - Error button component
 
-- **`webapp/src/hooks/use-intel.ts`**
+#### Other Components
+
+- **`client/src/components/ErrorBoundary.tsx`**
+
+  - React Error Boundary component
+  - Catches and handles React errors
+
+- **`client/src/components/NavLink.tsx`**
+  - Navigation link component
+  - React Router integration
+
+### Hooks (`client/src/hooks/`)
+
+- **`client/src/hooks/use-intel.ts`**
 
   - React Query hook for fetching intel
   - Fetches from `intel` table filtered by faction
   - Returns: data, isLoading, error
 
-- **`webapp/src/hooks/use-messages.ts`**
+- **`client/src/hooks/use-messages.ts`**
 
   - React Query hook for fetching Scrappy messages
   - Fetches from `scrappy_messages` table
   - Returns: data, isLoading, error
 
-- **`webapp/src/hooks/use-mobile.tsx`**
+- **`client/src/hooks/use-mobile.tsx`**
   - Mobile detection hook
   - Responsive UI utilities
 
-### Library (`webapp/src/lib/`)
+### Library (`client/src/lib/`)
 
-- **`webapp/src/lib/supabase.ts`**
+- **`client/src/lib/supabase.ts`**
 
-  - Supabase client for webapp
+  - Supabase client for client application
   - Browser-optimized configuration
 
-- **`webapp/src/lib/utils.ts`**
+- **`client/src/lib/utils.ts`**
+
   - Utility functions
   - `cn()` function for className merging (tailwind-merge + clsx)
 
-### Assets (`webapp/src/assets/`)
+- **`client/src/lib/errors.ts`**
 
-- **`webapp/src/assets/scrappy-messages-bg.png`**
+  - Application error codes and error handling
+  - Standardized error codes (DATABASE_ERROR, MISSING_DATA, UNKNOWN_ERROR, etc.)
+  - AppError class for consistent error handling
 
-  - Background image for Scrappy messages section
+- **`client/src/lib/sentry.ts`**
 
-- **`webapp/src/assets/scrappy-messages-bg.webp`**
-  - WebP version of Scrappy background image
+  - Sentry error monitoring configuration
+  - Initializes Sentry for error tracking and performance monitoring
+  - Environment-based configuration
+
+- **`client/src/lib/sanitize.ts`**
+  - Content sanitization utilities
+  - HTML/content sanitization functions
+
+### Types (`client/src/types/`)
+
+- **`client/src/types/database.ts`**
+  - Database type definitions
+  - Supabase-generated types
+
+### Constants (`client/src/constants/`)
+
+- **`client/src/constants/index.ts`**
+  - Application constants
+  - App name, contact information, etc.
+
+### Assets (`client/src/assets/`)
+
+- **`client/src/assets/arcline-og-share.psd`**
+
+  - Open Graph share image source
+
+- **`client/src/assets/intel-bg.webp`**
+
+  - Intel section background image
+
+- **`client/src/assets/jason-rundell-avatar.webp`**
+
+  - Avatar image
+
+- **`client/src/assets/scrappy-messages-bg.webp`**
+
+  - Scrappy messages section background image
+
+- **`client/src/assets/scrappy.webp`**
+  - Scrappy character image
+
+### Public Assets (`client/public/`)
+
+- **`client/public/arcline-og-share.webp`**
+
+  - Open Graph share image
+
+- **`client/public/favicon.ico`**
+
+  - Site favicon
+
+- **`client/public/robots.txt`**
+  - Search engine robots configuration
 
 ---
 
-## Type Definitions (`types/`)
+## Server Type Definitions (`server/types/`)
 
-- **`types/twilio.ts`**
+- **`server/types/twilio.ts`**
   - `ConversationRelayRequest` interface
   - `ConversationRelayResponse` interface
   - `HotlineType` union type:
@@ -338,30 +483,17 @@ Each hotline handler implements the same interface:
 
 ---
 
-## Alternative API Routes (`api/`)
+## Scripts (`server/scripts/`)
 
-Legacy or alternative API implementations:
-
-- **`api/twiml.ts`**
-
-  - Alternative TwiML endpoint (for Vercel deployment)
-
-- **`api/twilio/conversation/webhook.ts`**
-  - Alternative webhook endpoint (for Vercel deployment)
-
----
-
-## Scripts (`scripts/`)
-
-- **`scripts/test-supabase.ts`**
+- **`server/scripts/test-supabase.ts`**
   - Supabase connection testing script
   - Database connectivity verification
 
 ---
 
-## SQL (`sql/`)
+## SQL (`server/sql/`)
 
-- **`sql/database_schema.sql`**
+- **`server/sql/database_schema.sql`**
   - Complete database schema
   - Table definitions:
     - `intel` - Faction intel and rumors
@@ -373,24 +505,6 @@ Legacy or alternative API implementations:
 
 ---
 
-## Tests
-
-### Unit Tests (`__tests__/`)
-
-- **`__tests__/components/HotlineCard.test.tsx`**
-
-  - Tests for HotlineCard component
-
-- **`__tests__/lib/hotlines/chicken.test.ts`**
-  - Tests for chicken hotline handler
-
-### E2E Tests (`e2e/`)
-
-- **`e2e/homepage.spec.ts`**
-  - Playwright E2E tests for homepage
-
----
-
 ## Documentation (`docs/`)
 
 Comprehensive documentation files:
@@ -398,7 +512,9 @@ Comprehensive documentation files:
 - **`docs/ACCESSIBILITY.md`** - Accessibility guidelines
 - **`docs/API.md`** - API endpoints and webhook details
 - **`docs/ARCHITECTURE.md`** - System architecture overview
+- **`docs/AWS_DEPLOYMENT.md`** - AWS-specific deployment guide
 - **`docs/CHANGELOG.md`** - Version history
+- **`docs/CODE_REVIEW_REPORT.md`** - Code review report
 - **`docs/DATABASE_SCHEMA.md`** - Database structure and setup
 - **`docs/DEPLOYMENT.md`** - Deployment instructions
 - **`docs/DEVELOPMENT.md`** - Development setup guide
@@ -409,6 +525,8 @@ Comprehensive documentation files:
 - **`docs/TWILIO_SETUP.md`** - Twilio ConversationRelay configuration
 - **`docs/VERCEL_DEPLOYMENT.md`** - Vercel-specific deployment guide
 - **`docs/VOICE_SWITCHING_LIMITATION.md`** - Voice switching limitations
+- **`docs/AI_CODE_REVIEW_PROMPT.md`** - AI code review prompt
+- **`docs/AI_HYBRID_APPROACH.md`** - AI hybrid approach documentation
 
 ### Character Documentation
 
@@ -425,22 +543,17 @@ ARC Raiders character documentation:
 
 - **`docs/ARC_RAIDERS_DIALOG_AND_LORE.md`** - Dialog and lore reference
 
----
+### Lovable Documentation
 
-## Static Assets (`public/`)
-
-- **`public/manifest.json`**
-
-### Webapp Static Assets (`webapp/public/`)
-
-- **`webapp/public/robots.txt`**
-  - Search engine robots configuration
+- **`docs/lovable/LOVABLE_PROMPT.md`** - Lovable-specific documentation
 
 ---
 
 ## Environment Variables
 
-Required environment variables (`.env` or `.env.local`):
+### Server Environment Variables
+
+Required environment variables for `server/` (`.env` or `.env.local`):
 
 ```
 PORT=8080
@@ -451,6 +564,16 @@ SUPABASE_ANON_KEY=your-anon-key
 
 TWILIO_ACCOUNT_SID=your_account_sid
 TWILIO_AUTH_TOKEN=your_auth_token
+```
+
+### Client Environment Variables
+
+Required environment variables for `client/` (`.env` or `.env.local`):
+
+```
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_SENTRY_DSN=your-sentry-dsn (optional)
 ```
 
 ---
@@ -476,16 +599,15 @@ TWILIO_AUTH_TOKEN=your_auth_token
 ### Technologies
 
 - **Backend:** Fastify server with WebSocket support
-- **Frontend:**
-  - Primary: Vite + React (in `webapp/`)
-  - Legacy: Next.js 14+ with App Router (in `app/`)
+- **Frontend:** Vite + React (in `client/`)
 - **Database:** Supabase (PostgreSQL)
 - **Voice:** Twilio ConversationRelay
 - **Styling:** Tailwind CSS with ARC Raiders theme
 - **State Management:** TanStack Query (React Query)
-- **Routing:** React Router (webapp)
+- **Routing:** React Router
 - **UI Components:** shadcn/ui
-- **Notifications:** Sonner (toast notifications)
+- **Error Monitoring:** Sentry
+- **Icons:** Lucide React
 
 ---
 
@@ -493,21 +615,21 @@ TWILIO_AUTH_TOKEN=your_auth_token
 
 ### Development Commands
 
-#### Main Server
+#### Server
 
 ```bash
+cd server
 npm run dev          # Start development server (tsx watch)
 npm run build        # Build for production (TypeScript compile)
 npm start            # Start production server
-npm test             # Run tests
 npm run lint         # Lint code
 ```
 
-#### Webapp
+#### Client
 
 ```bash
-cd webapp
-npm run dev          # Start Vite dev server
+cd client
+npm run dev          # Start Vite dev server (port 3000)
 npm run build        # Build for production
 npm run build:dev    # Build in development mode
 npm run preview      # Preview production build
@@ -543,13 +665,13 @@ All tables have RLS enabled with anonymous read/write policies for application f
 
 - ✅ Core server implementation (Fastify + WebSocket)
 - ✅ All 5+ hotlines implemented
-- ✅ Web UI (Vite + React in webapp/)
+- ✅ Web UI (Vite + React in `client/`)
 - ✅ Database integration (Supabase)
 - ✅ Session logging system
-- ✅ Testing setup (Jest + Playwright)
-- ✅ PWA support (legacy)
+- ✅ Error monitoring (Sentry)
+- ✅ Comprehensive error handling
 - 📚 Comprehensive documentation
-- 🚀 Deployable to Vercel/Heroku/Railway
+- 🚀 Deployable to Vercel/Heroku/Railway/AWS
 
 ---
 
@@ -557,7 +679,7 @@ All tables have RLS enabled with anonymous read/write policies for application f
 
 - **LICENSE** - MIT License
 - **README.md** - Main project README
-- **.gitignore** - Git ignore rules (if present)
+- **.gitignore** - Git ignore rules
 
 ---
 

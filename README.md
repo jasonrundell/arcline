@@ -70,12 +70,12 @@ A voice-based multi-hotline system for the ARC Raiders universe, built with Twil
    TWILIO_AUTH_TOKEN=your_auth_token
    ```
 
-4. **Set up database**
+5. **Set up database**
 
    - Go to your Supabase project
    - Run the SQL from `docs/DATABASE_SCHEMA.md` in the SQL Editor
 
-5. **Start ngrok** (for local development)
+6. **Start ngrok** (for local development)
 
    ```bash
    ngrok http 8080
@@ -87,7 +87,7 @@ A voice-based multi-hotline system for the ARC Raiders universe, built with Twil
    DOMAIN=abc123.ngrok.io
    ```
 
-6. **Run development server**
+7. **Run development server**
 
    ```bash
    cd server
@@ -96,7 +96,7 @@ A voice-based multi-hotline system for the ARC Raiders universe, built with Twil
 
    The server will start on `http://localhost:8080`
 
-7. **Configure Twilio**
+8. **Configure Twilio**
 
    - Go to your Twilio Console
    - Navigate to Phone Numbers > Manage > Active Numbers
@@ -107,7 +107,7 @@ A voice-based multi-hotline system for the ARC Raiders universe, built with Twil
      ```
    - Set HTTP method to **GET**
 
-8. **Test the system**
+9. **Test the system**
 
    Call your Twilio phone number and follow the voice prompts!
 
@@ -117,26 +117,54 @@ A voice-based multi-hotline system for the ARC Raiders universe, built with Twil
 arcline/
 ├── server/                # Server application
 │   ├── server.ts         # Main server file with WebSocket support
-│   ├── api/              # API routes
 │   ├── lib/              # Utility libraries
 │   │   ├── supabase.ts  # Supabase client
-│   │   └── hotlines/    # Hotline handlers
-│   │       ├── menu.ts  # Main menu handler
-│   │       ├── extraction.ts
-│   │       ├── loot.ts
-│   │       ├── chicken.ts
-│   │       └── submit-intel.ts
+│   │   ├── ai/          # AI handlers
+│   │   │   ├── lootlookup.ts
+│   │   │   └── shaniresponse.ts
+│   │   ├── hotlines/    # Hotline handlers
+│   │   │   ├── menu.ts  # Main menu handler
+│   │   │   ├── extraction.ts
+│   │   │   ├── loot.ts
+│   │   │   ├── chicken.ts
+│   │   │   ├── listen-intel.ts
+│   │   │   └── submit-intel.ts
+│   │   └── utils/       # Utility functions
+│   │       ├── exit.ts
+│   │       ├── hotline-detection.ts
+│   │       ├── repeat.ts
+│   │       ├── router.ts
+│   │       ├── save-logs.ts
+│   │       ├── session-logger.ts
+│   │       └── sms.ts
 │   ├── types/            # TypeScript types
 │   │   └── twilio.ts    # Twilio ConversationRelay types
 │   ├── constants/        # Constants
 │   ├── scripts/          # Utility scripts
 │   ├── sql/              # Database schema
+│   │   └── database_schema.sql
+│   ├── Dockerfile        # Docker configuration
+│   ├── Procfile          # Process configuration
+│   ├── template.yaml     # AWS SAM template
+│   ├── tsconfig.json     # TypeScript configuration
 │   └── package.json
 ├── client/                # Client web application
 │   ├── src/              # React source code
-│   ├── public/           # Static assets
+│   │   ├── components/   # React components
+│   │   ├── pages/        # Page components
+│   │   ├── hooks/        # Custom React hooks
+│   │   ├── lib/          # Utility libraries
+│   │   ├── types/        # TypeScript types
+│   │   ├── constants/    # Constants
+│   │   └── assets/       # Static assets
+│   ├── public/           # Public static assets
+│   ├── tailwind.config.ts
+│   ├── vite.config.ts
+│   ├── tsconfig.json
 │   └── package.json
 └── docs/                  # Documentation
+    ├── personas/         # Character personas
+    └── lovable/          # Lovable-specific docs
 ```
 
 ## 🏗️ Building for Production
@@ -190,7 +218,7 @@ The application can be deployed to any Node.js hosting platform:
 
 ### Single Platform Deployment
 
-- **Heroku**: Deploy from `server/` directory with `Procfile`
+- **Heroku**: Root `package.json` and `Procfile` automatically configure deployment from `server/` directory
 - **Railway**: Configure build command `npm run build` and start command `npm start` in `server/` directory
 - **Fly.io**: Use Dockerfile in `server/` directory
 - **AWS**: See [AWS_DEPLOYMENT.md](docs/AWS_DEPLOYMENT.md) for Elastic Beanstalk, EC2, or ECS deployment

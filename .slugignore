@@ -1,0 +1,7 @@
+client/
+docs/
+*.md
+!README.md
+.git/
+.gitignore
+
