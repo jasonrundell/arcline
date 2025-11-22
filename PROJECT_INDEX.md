@@ -85,15 +85,6 @@ arcline/
   - Function timeouts and rewrites
   - Maps `/twiml` to `/api/twiml`
 
-- **`tailwind.config.ts`**
-
-  - Tailwind CSS configuration
-  - ARC Raiders theme colors
-
-- **`postcss.config.mjs`**
-
-  - PostCSS configuration for Tailwind
-
 - **`jest.config.js`**
 
   - Jest test configuration
@@ -332,50 +323,6 @@ Each hotline handler implements the same interface:
 
 ---
 
-## Next.js App (`app/`) - Legacy
-
-Legacy Next.js App Router structure (may be deprecated):
-
-- **`app/api/twilio/conversation/webhook/route.ts`**
-
-  - Next.js API route for Twilio webhook
-  - Alternative to Fastify server endpoint
-  - Handles ConversationRelay requests
-
-- **`app/sw.js/route.ts`**
-  - Service worker route
-  - PWA offline support
-
----
-
-## Components (`components/`) - Legacy
-
-Legacy React components (may be deprecated in favor of webapp):
-
-- **`components/Header.tsx`**
-
-  - Site header component
-
-- **`components/Footer.tsx`**
-
-  - Site footer component
-
-- **`components/HotlineCard.tsx`**
-
-  - Card component for displaying hotline information
-  - Used in hotline grid
-
-- **`components/HotlineDetail.tsx`**
-
-  - Detailed view of a single hotline
-  - Shows hotline description and features
-
-- **`components/HotlineGrid.tsx`**
-  - Grid layout for displaying all hotlines
-  - Main homepage component
-
----
-
 ## Type Definitions (`types/`)
 
 - **`types/twilio.ts`**
@@ -483,11 +430,6 @@ ARC Raiders character documentation:
 ## Static Assets (`public/`)
 
 - **`public/manifest.json`**
-
-  - PWA manifest file
-
-- **`public/sw.js`**
-  - Service worker script for offline support
 
 ### Webapp Static Assets (`webapp/public/`)
 

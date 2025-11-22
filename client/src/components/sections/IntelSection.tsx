@@ -120,7 +120,7 @@ export const IntelSection = () => {
                   >
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-lg font-mono text-[#00ff00] font-bold tracking-wider">
-                        Report #{report.reportId}
+                        Intel #{report.reportId}
                       </h4>
                       <span className="text-xs font-mono text-[#00ff00]/70">
                         {report.formattedDate}

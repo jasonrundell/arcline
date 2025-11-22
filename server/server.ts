@@ -12,10 +12,7 @@ import formbody from "@fastify/formbody";
 import rateLimit from "@fastify/rate-limit";
 import twilio from "twilio";
 import { routeToHotline } from "./lib/utils/router";
-import {
-  ConversationRelayRequest,
-  ConversationRelayResponse,
-} from "./types/twilio";
+import { ConversationRelayRequest } from "./types/twilio";
 import { isEndCallRequest, createEndCallResponse } from "./lib/utils/exit";
 import { createSessionAwareLogger } from "./lib/utils/session-logger";
 import { saveSessionLogsToDatabase } from "./lib/utils/save-logs";
