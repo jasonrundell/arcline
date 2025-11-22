@@ -98,7 +98,7 @@ Add to your `.env.local`:
 ```env
 TWILIO_ACCOUNT_SID=your_account_sid
 TWILIO_AUTH_TOKEN=your_auth_token
-NEXT_PUBLIC_TWILIO_PHONE_NUMBER=+18722825463
+TWILIO_PHONE_NUMBER=+18722825463
 ```
 
 **Note**: Only one phone number is needed. Users select options via the voice menu (1-5).

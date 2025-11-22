@@ -10,15 +10,10 @@ import twilio from "twilio";
  * @param message - The message content to send
  * @returns Promise that resolves when SMS is sent
  */
-export async function sendSMS(
-  to: string,
-  message: string
-): Promise<void> {
+export async function sendSMS(to: string, message: string): Promise<void> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  let fromNumber =
-    process.env.TWILIO_PHONE_NUMBER ||
-    process.env.NEXT_PUBLIC_TWILIO_PHONE_NUMBER;
+  let fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
   console.log("SMS configuration check:", {
     hasAccountSid: !!accountSid,
@@ -26,8 +21,6 @@ export async function sendSMS(
     fromNumberRaw: fromNumber,
     fromNumberSource: process.env.TWILIO_PHONE_NUMBER
       ? "TWILIO_PHONE_NUMBER"
-      : process.env.NEXT_PUBLIC_TWILIO_PHONE_NUMBER
-      ? "NEXT_PUBLIC_TWILIO_PHONE_NUMBER"
       : "none",
   });
 
@@ -76,7 +69,7 @@ export async function sendSMS(
   // Twilio SMS has a 1600 character limit per message
   // If the message is longer, split it into multiple messages
   const MAX_SMS_LENGTH = 1600;
-  
+
   try {
     if (message.length <= MAX_SMS_LENGTH) {
       // Single message - send as is
@@ -96,16 +89,19 @@ export async function sendSMS(
       // Split message into multiple parts
       const parts: string[] = [];
       let currentIndex = 0;
-      
+
       while (currentIndex < message.length) {
-        let chunk = message.substring(currentIndex, currentIndex + MAX_SMS_LENGTH);
-        
+        let chunk = message.substring(
+          currentIndex,
+          currentIndex + MAX_SMS_LENGTH
+        );
+
         // Try to break at a sentence boundary if possible (within last 100 chars)
         if (currentIndex + MAX_SMS_LENGTH < message.length) {
-          const lastPeriod = chunk.lastIndexOf('.');
-          const lastNewline = chunk.lastIndexOf('\n');
+          const lastPeriod = chunk.lastIndexOf(".");
+          const lastNewline = chunk.lastIndexOf("\n");
           const breakPoint = Math.max(lastPeriod, lastNewline);
-          
+
           // If we found a good break point in the last 200 characters, use it
           if (breakPoint > MAX_SMS_LENGTH - 200) {
             chunk = chunk.substring(0, breakPoint + 1);
@@ -116,29 +112,30 @@ export async function sendSMS(
         } else {
           currentIndex += MAX_SMS_LENGTH;
         }
-        
+
         parts.push(chunk);
       }
-      
+
       // Send all parts
       const results = [];
       for (let i = 0; i < parts.length; i++) {
-        const partNumber = parts.length > 1 ? ` (${i + 1}/${parts.length})` : '';
-        const partMessage = parts.length > 1 
-          ? `${parts[i]}${partNumber}`
-          : parts[i];
-        
+        const partNumber =
+          parts.length > 1 ? ` (${i + 1}/${parts.length})` : "";
+        const partMessage =
+          parts.length > 1 ? `${parts[i]}${partNumber}` : parts[i];
+
         // Ensure part doesn't exceed limit even with part number
-        const finalMessage = partMessage.length > MAX_SMS_LENGTH
-          ? parts[i] // Send without part number if it would exceed limit
-          : partMessage;
-        
+        const finalMessage =
+          partMessage.length > MAX_SMS_LENGTH
+            ? parts[i] // Send without part number if it would exceed limit
+            : partMessage;
+
         const result = await client.messages.create({
           body: finalMessage,
           from: fromNumber,
           to: to,
         });
-        
+
         results.push(result);
         console.log(`SMS part ${i + 1}/${parts.length} sent:`, {
           to,
@@ -146,18 +143,18 @@ export async function sendSMS(
           status: result.status,
           partLength: finalMessage.length,
         });
-        
+
         // Small delay between messages to avoid rate limiting
         if (i < parts.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
       }
-      
+
       console.log("All SMS parts sent successfully:", {
         to,
         totalParts: parts.length,
         totalLength: message.length,
-        messageSids: results.map(r => r.sid),
+        messageSids: results.map((r) => r.sid),
       });
     }
   } catch (error) {
@@ -165,4 +162,3 @@ export async function sendSMS(
     throw error;
   }
 }
-
