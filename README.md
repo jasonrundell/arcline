@@ -145,7 +145,6 @@ arcline/
 │   │   └── database_schema.sql
 │   ├── Dockerfile        # Docker configuration
 │   ├── Procfile          # Process configuration
-│   ├── template.yaml     # AWS SAM template
 │   ├── tsconfig.json     # TypeScript configuration
 │   └── package.json
 ├── client/                # Client web application
@@ -207,7 +206,6 @@ npm run build
 - [API Documentation](docs/API.md) - API endpoints and webhook details
 - [Database Schema](docs/DATABASE_SCHEMA.md) - Database structure and setup
 - [Deployment Guide](docs/DEPLOYMENT.md) - Deployment instructions
-- [AWS Deployment](docs/AWS_DEPLOYMENT.md) - AWS-specific deployment guide
 - [Vercel Deployment](docs/VERCEL_DEPLOYMENT.md) - Vercel-specific deployment guide
 - [Twilio Setup](docs/TWILIO_SETUP.md) - Twilio ConversationRelay configuration
 - [Twilio ConversationRelay](https://www.twilio.com/docs/voice/conversationrelay) - Twilio ConversationRelay official documentation
@@ -221,7 +219,6 @@ The application can be deployed to any Node.js hosting platform:
 - **Heroku**: Root `package.json` and `Procfile` automatically configure deployment from `server/` directory
 - **Railway**: Configure build command `npm run build` and start command `npm start` in `server/` directory
 - **Fly.io**: Use Dockerfile in `server/` directory
-- **AWS**: See [AWS_DEPLOYMENT.md](docs/AWS_DEPLOYMENT.md) for Elastic Beanstalk, EC2, or ECS deployment
 
 See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed instructions.
 

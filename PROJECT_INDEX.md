@@ -50,8 +50,6 @@ arcline/
 │   ├── sql/                 # Database schema
 │   ├── Dockerfile           # Docker configuration
 │   ├── Procfile             # Heroku deployment configuration
-│   ├── template.yaml        # AWS SAM template
-│   ├── samconfig.toml       # AWS SAM configuration
 │   ├── tsconfig.json        # TypeScript configuration
 │   └── package.json
 ├── docs/                    # Documentation
@@ -105,13 +103,6 @@ arcline/
 - **`server/Dockerfile`**
 
   - Docker configuration for containerized deployment
-
-- **`server/template.yaml`**
-
-  - AWS SAM template for serverless deployment
-
-- **`server/samconfig.toml`**
-  - AWS SAM configuration
 
 ### Client Configuration (`client/`)
 
@@ -512,7 +503,6 @@ Comprehensive documentation files:
 - **`docs/ACCESSIBILITY.md`** - Accessibility guidelines
 - **`docs/API.md`** - API endpoints and webhook details
 - **`docs/ARCHITECTURE.md`** - System architecture overview
-- **`docs/AWS_DEPLOYMENT.md`** - AWS-specific deployment guide
 - **`docs/CHANGELOG.md`** - Version history
 - **`docs/CODE_REVIEW_REPORT.md`** - Code review report
 - **`docs/DATABASE_SCHEMA.md`** - Database structure and setup
@@ -671,7 +661,7 @@ All tables have RLS enabled with anonymous read/write policies for application f
 - ✅ Error monitoring (Sentry)
 - ✅ Comprehensive error handling
 - 📚 Comprehensive documentation
-- 🚀 Deployable to Vercel/Heroku/Railway/AWS
+- 🚀 Deployable to Vercel/Heroku/Railway
 
 ---
 

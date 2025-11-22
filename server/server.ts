@@ -142,7 +142,6 @@ fastify.get("/twiml", async (request, reply) => {
 
   // Use wss:// for WebSocket connection (ngrok provides HTTPS/WSS automatically)
   // According to official docs: url attribute on <ConversationRelay> is for WebSocket connections
-  // For AWS, you need to configure HTTPS on the ALB to support wss://
   const isProduction = process.env.NODE_ENV === "production";
   const protocol = isProduction
     ? "wss"
