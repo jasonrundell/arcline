@@ -4,7 +4,7 @@
   "description": "ARC Line - ARC Raiders Multi-Hotline Voice System",
   "private": true,
   "scripts": {
-    "postinstall": "cd server && npm install && npm run build",
+    "postinstall": "cd server && npm install --include=dev && npm run build",
     "start": "cd server && npm start"
   },
   "engines": {
