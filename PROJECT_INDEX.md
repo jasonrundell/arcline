@@ -85,15 +85,6 @@ arcline/
   - Function timeouts and rewrites
   - Maps `/twiml` to `/api/twiml`
 
-- **`tailwind.config.ts`**
-
-  - Tailwind CSS configuration
-  - ARC Raiders theme colors
-
-- **`postcss.config.mjs`**
-
-  - PostCSS configuration for Tailwind
-
 - **`jest.config.js`**
 
   - Jest test configuration

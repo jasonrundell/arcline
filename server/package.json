@@ -6,8 +6,7 @@
     "dev": "tsx watch server.ts",
     "start": "node dist/server.js",
     "build": "tsc",
-    "lint": "eslint . --ext .ts",
-    "test": "jest"
+    "lint": "eslint . --ext .ts"
   },
   "repository": {
     "type": "git",
@@ -30,7 +29,6 @@
     "@fastify/formbody": "^8.0.2",
     "@fastify/rate-limit": "^10.1.1",
     "@supabase/supabase-js": "^2.81.1",
-    "@vercel/node": "^3.0.0",
     "dotenv": "^17.2.3",
     "fastify": "^5.0.0",
     "twilio": "^5.10.5",

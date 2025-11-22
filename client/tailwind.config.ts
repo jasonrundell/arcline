@@ -76,22 +76,6 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
-        "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
-        },
-        "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
-        },
         vibrate: {
           "0%, 100%": { transform: "translate(0, 0) rotate(0deg)" },
           "10%": { transform: "translate(-2px, -1px) rotate(-0.5deg)" },

@@ -18,19 +18,16 @@ export function detectHotlineType(input: string): string | undefined {
   // Check for loot hotline (most specific patterns first)
   if (
     normalizedInput.includes("loot") ||
-    normalizedInput.includes("loots") ||
     normalizedInput.includes("loop") ||
-    normalizedInput.includes("loops") ||
     normalizedInput.includes("lou") ||
     normalizedInput.includes("lous") ||
     normalizedInput.includes("item") ||
-    normalizedInput.includes("items") ||
     normalizedInput.includes("flute") ||
-    normalizedInput.includes("flutes") ||
     normalizedInput.includes("resource") ||
-    normalizedInput.includes("resources") ||
     normalizedInput.includes("material") ||
-    normalizedInput.includes("materials")
+    normalizedInput.includes("clip") ||
+    normalizedInput.includes("click") ||
+    normalizedInput.includes("lipped")
   ) {
     return "loot";
   }
