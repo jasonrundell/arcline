@@ -323,34 +323,6 @@ Each hotline handler implements the same interface:
 
 ---
 
-## Components (`components/`) - Legacy
-
-Legacy React components (may be deprecated in favor of webapp):
-
-- **`components/Header.tsx`**
-
-  - Site header component
-
-- **`components/Footer.tsx`**
-
-  - Site footer component
-
-- **`components/HotlineCard.tsx`**
-
-  - Card component for displaying hotline information
-  - Used in hotline grid
-
-- **`components/HotlineDetail.tsx`**
-
-  - Detailed view of a single hotline
-  - Shows hotline description and features
-
-- **`components/HotlineGrid.tsx`**
-  - Grid layout for displaying all hotlines
-  - Main homepage component
-
----
-
 ## Type Definitions (`types/`)
 
 - **`types/twilio.ts`**
