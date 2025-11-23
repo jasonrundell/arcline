@@ -21,6 +21,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - E2E tests with Playwright
 - Comprehensive documentation
 
+### Changed
+
+- Environment variable naming: `TWILIO_PHONE_NUMBER` is now the preferred variable for Twilio phone number configuration
+- `NEXT_PUBLIC_TWILIO_PHONE_NUMBER` is still supported as a fallback but is deprecated and will be removed in a future release
+
+### Deprecated
+
+- `NEXT_PUBLIC_TWILIO_PHONE_NUMBER` - Use `TWILIO_PHONE_NUMBER` instead. A deprecation warning will be logged when the old variable is used.
+
+### Migration Guide
+
+If you are currently using `NEXT_PUBLIC_TWILIO_PHONE_NUMBER`, please update your environment configuration to use `TWILIO_PHONE_NUMBER` instead:
+
+```bash
+# Old (deprecated)
+NEXT_PUBLIC_TWILIO_PHONE_NUMBER=+1234567890
+
+# New (recommended)
+TWILIO_PHONE_NUMBER=+1234567890
+```
+
+The old variable will continue to work for now, but you'll see a deprecation warning in the logs.
+
 ### Features
 
 - Extraction Request Hotline

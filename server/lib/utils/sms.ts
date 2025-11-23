@@ -13,7 +13,20 @@ import twilio from "twilio";
 export async function sendSMS(to: string, message: string): Promise<void> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  let fromNumber = process.env.TWILIO_PHONE_NUMBER;
+  let fromNumber =
+    process.env.TWILIO_PHONE_NUMBER ||
+    process.env.NEXT_PUBLIC_TWILIO_PHONE_NUMBER;
+
+  // Deprecation warning for NEXT_PUBLIC_TWILIO_PHONE_NUMBER
+  if (
+    !process.env.TWILIO_PHONE_NUMBER &&
+    process.env.NEXT_PUBLIC_TWILIO_PHONE_NUMBER
+  ) {
+    console.warn(
+      "DEPRECATION WARNING: NEXT_PUBLIC_TWILIO_PHONE_NUMBER is deprecated and will be removed in a future release. " +
+        "Please use TWILIO_PHONE_NUMBER instead."
+    );
+  }
 
   console.log("SMS configuration check:", {
     hasAccountSid: !!accountSid,
@@ -21,12 +34,15 @@ export async function sendSMS(to: string, message: string): Promise<void> {
     fromNumberRaw: fromNumber,
     fromNumberSource: process.env.TWILIO_PHONE_NUMBER
       ? "TWILIO_PHONE_NUMBER"
+      : process.env.NEXT_PUBLIC_TWILIO_PHONE_NUMBER
+      ? "NEXT_PUBLIC_TWILIO_PHONE_NUMBER (deprecated)"
       : "none",
   });
 
   if (!accountSid || !authToken || !fromNumber) {
     throw new Error(
-      "Twilio credentials not configured. Need TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER"
+      "Twilio credentials not configured. Need TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER " +
+        "(NEXT_PUBLIC_TWILIO_PHONE_NUMBER is deprecated but still supported)"
     );
   }
 
