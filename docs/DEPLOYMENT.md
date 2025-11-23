@@ -13,7 +13,7 @@ This guide covers deploying ARC Line as a standalone Node.js voice system.
 - Node.js 18+ runtime
 - Supabase project set up
 - Twilio account with phone number configured
-- Hosting platform account (Heroku, Railway, Fly.io, AWS, etc.)
+- Hosting platform account (Heroku, Railway, Fly.io, etc.)
 
 ## Step 1: Environment Variables
 
@@ -123,38 +123,6 @@ The repository is configured to deploy the `server/` folder as the root project.
    ```bash
    fly deploy
    ```
-
-### Option D: AWS
-
-Deploy to AWS using Elastic Beanstalk, EC2, or ECS. See [AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md) for detailed AWS deployment instructions.
-
-**Quick Start (Elastic Beanstalk)**:
-
-1. Navigate to server directory:
-
-   ```bash
-   cd server
-   ```
-
-2. Initialize Elastic Beanstalk:
-
-   ```bash
-   eb init
-   eb create arcline-production
-   ```
-
-3. Set environment variables:
-
-   ```bash
-   eb setenv DOMAIN=your-domain.com SUPABASE_URL=... SUPABASE_ANON_KEY=...
-   ```
-
-4. Deploy:
-   ```bash
-   eb deploy
-   ```
-
-For detailed instructions on EC2, ECS, and advanced AWS configurations, see [AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md).
 
 ## Step 3: Configure Twilio Webhooks
 

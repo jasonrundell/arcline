@@ -27,6 +27,9 @@ export function detectHotlineType(input: string): string | undefined {
     normalizedInput.includes("material") ||
     normalizedInput.includes("clip") ||
     normalizedInput.includes("click") ||
+    normalizedInput.includes("boot") ||
+    normalizedInput.includes("lut") ||
+    normalizedInput.includes("lute") ||
     normalizedInput.includes("lipped")
   ) {
     return "loot";
